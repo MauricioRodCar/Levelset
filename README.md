@@ -8,7 +8,7 @@ signal, the exit plan, 10,000 simulated sessions, the position size and the risk
 Levelset runs on your own Windows PC, uses free market data and **never places an order**. You
 read the ticket and place the trade yourself, on your own platform.
 
-> **Web demo:** `https://<user>.github.io/Levelset/` (placeholder: published by `.github/workflows/pages.yml`)
+> **Web demo:** [mauriciorodcar.github.io/Levelset](https://mauriciorodcar.github.io/Levelset/) (runs in your browser on demo data, no install)
 
 The app is available in **English and Spanish** (switch it any time from the status bar).
 
