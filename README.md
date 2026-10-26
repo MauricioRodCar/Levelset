@@ -16,10 +16,11 @@ The app is available in **English and Spanish** (switch it any time from the sta
 
 | | |
 | --- | --- |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Pipeline](docs/screenshots/pipeline.png) |
-| ![Ticket](docs/screenshots/ticket.png) | ![Settings and themes](docs/screenshots/settings.png) |
+| ![Dashboard: tickets with large entry, stop loss and take profit](docs/screenshots/dashboard.png) | ![Pipeline: the 8 steps behind a ticket](docs/screenshots/pipeline.png) |
+| ![Settings: 7 presets and per-colour editing](docs/screenshots/appearance.png) | ![Spanish UI on the Daylight theme](docs/screenshots/dashboard-es-daylight.png) |
+| ![Connections: how to enter a ticket in cTrader, MT4, MT5](docs/screenshots/connections.png) | |
 
-_Placeholders: add the PNGs to `docs/screenshots/`._
+_Screenshots come from the built-in demo (mock engine, TSLA on 2026-10-19). Regenerate with `node app/scripts/screenshots.mjs` while `npm run dev:mock -- --port 5174` runs._
 
 ## Features
 
