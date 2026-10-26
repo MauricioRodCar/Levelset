@@ -1,0 +1,24 @@
+{
+  "id": "daylight",
+  "name": {
+    "en": "Daylight",
+    "es": "D\u00eda"
+  },
+  "mode": "light",
+  "order": 1,
+  "tokens": {
+    "bg": "#F7F9FC",
+    "surface": "#FFFFFF",
+    "surface2": "#EEF2F8",
+    "border": "#DCE3EE",
+    "text": "#0F172A",
+    "textMuted": "#5B6B84",
+    "primary": "#0F766E",
+    "onPrimary": "#FFFFFF",
+    "accent": "#1D4ED8",
+    "profit": "#15803D",
+    "loss": "#B91C1C",
+    "warning": "#B45309",
+    "info": "#1D4ED8"
+  }
+}

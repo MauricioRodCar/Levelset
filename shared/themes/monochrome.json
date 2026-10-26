@@ -1,0 +1,24 @@
+{
+  "id": "monochrome",
+  "name": {
+    "en": "Monochrome",
+    "es": "Monocromo"
+  },
+  "mode": "dark",
+  "order": 4,
+  "tokens": {
+    "bg": "#0C0C0D",
+    "surface": "#161618",
+    "surface2": "#1E1E21",
+    "border": "#2A2A2E",
+    "text": "#F2F2F3",
+    "textMuted": "#9A9AA0",
+    "primary": "#E5E5E7",
+    "onPrimary": "#0C0C0D",
+    "accent": "#BDBDC2",
+    "profit": "#F2F2F3",
+    "loss": "#6E6E75",
+    "warning": "#C8C8CC",
+    "info": "#BDBDC2"
+  }
+}

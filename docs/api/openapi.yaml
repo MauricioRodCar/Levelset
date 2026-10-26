@@ -1,0 +1,406 @@
+openapi: 3.1.0
+info:
+  title: Levelset Engine API
+  version: 0.1.0
+  description: |
+    Local HTTP API served by levelset-engine on 127.0.0.1:<port>.
+    Every request carries `Authorization: Bearer <token>` (token passed by the Tauri shell at launch;
+    in dev the engine reads LEVELSET_TOKEN, default "dev").
+    All prices are USD numbers. All timestamps are ISO-8601 with offset. Market times are America/New_York.
+    This file is the contract between engine (WP1) and UI (WP2-5). Change it only through the lead.
+servers:
+  - url: http://127.0.0.1:8765
+security:
+  - bearer: []
+paths:
+  /health:
+    get:
+      security: []
+      summary: Liveness
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: object, properties: { ok: { type: boolean }, version: { type: string } } } } } }
+  /status:
+    get:
+      summary: Market clock, data delay, mode
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Status" } } } }
+  /dashboard:
+    get:
+      summary: KPI row + counts for the Dashboard
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/DashboardSummary" } } } }
+  /settings:
+    get:
+      summary: Current settings (account, limits, data)
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Settings" } } } }
+    put:
+      summary: Replace settings; engine writes the skills' config files
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/Settings" } } } }
+      responses:
+        "200": { description: saved, content: { application/json: { schema: { $ref: "#/components/schemas/Settings" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+  /watchlist:
+    get:
+      summary: Tickers from the last scan with live entry state
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/WatchItem" } } } } }
+  /scanner/run:
+    post:
+      summary: Run trader-scanner (writes the watchlist)
+      requestBody:
+        content: { application/json: { schema: { $ref: "#/components/schemas/ScanRequest" } } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/ScanResult" } } } }
+  /news:
+    get:
+      summary: Headlines and 8-Ks for tickers
+      parameters:
+        - { name: tickers, in: query, required: true, schema: { type: string }, description: "comma separated" }
+        - { name: hours, in: query, schema: { type: integer, default: 12 } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/NewsItem" } } } } }
+  /pipeline/runs:
+    get:
+      summary: Run history, newest first
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/PipelineRunSummary" } } } } }
+    post:
+      summary: Start a run. mode=all runs every step in the background (progress via /events); mode=step creates the run with all steps pending.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PipelineRunRequest" } } } }
+      responses:
+        "202": { description: started, content: { application/json: { schema: { $ref: "#/components/schemas/PipelineRun" } } } }
+  /pipeline/runs/{runId}:
+    get:
+      parameters: [ { $ref: "#/components/parameters/runId" } ]
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/PipelineRun" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /pipeline/runs/{runId}/steps/{stepKey}/run:
+    post:
+      summary: Run (or re-run) one step in step mode with optional parameter overrides. Previous steps must be done/check.
+      parameters: [ { $ref: "#/components/parameters/runId" }, { $ref: "#/components/parameters/stepKey" } ]
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { params: { type: object, additionalProperties: true } } } } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Step" } } } }
+        "409": { $ref: "#/components/responses/Problem" }
+  /tickets:
+    get:
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [ready, blocked, stale, all], default: all } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Ticket" } } } } }
+  /tickets/{ticketId}:
+    get:
+      parameters: [ { $ref: "#/components/parameters/ticketId" } ]
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Ticket" } } } }
+  /tickets/{ticketId}/export:
+    get:
+      summary: Ticket formatted for a platform adapter
+      parameters:
+        - { $ref: "#/components/parameters/ticketId" }
+        - { name: format, in: query, required: true, schema: { type: string, enum: [text, csv, json, ctrader, mt4, mt5] } }
+      responses:
+        "200": { description: ok, content: { text/plain: { schema: { type: string } } } }
+  /trades:
+    get:
+      summary: Open positions from recorded fills, with unrealized P/L at the latest price
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/OpenTrade" } } } } }
+  /fills:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Fill" } } } } }
+    post:
+      summary: Record a manual fill (v1 has no broker link)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FillCreate" } } } }
+      responses:
+        "201": { description: created, content: { application/json: { schema: { $ref: "#/components/schemas/Fill" } } } }
+  /alerts:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Alert" } } } } }
+    post:
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AlertCreate" } } } }
+      responses:
+        "201": { description: created, content: { application/json: { schema: { $ref: "#/components/schemas/Alert" } } } }
+  /alerts/from-plan:
+    post:
+      summary: Stop, target and flat-by alerts from a run's plan
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [runId], properties: { runId: { type: string } } } } } }
+      responses:
+        "201": { description: created, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Alert" } } } } }
+  /alerts/{alertId}:
+    delete:
+      parameters: [ { name: alertId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        "204": { description: deleted }
+  /events:
+    get:
+      summary: |
+        Server-Sent Events stream. Event names and data payloads:
+          run.updated    -> PipelineRunSummary
+          step.updated   -> { runId, step: Step }
+          ticket.created -> Ticket
+          alert.rung     -> Alert
+          status.changed -> Status
+        Token may be passed as ?token= because EventSource can't set headers.
+      responses:
+        "200": { description: stream, content: { text/event-stream: { schema: { type: string } } } }
+
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer }
+  parameters:
+    runId: { name: runId, in: path, required: true, schema: { type: string } }
+    ticketId: { name: ticketId, in: path, required: true, schema: { type: string } }
+    stepKey: { name: stepKey, in: path, required: true, schema: { $ref: "#/components/schemas/StepKey" } }
+  responses:
+    Problem:
+      description: Error (RFC 9457)
+      content: { application/problem+json: { schema: { $ref: "#/components/schemas/Problem" } } }
+  schemas:
+    Problem:
+      type: object
+      properties: { title: { type: string }, detail: { type: string }, code: { type: string, description: "stable machine code, UI translates it" } }
+    Status:
+      type: object
+      required: [marketOpen, nowEt, dataDelaySeconds, mode, paper, tier, engineVersion]
+      properties:
+        marketOpen: { type: boolean }
+        nowEt: { type: string, format: date-time }
+        nextOpen: { type: [string, "null"], format: date-time }
+        nextClose: { type: [string, "null"], format: date-time }
+        earlyClose: { type: boolean }
+        dataDelaySeconds: { type: integer, description: "estimated delay of the price source" }
+        mode: { type: string, enum: [demo, live], description: "demo = fixtures with pinned clock 2026-10-19 10:15 ET" }
+        paper: { type: boolean }
+        tier: { type: string, enum: [free, pro, tester] }
+        engineVersion: { type: string }
+    DashboardSummary:
+      type: object
+      required: [dayPnl, riskUsed, dailyLossLimit, tradesToday, maxTradesPerDay, setupsFound]
+      properties:
+        dayPnl: { type: number }
+        riskUsed: { type: number, description: "sum of max losses of today's entries" }
+        dailyLossLimit: { type: number }
+        tradesToday: { type: integer }
+        maxTradesPerDay: { type: integer }
+        setupsFound: { type: integer }
+        lastScanAt: { type: [string, "null"], format: date-time }
+    Settings:
+      type: object
+      required: [account, limits, data]
+      properties:
+        account:
+          type: object
+          required: [accountSizeUsd, paper]
+          properties:
+            accountSizeUsd: { type: number, minimum: 0 }
+            cashBufferPct: { type: number, minimum: 0, maximum: 100 }
+            paper: { type: boolean }
+        limits:
+          type: object
+          properties:
+            maxLossPerTradeUsd: { type: number }
+            maxDailyLossUsd: { type: number }
+            maxTradesPerDay: { type: integer }
+            minRewardRisk: { type: number }
+            maxPositionPct: { type: number }
+            maxOrderUsd: { type: number }
+            noEntriesBefore: { type: string, example: "09:45" }
+            noEntriesAfter: { type: string, example: "15:30" }
+            flatBy: { type: string, example: "15:55" }
+            requireStop: { type: boolean }
+            pdtGuard: { type: boolean }
+        data:
+          type: object
+          properties:
+            secUserAgent: { type: string }
+            demoMode: { type: boolean }
+    ScanRequest:
+      type: object
+      properties:
+        kind: { type: string, enum: [orb, daily], default: orb }
+        at: { type: string, description: "HH:MM ET, optional", example: "10:15" }
+        tickers: { type: array, items: { type: string }, description: "limit the universe, optional" }
+    ScanResult:
+      type: object
+      properties:
+        kind: { type: string }
+        scanned: { type: integer }
+        hits: { type: array, items: { $ref: "#/components/schemas/ScanHit" } }
+        at: { type: string, format: date-time }
+    ScanHit:
+      type: object
+      required: [symbol, setup]
+      properties:
+        symbol: { type: string }
+        setup: { type: string, description: "orb | breakout20 | bull_flag | reclaim20 | oversold | oversold_bounce" }
+        price: { type: number }
+        rangeHigh: { type: [number, "null"] }
+        rangeLow: { type: [number, "null"] }
+        pctOverTrigger: { type: [number, "null"] }
+        changePct: { type: [number, "null"] }
+    WatchItem:
+      type: object
+      required: [symbol, entryState]
+      properties:
+        symbol: { type: string }
+        setup: { type: string }
+        entryState: { type: string, enum: [waiting, triggered, expired, not_open] }
+        distancePct: { type: [number, "null"], description: "how far from trigger when waiting" }
+        price: { type: [number, "null"] }
+        changePct: { type: [number, "null"] }
+    NewsItem:
+      type: object
+      required: [id, symbol, title, publishedAt, source]
+      properties:
+        id: { type: string }
+        symbol: { type: string }
+        title: { type: string }
+        url: { type: string }
+        source: { type: string, enum: [yahoo, sec] }
+        publishedAt: { type: string, format: date-time }
+        tags: { type: array, items: { type: string, description: "earnings | analyst | deal | halt | regulatory | macro | leadership | legal | other" } }
+    StepKey:
+      type: string
+      enum: [scanner, news, entry, exit, timemachine, budget, risk, ticket]
+    StepStatus:
+      type: string
+      enum: [pending, running, done, check, blocked, error]
+    Step:
+      type: object
+      required: [key, status]
+      properties:
+        key: { $ref: "#/components/schemas/StepKey" }
+        status: { $ref: "#/components/schemas/StepStatus" }
+        params: { type: object, additionalProperties: true }
+        inputs: { type: object, additionalProperties: true, description: "snapshot of what the step read" }
+        outputs: { type: object, additionalProperties: true, description: "raw JSON the skill produced" }
+        summary:
+          type: object
+          description: "short structured result for the step card; UI renders with i18n"
+          properties:
+            inLine: { type: string, description: "one-line input description (English fallback)" }
+            outLine: { type: string, description: "one-line output description (English fallback)" }
+            code: { type: string, description: "i18n key suffix, e.g. scanner.found" }
+            values: { type: object, additionalProperties: true, description: "values for the i18n message" }
+        checks: { type: array, items: { type: string }, description: "reasons for status=check/blocked, machine codes e.g. earnings_this_week, coin_flip, daily_limit" }
+        error: { type: [string, "null"] }
+        startedAt: { type: [string, "null"], format: date-time }
+        endedAt: { type: [string, "null"], format: date-time }
+    PipelineRunRequest:
+      type: object
+      required: [mode]
+      properties:
+        mode: { type: string, enum: [all, step] }
+        ticker: { type: string, description: "optional; if absent the scanner's best hit is used" }
+        setup: { type: string, enum: [orb, level], default: orb }
+        params: { type: object, additionalProperties: true, description: "per-step overrides keyed by StepKey" }
+    PipelineRunSummary:
+      type: object
+      required: [id, status, mode, startedAt]
+      properties:
+        id: { type: string }
+        ticker: { type: [string, "null"] }
+        setup: { type: string }
+        mode: { type: string, enum: [all, step] }
+        status: { type: string, enum: [running, done, check, blocked, error, pending] }
+        startedAt: { type: string, format: date-time }
+        endedAt: { type: [string, "null"], format: date-time }
+        ticketId: { type: [string, "null"] }
+    PipelineRun:
+      allOf:
+        - $ref: "#/components/schemas/PipelineRunSummary"
+        - type: object
+          required: [steps]
+          properties:
+            steps: { type: array, items: { $ref: "#/components/schemas/Step" }, minItems: 8, maxItems: 8 }
+    Ticket:
+      type: object
+      required: [id, runId, symbol, side, qty, orderType, entry, stop, target, maxLoss, riskPerShare, rMultiple, status, createdAt]
+      properties:
+        id: { type: string }
+        runId: { type: string }
+        symbol: { type: string }
+        side: { type: string, enum: [buy, sell] }
+        qty: { type: integer }
+        orderType: { type: string, enum: [market, limit] }
+        timeInForce: { type: string, enum: [day, gtc] }
+        entry: { type: number }
+        stop: { type: number }
+        target: { type: number }
+        riskPerShare: { type: number }
+        rewardPerShare: { type: number }
+        rMultiple: { type: number }
+        maxLoss: { type: number }
+        positionUsd: { type: number }
+        flatBy: { type: string, example: "15:55" }
+        status: { type: string, enum: [ready, blocked, stale] }
+        riskReasons: { type: array, items: { type: string }, description: "machine codes from trader-risk when blocked" }
+        riskDetail: { type: array, items: { type: string }, description: "English detail lines from trader-risk" }
+        timeMachine:
+          type: [object, "null"]
+          properties:
+            targetFirstPct: { type: number }
+            stopFirstPct: { type: number }
+            openAtClosePct: { type: number }
+            verdict: { type: string, description: "favorable | coin_flip | unfavorable" }
+            historyFired: { type: integer }
+            historyWon: { type: integer }
+            historyLost: { type: integer }
+        createdAt: { type: string, format: date-time }
+    OpenTrade:
+      type: object
+      required: [symbol, qty, avgPrice]
+      properties:
+        symbol: { type: string }
+        qty: { type: integer }
+        avgPrice: { type: number }
+        lastPrice: { type: [number, "null"] }
+        unrealizedPnl: { type: [number, "null"] }
+        stop: { type: [number, "null"] }
+        target: { type: [number, "null"] }
+        flatBy: { type: [string, "null"] }
+        ticketId: { type: [string, "null"] }
+    FillCreate:
+      type: object
+      required: [symbol, side, qty, price]
+      properties:
+        symbol: { type: string }
+        side: { type: string, enum: [buy, sell] }
+        qty: { type: integer, minimum: 1 }
+        price: { type: number, exclusiveMinimum: 0 }
+        ticketId: { type: string }
+        at: { type: string, format: date-time }
+    Fill:
+      allOf:
+        - $ref: "#/components/schemas/FillCreate"
+        - type: object
+          required: [id]
+          properties: { id: { type: string }, realizedPnl: { type: [number, "null"] } }
+    AlertCreate:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [above, below, stop, target, pct_move, time, open_bell, flat_by] }
+        symbol: { type: string }
+        level: { type: number }
+        pct: { type: number }
+        time: { type: string, example: "15:55" }
+        note: { type: string }
+    Alert:
+      allOf:
+        - $ref: "#/components/schemas/AlertCreate"
+        - type: object
+          required: [id, status, createdAt]
+          properties:
+            id: { type: string }
+            status: { type: string, enum: [armed, rung] }
+            createdAt: { type: string, format: date-time }
+            rungAt: { type: [string, "null"], format: date-time }

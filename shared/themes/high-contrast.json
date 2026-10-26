@@ -1,0 +1,24 @@
+{
+  "id": "high-contrast",
+  "name": {
+    "en": "High contrast",
+    "es": "Alto contraste"
+  },
+  "mode": "dark",
+  "order": 6,
+  "tokens": {
+    "bg": "#000000",
+    "surface": "#0A0A0A",
+    "surface2": "#141414",
+    "border": "#FFFFFF",
+    "text": "#FFFFFF",
+    "textMuted": "#D4D4D4",
+    "primary": "#00E5CC",
+    "onPrimary": "#000000",
+    "accent": "#7CC4FF",
+    "profit": "#00FF66",
+    "loss": "#FF5C5C",
+    "warning": "#FFD000",
+    "info": "#7CC4FF"
+  }
+}

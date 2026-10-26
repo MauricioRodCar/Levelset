@@ -1,6 +1,6 @@
-# Levelset — Product Requirements (v0.1, draft for sign-off)
+# Levelset — Product Requirements (v1.0)
 
-Status: **Draft — awaiting owner sign-off. No code until approved.**
+Status: **Approved by owner 2026-10-25.**
 Owner: Mauricio · Date: 2026-10-25
 
 ## 1. Vision
@@ -40,7 +40,7 @@ v1 is used by the owner only. Testers come later.
 | Languages | English and Spanish from v1 |
 | Monetization | Open core, one app, one installer, key tiers: Free / Pro / Tester (expiring, revocable) |
 | Name | Levelset (web search found no trading-software conflict; formal trademark check before selling) |
-| Location | `Desktop\Levelset`, git repo, public portfolio repo later |
+| Location | `C:\dev\Levelset`, git repo, public portfolio repo later |
 
 ## 4. Scope
 
@@ -146,9 +146,9 @@ One installer; features gated by flags. Public repo = Free core + demo. Pro modu
 4. The whole UI switches EN ↔ ES and between all 7 presets with no untranslated strings or contrast failures.
 5. Demo mode is live on GitHub Pages.
 
-## 9. Open questions
+## 9. Resolved questions (2026-10-25)
 
-1. Day P/L in v1: manual fill entry only (no broker link) — OK?
-2. Account currency: USD only in v1, or also show in a second currency (e.g. MXN/EUR)?
-3. Public repo licence for the Levelset core: MIT (max portfolio reach) vs AGPL (discourages closed commercial forks)?
-4. Should the folder move out of OneDrive before coding? (OneDrive syncing `node_modules` and Rust `target/` folders is slow and can lock files — recommended: `C:\dev\Levelset`, with git + GitHub as backup.)
+1. Day P/L in v1: **manual fill entry** (no broker link).
+2. Account currency: **USD only** in v1.
+3. Public repo licence for the Levelset core: **MIT** (keep day-trader-skill's MIT notice in NOTICE).
+4. Project location: **`C:\dev\Levelset`** (out of OneDrive), git + GitHub as backup.

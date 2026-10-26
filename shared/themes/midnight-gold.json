@@ -1,0 +1,24 @@
+{
+  "id": "midnight-gold",
+  "name": {
+    "en": "Midnight + Gold",
+    "es": "Medianoche + Oro"
+  },
+  "mode": "dark",
+  "order": 3,
+  "tokens": {
+    "bg": "#0A0B1A",
+    "surface": "#131530",
+    "surface2": "#1A1D3D",
+    "border": "#23264A",
+    "text": "#EDEBFA",
+    "textMuted": "#9693B8",
+    "primary": "#6366F1",
+    "onPrimary": "#FFFFFF",
+    "accent": "#D4A84B",
+    "profit": "#22C55E",
+    "loss": "#EF4444",
+    "warning": "#F59E0B",
+    "info": "#A5B4FC"
+  }
+}

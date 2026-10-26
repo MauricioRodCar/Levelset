@@ -1,0 +1,24 @@
+{
+  "id": "graphite-emerald",
+  "name": {
+    "en": "Graphite + Emerald",
+    "es": "Grafito + Esmeralda"
+  },
+  "mode": "dark",
+  "order": 2,
+  "tokens": {
+    "bg": "#0E0F12",
+    "surface": "#17191E",
+    "surface2": "#1E2127",
+    "border": "#262A33",
+    "text": "#ECEEF2",
+    "textMuted": "#8B9099",
+    "primary": "#10B981",
+    "onPrimary": "#022C1E",
+    "accent": "#A3A3A3",
+    "profit": "#34D399",
+    "loss": "#F43F5E",
+    "warning": "#FBBF24",
+    "info": "#93C5FD"
+  }
+}
