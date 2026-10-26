@@ -1,13 +1,18 @@
 openapi: 3.1.0
 info:
   title: Levelset Engine API
-  version: 0.1.0
+  version: 0.1.1
   description: |
     Local HTTP API served by levelset-engine on 127.0.0.1:<port>.
     Every request carries `Authorization: Bearer <token>` (token passed by the Tauri shell at launch;
     in dev the engine reads LEVELSET_TOKEN, default "dev").
     All prices are USD numbers. All timestamps are ISO-8601 with offset. Market times are America/New_York.
     This file is the contract between engine (WP1) and UI (WP2-5). Change it only through the lead.
+    Error codes (Problem.code) the UI must translate: unauthorized, not_found, validation_error,
+    previous_step_not_done, scan_failed (502), news_failed (502), insufficient_position (422),
+    invalid_alert (422). A run-all that stops early (e.g. entry still waiting) ends with status
+    "check" and the remaining steps "pending". News tags map the skill's people->leadership,
+    capital/risk->other.
 servers:
   - url: http://127.0.0.1:8765
 security:
@@ -221,7 +226,7 @@ components:
           type: object
           properties:
             secUserAgent: { type: string }
-            demoMode: { type: boolean }
+            demoMode: { type: boolean, readOnly: true, description: "chosen at engine start (--demo); ignored on PUT" }
     ScanRequest:
       type: object
       properties:
@@ -240,7 +245,7 @@ components:
       required: [symbol, setup]
       properties:
         symbol: { type: string }
-        setup: { type: string, description: "orb | breakout20 | bull_flag | reclaim20 | oversold | oversold_bounce" }
+        setup: { type: string, description: "orb | breakout20 | bull_flag | reclaim20 | oversold | oversold_bounce (first match when several apply)" }
         price: { type: number }
         rangeHigh: { type: [number, "null"] }
         rangeLow: { type: [number, "null"] }
