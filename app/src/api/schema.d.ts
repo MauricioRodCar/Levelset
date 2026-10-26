@@ -916,6 +916,15 @@ export interface paths {
          *       ticket.created -> Ticket
          *       alert.rung     -> Alert
          *       status.changed -> Status
+         *       paper.opened     -> PaperPosition     (auto-follow filled a ticket; also refresh Ticket.paper)
+         *       paper.closed     -> PaperTrade        (kind closed: stop, target, flat_by or reset)
+         *       paper.skipped    -> PaperTrade        (kind skipped: blocked, stale or duplicate)
+         *       paper.backfilled -> PaperBackfill     (catch-up after engine start finished)
+         *       congress.filing  -> CongressFilingEvent (new PTR that mentions the watchlist or a position;
+         *                                                only when CongressSettings.notifyOnWatchlist)
+         *       bridge.updated   -> BridgeTicketState (a bridge acknowledged a signal: shown, placed, dismissed...)
+         *       bridge.status    -> BridgeStatus      (a platform's bridge went online / offline / error)
+         *     Backfilled paper events are not sent one by one; one paper.backfilled summarises them.
          *     Token may be passed as ?token= because EventSource can't set headers.
          */
         get: {
@@ -940,6 +949,1217 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Every paper account, oldest first. Never empty: on first use the engine creates "Paper 1"
+         *     (active, starting balance = Settings.account.accountSizeUsd).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperAccount"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a paper account (unlimited). activate=true (default) makes it the one auto-follow trades into. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PaperAccountCreate"];
+                };
+            };
+            responses: {
+                /** @description created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperAccount"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/accounts/{accountId}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start a new account period (the UI confirms first). Open positions of the current period are
+         *     closed at the latest price with exitReason "reset"; the old period and its trades are kept
+         *     and stay selectable with periodId. The new period starts at startingBalanceUsd
+         *     (default Settings.account.accountSizeUsd).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountId: components["parameters"]["accountId"];
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PaperAccountReset"];
+                };
+            };
+            responses: {
+                /** @description reset */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperAccount"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/accounts/{accountId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make this the active account (exactly one is active). Open positions in other accounts keep running to their exits. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountId: components["parameters"]["accountId"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description activated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperAccount"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open paper positions. This is the separate list the Open trades view shows with a PAPER badge;
+         *     GET /trades stays real (manual fills) only. Default: the active account.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description paper account; default the active one (404 paper_account_not_found) */
+                    accountId?: components["parameters"]["accountIdQuery"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperPosition"][];
+                    };
+                };
+                404: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/trades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Paper trade log, newest first (by createdAt): closed trades and skipped entries. Open positions
+         *     are in /paper/positions; a position keeps its id when it closes. Defaults: the active account,
+         *     its current period, every date.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description paper account; default the active one (404 paper_account_not_found) */
+                    accountId?: components["parameters"]["accountIdQuery"];
+                    /** @description account period id, or "all"; default the account's current period */
+                    periodId?: components["parameters"]["periodIdQuery"];
+                    /** @description first day included (New York date) */
+                    from?: components["parameters"]["fromDate"];
+                    /** @description last day included (New York date) */
+                    to?: components["parameters"]["toDate"];
+                    symbol?: string;
+                    kind?: "closed" | "skipped" | "all";
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperTrade"][];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/trades/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The same rows as GET /paper/trades (no limit) as CSV, UTF-8, comma separated, header row, with
+         *     Content-Disposition attachment; filename="levelset-paper-<accountId>.csv". Columns, in order:
+         *     id,accountId,periodId,kind,symbol,setup,qty,entryAt,entryPrice,exitAt,exitPrice,exitReason,
+         *     rMultiple,pnl,slippageUsd,skipReason,backfilled,ticketId,runId,createdAt (empty cell = null).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description paper account; default the active one (404 paper_account_not_found) */
+                    accountId?: components["parameters"]["accountIdQuery"];
+                    /** @description account period id, or "all"; default the account's current period */
+                    periodId?: components["parameters"]["periodIdQuery"];
+                    /** @description first day included (New York date) */
+                    from?: components["parameters"]["fromDate"];
+                    /** @description last day included (New York date) */
+                    to?: components["parameters"]["toDate"];
+                    kind?: "closed" | "skipped" | "all";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                404: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report numbers over closed trades in the range (skipped entries are only counted). Defaults:
+         *     the active account, its current period, every date, no breakdown.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description paper account; default the active one (404 paper_account_not_found) */
+                    accountId?: components["parameters"]["accountIdQuery"];
+                    /** @description account period id, or "all"; default the account's current period */
+                    periodId?: components["parameters"]["periodIdQuery"];
+                    /** @description first day included (New York date) */
+                    from?: components["parameters"]["fromDate"];
+                    /** @description last day included (New York date) */
+                    to?: components["parameters"]["toDate"];
+                    groupBy?: "ticker" | "setup" | "hour" | "weekday";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperStats"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * "Signals vs. you": paper results (every signal followed) next to the user's recorded manual
+         *     round trips (GET /fills), per day and ticker. Totals cover only rows where both sides traded
+         *     (same days, same tickers). Defaults: the active account, its current period, every date.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description paper account; default the active one (404 paper_account_not_found) */
+                    accountId?: components["parameters"]["accountIdQuery"];
+                    /** @description account period id, or "all"; default the account's current period */
+                    periodId?: components["parameters"]["periodIdQuery"];
+                    /** @description first day included (New York date) */
+                    from?: components["parameters"]["fromDate"];
+                    /** @description last day included (New York date) */
+                    to?: components["parameters"]["toDate"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperComparison"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/paper/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperSettings"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change any PaperSettings field; applies to fills made after the change. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PaperSettingsUpdate"];
+                };
+            };
+            responses: {
+                /** @description saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaperSettings"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        trace?: never;
+    };
+    "/ai/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Write-only. Called by the Tauri shell (never by the UI) with the Claude API key it read from
+         *     Windows Credential Manager, after the engine is healthy and whenever the key is saved. The engine
+         *     keeps it in memory only: never persisted, logged or returned. 422 invalid_ai_key when it does not
+         *     look like an Anthropic key.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiKey"];
+                };
+            };
+            responses: {
+                /** @description stored in memory */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        post?: never;
+        /** Forget the key (shell calls it when the user deletes the key). Idempotent. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description forgotten */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether AI can answer now, and this month's spend. Never contains the key. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiStatus"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiSettings"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiSettingsUpdate"];
+                };
+            };
+            responses: {
+                /** @description saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiSettings"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        trace?: never;
+    };
+    "/ai/explain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Layer 1 "Explain" buttons. Explains with the user's own data; never a buy/sell call or a price
+         *     prediction. Errors (all Problem): 409 ai_disabled, 409 ai_no_key, 429 ai_cap_reached,
+         *     502 ai_failed, 404 not_found / ticket_not_found for unknown ids, 422 validation_error when the
+         *     fields required by kind are missing.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiExplainRequest"];
+                };
+            };
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiAnswer"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                409: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+                429: components["responses"]["Problem"];
+                502: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/coach": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Layer 2 review of paper vs. manual results over a date range; suggests experiments, not rule changes. Same errors as /ai/explain. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiCoachRequest"];
+                };
+            };
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiAnswer"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                409: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+                429: components["responses"]["Problem"];
+                502: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Layer 3 chat panel, scoped to Levelset data. Stateless: the UI sends the whole history each time
+         *     (last message role user). Answers in lang. Same errors as /ai/explain.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AiChatRequest"];
+                };
+            };
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiAnswer"];
+                    };
+                };
+                409: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+                429: components["responses"]["Problem"];
+                502: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analyst/{symbol}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reported numbers from SEC EDGAR XBRL company facts (trader-analyst facts.py --json) for one
+         *     company. 422 sec_identity_missing when Settings.data.secUserAgent is empty (live mode),
+         *     404 no_sec_filer when SEC has no CIK / XBRL facts for the ticker (ETFs, many foreign filers),
+         *     502 analyst_failed when SEC cannot be reached.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    quarters?: number;
+                };
+                header?: never;
+                path: {
+                    symbol: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AnalystReport"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+                502: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/congress/trades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stored House PTR rows (trader-pelosi ptr.py), newest filing first. Reads the local store only;
+         *     POST /congress/refresh fetches new filings. from/to filter filedDate. Public disclosures,
+         *     delayed up to 45 days; not inside information.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description case-insensitive substring of the member's name */
+                    member?: string;
+                    ticker?: string;
+                    type?: "buy" | "sell" | "exchange";
+                    /** @description first day included (New York date) */
+                    from?: components["parameters"]["fromDate"];
+                    /** @description last day included (New York date) */
+                    to?: components["parameters"]["toDate"];
+                    /** @description only rows with inWatchlist or inPositions */
+                    watchlistOnly?: boolean;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CongressFeed"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/congress/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fetch the House Clerk index, download and read new PTRs, store their rows. 502 congress_failed when the Clerk site cannot be reached. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CongressRefreshResult"];
+                    };
+                };
+                502: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/congress/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CongressSettings"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CongressSettingsUpdate"];
+                };
+            };
+            responses: {
+                /** @description saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CongressSettings"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        trace?: never;
+    };
+    "/bridges/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BridgeSettings"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the signals folder and/or enable platforms. 422 validation_error for a relative path, 500 bridge_folder_unwritable when the folder cannot be created. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BridgeSettingsUpdate"];
+                };
+            };
+            responses: {
+                /** @description saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BridgeSettings"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+                500: components["responses"]["Problem"];
+            };
+        };
+        trace?: never;
+    };
+    "/bridges/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One row per platform (ctrader, mt4, mt5), from each bridge's heartbeat file. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BridgeStatus"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bridges/symbol-map": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SymbolMap"];
+                    };
+                };
+            };
+        };
+        /** Replace the whole mapping table. 422 validation_error for a duplicate (platform, usSymbol) or a bad number. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SymbolMap"];
+                };
+            };
+            responses: {
+                /** @description saved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SymbolMap"];
+                    };
+                };
+                422: components["responses"]["Problem"];
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/{ticketId}/send-to-bridge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Show this ticket inside the trading platform for the user to confirm. The engine only writes a
+         *     signal file (BridgeSignal) per platform; the cBot / EA displays it and the user clicks Place or
+         *     Dismiss there. Levelset never places an order. Sending again replaces the previous signal (a
+         *     cancel file is written for the old signalId). Errors: 404 ticket_not_found, 409 ticket_not_ready
+         *     (only status ready can be sent), 409 bridge_disabled (none of the platforms is enabled),
+         *     422 bridge_symbol_unmapped, 422 bridge_volume_too_small, 500 bridge_folder_unwritable.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    ticketId: components["parameters"]["ticketId"];
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["BridgeSendRequest"];
+                };
+            };
+            responses: {
+                /** @description signal files written */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BridgeTicketState"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                409: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+                500: components["responses"]["Problem"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tickets/{ticketId}/cancel-bridge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw the ticket from the platforms: writes a BridgeCancel file per platform so the panel
+         *     disappears. It cannot undo an order the user already placed in the platform. 404 ticket_not_found,
+         *     404 bridge_not_sent when the ticket was never sent.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    ticketId: components["parameters"]["ticketId"];
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description cancel files written */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BridgeTicketState"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -987,6 +2207,8 @@ export interface components {
             setupsFound: number;
             /** Format: date-time */
             lastScanAt?: string | null;
+            /** @description v1.1: active paper account, today's realized + unrealized P/L after slippage; null when auto-follow is off and nothing traded today. Never part of dayPnl. */
+            paperPnlToday?: number | null;
         };
         Settings: {
             account: {
@@ -1012,7 +2234,7 @@ export interface components {
             };
             data: {
                 secUserAgent?: string;
-                /** @description chosen at engine start (--demo); ignored on PUT */
+                /** @description chosen at engine start (--demo); ignored on PUT. v1.1: the Settings toggle is a Tauri shell command that writes/removes the <app data>\demo marker and restarts Levelset (no engine endpoint). */
                 readonly demoMode?: boolean;
             };
         };
@@ -1196,6 +2418,8 @@ export interface components {
             } | null;
             /** Format: date-time */
             createdAt: string;
+            paper?: components["schemas"]["TicketPaper"];
+            bridge?: components["schemas"]["BridgeTicketState"];
         };
         OpenTrade: {
             symbol: string;
@@ -1254,6 +2478,792 @@ export interface components {
             /** Format: date-time */
             rungAt?: string | null;
         };
+        /**
+         * @description Auto-follow outcome for this ticket in the active paper account. Absent while auto-follow is off
+         *     or the engine has not processed the ticket yet. pending = risk PASS, waiting for the next bar's
+         *     open; opened -> "Paper: opened 364.20"; closed; skipped (skipReason).
+         */
+        TicketPaper: {
+            /** @enum {string} */
+            status: "pending" | "opened" | "closed" | "skipped";
+            accountId: string;
+            /** @description PaperPosition.id; the closed PaperTrade keeps the same id */
+            positionId: string | null;
+            /** @description fill incl. slippage */
+            entryPrice: number | null;
+            exitPrice: number | null;
+            exitReason: components["schemas"]["PaperExitReason"] | null;
+            pnl: number | null;
+            rMultiple: number | null;
+            skipReason: components["schemas"]["PaperSkipReason"] | null;
+            backfilled: boolean;
+        };
+        /**
+         * @description stop first when stop and target touch in the same bar; gaps fill at the bar's open; reset = closed by POST .../reset
+         * @enum {string}
+         */
+        PaperExitReason: "stop" | "target" | "flat_by" | "reset";
+        /**
+         * @description duplicate = the account already holds an open paper position in the symbol
+         * @enum {string}
+         */
+        PaperSkipReason: "blocked" | "stale" | "duplicate";
+        PaperPeriod: {
+            id: string;
+            /** @description 1 for the account's first period, +1 per reset */
+            number: number;
+            startingBalanceUsd: number;
+            /** Format: date-time */
+            startedAt: string;
+            /**
+             * Format: date-time
+             * @description null for the current period
+             */
+            endedAt: string | null;
+            realizedPnl: number;
+            /** @description closed trades in the period */
+            trades: number;
+        };
+        PaperAccount: {
+            id: string;
+            name: string;
+            /** @description exactly one account is active; auto-follow trades into it */
+            active: boolean;
+            /** @description of the current period */
+            startingBalanceUsd: number;
+            /** @description starting balance + realized P/L of the current period */
+            cashUsd: number;
+            /** @description cashUsd + unrealized P/L of open positions */
+            equityUsd: number;
+            /** @description current period */
+            realizedPnl: number;
+            unrealizedPnl: number;
+            openPositions: number;
+            currentPeriodId: string;
+            /** @description oldest first; the last is current */
+            periods: components["schemas"]["PaperPeriod"][];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PaperAccountCreate: {
+            /** @description default "Paper <n>" */
+            name?: string;
+            /** @description default Settings.account.accountSizeUsd */
+            startingBalanceUsd?: number;
+            /** @default true */
+            activate?: boolean;
+        };
+        PaperAccountReset: {
+            /** @description default Settings.account.accountSizeUsd */
+            startingBalanceUsd?: number;
+        };
+        /**
+         * @description An open paper position. Shares OpenTrade's fields so the Open trades table can render it with a
+         *     PAPER badge: avgPrice = entry fill incl. slippage, ticketId always set.
+         */
+        PaperPosition: components["schemas"]["OpenTrade"] & {
+            id: string;
+            accountId: string;
+            periodId: string;
+            runId: string;
+            setup?: string;
+            /**
+             * Format: date-time
+             * @description bar open used for the fill
+             */
+            entryAt: string;
+            unrealizedR?: number | null;
+            /** @description slippage + spread cost paid on the entry */
+            slippageUsd: number;
+            /** @description opened by the catch-up run after an engine start */
+            backfilled: boolean;
+        };
+        /**
+         * @description One trade-log row. kind closed: a finished position (same id as the PaperPosition it was).
+         *     kind skipped: a ticket the account did not trade (entry/exit fields null, skipReason set).
+         *     pnl is net of slippage; rMultiple = pnl / (riskPerShare * qty) from the ticket.
+         */
+        PaperTrade: {
+            id: string;
+            accountId: string;
+            periodId: string;
+            /** @enum {string} */
+            kind: "closed" | "skipped";
+            symbol: string;
+            /** @description the run's setup, e.g. orb */
+            setup?: string;
+            /** @description the ticket's qty */
+            qty: number;
+            ticketId: string;
+            /** @description for "View flow" */
+            runId: string;
+            /** Format: date-time */
+            entryAt: string | null;
+            /** @description fill incl. slippage */
+            entryPrice: number | null;
+            /** Format: date-time */
+            exitAt: string | null;
+            /** @description fill incl. slippage */
+            exitPrice: number | null;
+            exitReason: components["schemas"]["PaperExitReason"] | null;
+            rMultiple: number | null;
+            pnl: number | null;
+            /** @description entry + exit slippage and spread cost (already inside pnl) */
+            slippageUsd: number | null;
+            skipReason: components["schemas"]["PaperSkipReason"] | null;
+            backfilled: boolean;
+            /**
+             * Format: date-time
+             * @description when the ticket was handled (sort key)
+             */
+            createdAt: string;
+        };
+        PaperEquityPoint: {
+            /**
+             * Format: date-time
+             * @description range start, then each closed trade's exitAt
+             */
+            t: string;
+            equityUsd: number;
+            tradeId?: string | null;
+        };
+        PaperBreakdownRow: {
+            /** @description ticker: symbol; setup: setup code; hour: entry hour ET "09".."15"; weekday: mon..fri */
+            key: string;
+            trades: number;
+            wins: number;
+            losses: number;
+            winRatePct: number | null;
+            totalPnl: number;
+            expectancyR: number | null;
+        };
+        /**
+         * @description Over closed trades. A win is pnl > 0. expectancyR = mean R per closed trade (the PRD's "average R"
+         *     and "expectancy"); avgWinR / avgLossR split it. profitFactor = gross wins / |gross losses| (null
+         *     when there are no losses). Drawdown is peak-to-trough on equityCurve.
+         */
+        PaperStats: {
+            accountId: string;
+            /** @description a period id or "all" */
+            periodId: string;
+            /** Format: date */
+            from: string | null;
+            /** Format: date */
+            to: string | null;
+            startingBalanceUsd: number;
+            endingEquityUsd: number;
+            totalPnl: number;
+            trades: number;
+            wins: number;
+            losses: number;
+            skipped: number;
+            winRatePct: number | null;
+            expectancyR: number | null;
+            avgWinR: number | null;
+            /** @description negative */
+            avgLossR: number | null;
+            profitFactor: number | null;
+            /** @description positive amount */
+            maxDrawdownUsd: number;
+            maxDrawdownPct: number;
+            longestLosingStreak: number;
+            equityCurve: components["schemas"]["PaperEquityPoint"][];
+            /** @enum {string|null} */
+            groupBy: "ticker" | "setup" | "hour" | "weekday" | null;
+            /** @description empty without groupBy; sorted by key */
+            breakdown: components["schemas"]["PaperBreakdownRow"][];
+        };
+        PaperCompareSide: {
+            /** @description round trips (paper: closed trades; manual: buy then sell fills) */
+            trades: number;
+            pnl: number;
+            /** @description manual: only when every round trip is linked to a ticket */
+            rTotal: number | null;
+            winRatePct: number | null;
+        };
+        PaperCompareRow: {
+            /** Format: date */
+            date: string;
+            symbol: string;
+            /** @description null: no paper trade that day in that ticker */
+            paper: components["schemas"]["PaperCompareSide"] | null;
+            /** @description null: no manual round trip */
+            manual: components["schemas"]["PaperCompareSide"] | null;
+        };
+        PaperComparison: {
+            accountId: string;
+            /** Format: date */
+            from: string | null;
+            /** Format: date */
+            to: string | null;
+            /** @description newest date first */
+            rows: components["schemas"]["PaperCompareRow"][];
+            totals: {
+                /** @description rows where both sides traded; paper/manual totals cover only these */
+                matched: number;
+                paperOnly: number;
+                manualOnly: number;
+                paper: components["schemas"]["PaperCompareSide"];
+                manual: components["schemas"]["PaperCompareSide"];
+            };
+        };
+        /**
+         * @description Buy fill = bar open * (1 + slippagePct/100) + slippagePerShare; sell fill = price * (1 - slippagePct/100)
+         *     - slippagePerShare. A fill is never better than the bar allows.
+         */
+        PaperSettings: {
+            /** @default true */
+            autoFollow: boolean;
+            /**
+             * @description percent: 0.02 = 0.02 %
+             * @default 0.02
+             */
+            slippagePct: number;
+            /**
+             * @description USD per share, each side
+             * @default 0.01
+             */
+            slippagePerShare: number;
+        };
+        PaperSettingsUpdate: {
+            autoFollow?: boolean;
+            slippagePct?: number;
+            slippagePerShare?: number;
+        };
+        /** @description paper.backfilled payload: what the catch-up run after an engine start recorded */
+        PaperBackfill: {
+            accountId: string;
+            /**
+             * Format: date-time
+             * @description first missed interval replayed
+             */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            opened: number;
+            closed: number;
+            skipped: number;
+        };
+        /**
+         * @description the engine maps each to the latest Claude model of that family (AiStatus.modelId)
+         * @enum {string}
+         */
+        AiModel: "haiku" | "sonnet" | "opus";
+        /** @enum {string} */
+        AiLang: "en" | "es";
+        AiKey: {
+            key: string;
+        };
+        AiStatus: {
+            keyPresent: boolean;
+            enabled: boolean;
+            /** @description enabled, key present and cap not reached */
+            ready: boolean;
+            /**
+             * @description why not ready (first that applies, in this order)
+             * @enum {string|null}
+             */
+            reason: "disabled" | "no_key" | "cap_reached" | null;
+            model: components["schemas"]["AiModel"];
+            /** @description API model id used, e.g. claude-sonnet-... */
+            modelId: string;
+            /**
+             * @description spend month (New York time)
+             * @example 2026-10
+             */
+            month: string;
+            monthlyCapUsd: number;
+            spentThisMonthUsd: number;
+            /** @description max(0, cap - spent) */
+            remainingUsd: number;
+        };
+        /**
+         * @description Soft cap: a request is refused (429 ai_cap_reached) once spentThisMonthUsd >= monthlyCapUsd; the
+         *     request that crosses the cap still completes. Raising the cap or a new month re-enables AI.
+         */
+        AiSettings: {
+            /** @default false */
+            enabled: boolean;
+            /** @default sonnet */
+            model: components["schemas"]["AiModel"];
+            /** @default 5 */
+            monthlyCapUsd: number;
+        };
+        AiSettingsUpdate: {
+            enabled?: boolean;
+            model?: components["schemas"]["AiModel"];
+            monthlyCapUsd?: number;
+        };
+        /**
+         * @description Required fields by kind: pipeline_step -> runId + stepKey; blocked_ticket -> ticketId;
+         *     news_summary -> tickers (default: the watchlist) and hours (default 12);
+         *     analyst_quarter -> symbol (+ quarterEnd, default the latest quarter).
+         */
+        AiExplainRequest: {
+            /** @enum {string} */
+            kind: "pipeline_step" | "blocked_ticket" | "news_summary" | "analyst_quarter";
+            lang: components["schemas"]["AiLang"];
+            runId?: string;
+            stepKey?: components["schemas"]["StepKey"];
+            ticketId?: string;
+            tickers?: string[];
+            hours?: number;
+            symbol?: string;
+            /**
+             * Format: date
+             * @description AnalystQuarter.end
+             */
+            quarterEnd?: string;
+        };
+        AiCoachRequest: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            lang: components["schemas"]["AiLang"];
+            /** @description paper account; default the active one */
+            accountId?: string;
+        };
+        AiChatMessage: {
+            /** @enum {string} */
+            role: "user" | "assistant";
+            content: string;
+        };
+        AiChatRequest: {
+            messages: components["schemas"]["AiChatMessage"][];
+            lang: components["schemas"]["AiLang"];
+        };
+        /** @description one read-only engine tool the answer used */
+        AiCitation: {
+            /** @description tool name, e.g. get_run, get_ticket, get_paper_stats, get_paper_trades, get_fills, get_settings, get_news, get_analyst */
+            tool: string;
+            /** @description short human label in the request's lang, e.g. "Paper stats, TSLA, Oct 2026" */
+            label: string;
+            /** @description what the UI can link to, when there is one */
+            ref?: {
+                /** @enum {string} */
+                kind: "run" | "ticket" | "paper_trade" | "paper_account" | "fill" | "news" | "analyst" | "settings";
+                id: string;
+            };
+            /** @description the tool's arguments */
+            params?: {
+                [key: string]: unknown;
+            };
+        };
+        AiUsage: {
+            inputTokens: number;
+            outputTokens: number;
+            costUsd: number;
+        };
+        /**
+         * @description text is plain text with light Markdown (paragraphs, bullet lists, **bold**). It explains and coaches;
+         *     it never contains a buy/sell call or a price prediction. The UI always shows the footer
+         *     disclaimerKey (an i18n key, e.g. ai.disclaimer) under it.
+         */
+        AiAnswer: {
+            text: string;
+            lang: components["schemas"]["AiLang"];
+            citations: components["schemas"]["AiCitation"][];
+            usage: components["schemas"]["AiUsage"];
+            /** @description API model id used */
+            model: string;
+            /** @example ai.disclaimer */
+            disclaimerKey: string;
+        };
+        /**
+         * @description One fiscal quarter. Money in USD (not millions). *YoyPct = percent change vs the same quarter a
+         *     year earlier; *YoyPts = margin change in percentage points vs that quarter. null when the number
+         *     or its year-earlier quarter is not in the facts. derived = Q4 computed as the 10-K year minus
+         *     three 10-Qs (EPS approximate).
+         */
+        AnalystQuarter: {
+            /** Format: date */
+            end: string;
+            /** Format: date */
+            start?: string | null;
+            /** @example Q3 2026 */
+            fiscal: string;
+            derived: boolean;
+            revenue: number | null;
+            revenueYoyPct: number | null;
+            grossProfit?: number | null;
+            grossMarginPct: number | null;
+            grossMarginYoyPts: number | null;
+            operatingIncome?: number | null;
+            operatingMarginPct: number | null;
+            operatingMarginYoyPts: number | null;
+            netMarginPct: number | null;
+            netMarginYoyPts: number | null;
+            netIncome: number | null;
+            netIncomeYoyPct: number | null;
+            epsDiluted: number | null;
+            epsDilutedYoyPct: number | null;
+            /** @example 10-Q */
+            form?: string | null;
+            /** Format: date */
+            filed?: string | null;
+        };
+        /**
+         * @description One "what changed" line, structured so the UI translates it (analyst.change.<code>). Codes and values:
+         *       quarter_summary     {end, derived, revenue, revenueYoyPct, netIncome, netIncomeYoyPct, epsDiluted, epsDilutedYoyPct}
+         *       gross_margin        {valuePct, qoqPts}   (qoqPts vs the quarter before, may be null)
+         *       operating_margin    {valuePct, qoqPts}
+         *       net_margin          {valuePct, qoqPts}
+         *       net_above_operating {netIncome, operatingIncome}  (gains outside the business: check the 10-Q)
+         *       revenue_qoq         {pct}                (vs the quarter before; seasonal, compare YoY first)
+         *       facts_stale         {latestEnd, form, period, filed, url}  (SEC facts lag a filed report)
+         *       derived_quarters    {}                   (some quarters are derived from the 10-K)
+         */
+        AnalystChange: {
+            /** @enum {string} */
+            code: "quarter_summary" | "gross_margin" | "operating_margin" | "net_margin" | "net_above_operating" | "revenue_qoq" | "facts_stale" | "derived_quarters";
+            values: {
+                [key: string]: unknown;
+            };
+            /** @description the skill's English sentence (fallback) */
+            text: string;
+        };
+        AnalystFiling: {
+            /** @example 8-K */
+            form: string;
+            /** Format: date */
+            filed: string;
+            /**
+             * Format: date
+             * @description report period (10-Q/10-K); null for an 8-K
+             */
+            period?: string | null;
+            /** @description primary document on sec.gov */
+            url: string;
+            /** @description 8-K only: the EX-99.1 press release, else the filing index */
+            pressReleaseUrl?: string | null;
+        };
+        AnalystReport: {
+            symbol: string;
+            /** @description company name */
+            entity: string | null;
+            /** @description 10 digits */
+            cik: string;
+            /** @description newest first */
+            quarters: components["schemas"]["AnalystQuarter"][];
+            /** @description sum of the last four quarters; a field is null when four consecutive quarters are not available */
+            ttm: {
+                revenue: number | null;
+                netIncome: number | null;
+                epsDiluted: number | null;
+            };
+            changes: components["schemas"]["AnalystChange"][];
+            /** @description newest 10-Q / 10-K / 20-F / 40-F */
+            latestReport: components["schemas"]["AnalystFiling"] | null;
+            /** @description newest earnings 8-K (item 2.02) */
+            earnings8k: components["schemas"]["AnalystFiling"] | null;
+            /** @description same rule as the News step's earnings_this_week check */
+            reportsThisWeek: boolean;
+            /** @example SEC XBRL company facts */
+            source: string;
+            /** Format: date-time */
+            fetchedAt: string;
+        };
+        CongressOption: {
+            /** @enum {string} */
+            kind: "call" | "put";
+            strike: number;
+            /** Format: date */
+            expires: string | null;
+            contracts?: number | null;
+            exercised?: boolean;
+        };
+        /** @description one transaction row of a House PTR. type: purchase -> buy, sale and partial sale -> sell (partial true), exchange -> exchange. */
+        CongressTrade: {
+            /** @description <docId>-<row index from 1> */
+            id: string;
+            docId: string;
+            /** @description as filed, e.g. "Hon. Nancy Pelosi" */
+            member: string;
+            /** @example CA11 */
+            district?: string | null;
+            /** @enum {string} */
+            owner: "self" | "spouse" | "joint" | "dependent_child";
+            ticker: string | null;
+            assetName: string;
+            /** @description PTR asset code, e.g. ST stock, OP option */
+            assetType?: string | null;
+            /** @enum {string} */
+            type: "buy" | "sell" | "exchange";
+            partial: boolean;
+            option: components["schemas"]["CongressOption"] | null;
+            shares?: number | null;
+            /** Format: date */
+            tradeDate: string;
+            /** Format: date */
+            notifiedDate?: string | null;
+            /** Format: date */
+            filedDate: string;
+            /** @example $1,000,001 - $5,000,000 */
+            amountRange: string;
+            amountLow: number | null;
+            amountHigh: number | null;
+            daysToDisclose: number | null;
+            /** @description disclosed more than 45 days after the trade */
+            late: boolean;
+            description?: string | null;
+            inWatchlist: boolean;
+            /** @description the user holds it (trader/portfolio.json) */
+            inPositions: boolean;
+            /** @description the PTR PDF on disclosures-clerk.house.gov */
+            filingUrl: string;
+        };
+        CongressFiling: {
+            docId: string;
+            member: string;
+            district?: string | null;
+            /** Format: date */
+            filedDate: string;
+            filingUrl: string;
+            /** @description false when the PDF could not be read into rows (e.g. a scanned paper filing); the UI links the PDF */
+            parsed: boolean;
+            tradeCount: number;
+        };
+        CongressFeed: {
+            trades: components["schemas"]["CongressTrade"][];
+            /** @description filings in the range with parsed false */
+            unreadFilings: components["schemas"]["CongressFiling"][];
+            /** Format: date-time */
+            lastCheckedAt: string | null;
+        };
+        CongressRefreshResult: {
+            /** Format: date-time */
+            checkedAt: string;
+            newFilings: number;
+            newTrades: number;
+            /** @description new filings that could not be read into rows */
+            unreadFilings: number;
+        };
+        CongressSettings: {
+            /**
+             * @description send congress.filing when a new filing mentions the watchlist or a position
+             * @default true
+             */
+            notifyOnWatchlist: boolean;
+            /**
+             * @description last names to track; empty = every House PTR
+             * @default []
+             */
+            members: string[];
+        };
+        CongressSettingsUpdate: {
+            notifyOnWatchlist?: boolean;
+            members?: string[];
+        };
+        /** @description congress.filing payload */
+        CongressFilingEvent: {
+            filing: components["schemas"]["CongressFiling"];
+            /** @description only the rows with inWatchlist or inPositions */
+            trades: components["schemas"]["CongressTrade"][];
+        };
+        /** @enum {string} */
+        BridgePlatform: "ctrader" | "mt4" | "mt5";
+        /**
+         * @description Folder layout under signalsFolder (one sub-folder per platform, so each bridge sees symbols and
+         *     volume already converted for it):
+         *       <signalsFolder>\<platform>\signals\<signalId>.json   BridgeSignal    (engine writes)
+         *       <signalsFolder>\<platform>\cancel\<signalId>.json    BridgeCancel    (engine writes)
+         *       <signalsFolder>\<platform>\acks\<signalId>.json      BridgeAck       (bridge writes)
+         *       <signalsFolder>\<platform>\heartbeat.json            BridgeHeartbeat (bridge writes every 5 s)
+         *     Files are UTF-8 without BOM, flat JSON, written to <name>.tmp then renamed. Default signalsFolder:
+         *     %APPDATA%\MetaQuotes\Terminal\Common\Files\Levelset (readable by MT4/MT5 with FILE_COMMON and by a
+         *     cBot with AccessRights.FileSystem).
+         */
+        BridgeSettings: {
+            /** @description absolute path */
+            signalsFolder: string;
+            platforms: {
+                ctrader: components["schemas"]["BridgePlatformSettings"];
+                mt4: components["schemas"]["BridgePlatformSettings"];
+                mt5: components["schemas"]["BridgePlatformSettings"];
+            };
+        };
+        BridgePlatformSettings: {
+            /** @default false */
+            enabled: boolean;
+        };
+        BridgeSettingsUpdate: {
+            signalsFolder?: string;
+            platforms?: {
+                ctrader?: components["schemas"]["BridgePlatformSettings"];
+                mt4?: components["schemas"]["BridgePlatformSettings"];
+                mt5?: components["schemas"]["BridgePlatformSettings"];
+            };
+        };
+        /** @description online = heartbeat younger than 30 s; offline = older; not_installed = no heartbeat file yet; error = heartbeat state error */
+        BridgeStatus: {
+            platform: components["schemas"]["BridgePlatform"];
+            enabled: boolean;
+            /** @enum {string} */
+            state: "not_installed" | "offline" | "online" | "error";
+            /** @description <signalsFolder>\<platform> */
+            folder: string;
+            /** Format: date-time */
+            lastHeartbeatAt: string | null;
+            bridgeVersion: string | null;
+            platformVersion: string | null;
+            accountIsDemo: boolean | null;
+            /** @description mapped broker symbols the platform does not know */
+            missingSymbols?: string[];
+            error: string | null;
+        };
+        /**
+         * @description volume = qtyShares * volumePerShare, rounded DOWN to a multiple of volumeStep; below minVolume the
+         *     send is refused (bridge_volume_too_small). cTrader: volume in units (stock CFDs usually
+         *     volumePerShare 1). MT4/MT5: volume in lots (volumePerShare = 1 / contract size).
+         */
+        SymbolMapRow: {
+            platform: components["schemas"]["BridgePlatform"];
+            /** @example TSLA */
+            usSymbol: string;
+            /** @example TSLA.US */
+            brokerSymbol: string;
+            volumePerShare: number;
+            minVolume: number;
+            volumeStep: number;
+        };
+        SymbolMap: {
+            /** @description (platform, usSymbol) is unique */
+            rows: components["schemas"]["SymbolMapRow"][];
+        };
+        BridgeSendRequest: {
+            /** @description default every enabled platform */
+            platforms?: components["schemas"]["BridgePlatform"][];
+        };
+        BridgeTicketPlatform: {
+            platform: components["schemas"]["BridgePlatform"];
+            brokerSymbol: string;
+            volume: number;
+            /** @enum {string} */
+            volumeUnit: "units" | "lots";
+            /**
+             * @description written by the engine; shown..rejected from the bridge's ack (placed = the user clicked Place in the platform); cancelled after cancel-bridge
+             * @enum {string}
+             */
+            state: "written" | "shown" | "placed" | "dismissed" | "expired" | "rejected" | "cancelled";
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description rejected: the platform's message */
+            error: string | null;
+        };
+        /** @description the ticket's current signal; also carried on Ticket.bridge once sent */
+        BridgeTicketState: {
+            ticketId: string;
+            signalId: string;
+            /** Format: date-time */
+            sentAt: string;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            platforms: components["schemas"]["BridgeTicketPlatform"][];
+        };
+        /**
+         * @description FILE FORMAT (not an HTTP body): <signalsFolder>\<platform>\signals\<signalId>.json, written by the
+         *     engine. The bridge shows a panel with these values and Place / Dismiss buttons; nothing goes to
+         *     the broker until the user clicks Place. The bridge ignores the signal after expiresAtUnix and when
+         *     a cancel file with the same signalId exists. Times are Unix seconds (UTC). Example:
+         *       {"schema":"levelset.signal/1","signalId":"sig_8f2c","ticketId":"t_tsla_1","platform":"ctrader",
+         *        "usSymbol":"TSLA","brokerSymbol":"TSLA.US","side":"buy","orderType":"market","entry":364.18,
+         *        "stopLoss":358.32,"takeProfit":370.04,"qtyShares":8,"volume":8,"volumeUnit":"units",
+         *        "maxLossUsd":46.88,"flatBy":"15:55","flatByUnix":1792439700,"createdAt":"2026-10-19T10:15:00-04:00",
+         *        "createdAtUnix":1792419300,"expiresAtUnix":1792438200,"comment":"Levelset TSLA 8 sh"}
+         */
+        BridgeSignal: {
+            /** @constant */
+            schema: "levelset.signal/1";
+            signalId: string;
+            ticketId: string;
+            platform: components["schemas"]["BridgePlatform"];
+            usSymbol: string;
+            brokerSymbol: string;
+            /** @enum {string} */
+            side: "buy" | "sell";
+            /** @enum {string} */
+            orderType: "market" | "limit";
+            /** @description limit price, or the reference price for a market order */
+            entry: number;
+            /** @description absolute price */
+            stopLoss: number;
+            /** @description absolute price */
+            takeProfit: number;
+            qtyShares: number;
+            /** @description already converted with the symbol map */
+            volume: number;
+            /** @enum {string} */
+            volumeUnit: "units" | "lots";
+            maxLossUsd: number;
+            /**
+             * @description New York time
+             * @example 15:55
+             */
+            flatBy: string;
+            flatByUnix: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdAtUnix: number;
+            /** @description end of today's entry window (Settings.limits.noEntriesAfter) */
+            expiresAtUnix: number;
+            /** @description label / comment the order carries if the user places it (MT limit 31 chars) */
+            comment: string;
+        };
+        /**
+         * @description FILE FORMAT: <signalsFolder>\<platform>\cancel\<signalId>.json, written by the engine. The bridge
+         *     removes the panel for signalId. It never touches an order the user already placed.
+         *     Example: {"schema":"levelset.cancel/1","signalId":"sig_8f2c","ticketId":"t_tsla_1","reason":"user","createdAtUnix":1792419900}
+         */
+        BridgeCancel: {
+            /** @constant */
+            schema: "levelset.cancel/1";
+            signalId: string;
+            ticketId: string;
+            /** @enum {string} */
+            reason: "user" | "replaced" | "stale";
+            createdAtUnix: number;
+        };
+        /**
+         * @description FILE FORMAT: <signalsFolder>\<platform>\acks\<signalId>.json, written (overwritten) by the bridge each
+         *     time the signal changes state. The engine reads it into BridgeTicketState and sends bridge.updated.
+         *     Example: {"schema":"levelset.ack/1","signalId":"sig_8f2c","ticketId":"t_tsla_1","platform":"mt5","state":"placed","timeUnix":1792419360,"error":""}
+         */
+        BridgeAck: {
+            /** @constant */
+            schema: "levelset.ack/1";
+            signalId: string;
+            ticketId: string;
+            platform: components["schemas"]["BridgePlatform"];
+            /** @enum {string} */
+            state: "shown" | "placed" | "dismissed" | "expired" | "rejected";
+            timeUnix: number;
+            /** @description rejected: the platform's message; empty otherwise */
+            error?: string;
+        };
+        /**
+         * @description FILE FORMAT: <signalsFolder>\<platform>\heartbeat.json, overwritten by the bridge every 5 s while it runs.
+         *     No account number or credentials. Example:
+         *       {"schema":"levelset.heartbeat/1","platform":"ctrader","bridgeVersion":"1.1.0","platformVersion":"5.0.40",
+         *        "state":"running","accountIsDemo":true,"broker":"Pepperstone","timeUnix":1792419305,"pendingSignals":1,
+         *        "missingSymbols":[],"error":""}
+         */
+        BridgeHeartbeat: {
+            /** @constant */
+            schema: "levelset.heartbeat/1";
+            platform: components["schemas"]["BridgePlatform"];
+            bridgeVersion: string;
+            platformVersion?: string;
+            /** @enum {string} */
+            state: "running" | "paused" | "error";
+            accountIsDemo?: boolean;
+            broker?: string;
+            timeUnix: number;
+            /** @description panels currently shown */
+            pendingSignals?: number;
+            missingSymbols?: string[];
+            error?: string;
+        };
     };
     responses: {
         /** @description Error (RFC 9457) */
@@ -1270,6 +3280,15 @@ export interface components {
         runId: string;
         ticketId: string;
         stepKey: components["schemas"]["StepKey"];
+        accountId: string;
+        /** @description paper account; default the active one (404 paper_account_not_found) */
+        accountIdQuery: string;
+        /** @description account period id, or "all"; default the account's current period */
+        periodIdQuery: string;
+        /** @description first day included (New York date) */
+        fromDate: string;
+        /** @description last day included (New York date) */
+        toDate: string;
     };
     requestBodies: never;
     headers: never;

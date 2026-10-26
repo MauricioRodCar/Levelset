@@ -5,6 +5,7 @@ import type { PipelineRun, Step } from '@/api';
 import { Card } from '@/components/Card';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AiExplainButton } from '@/features/ai';
 import { useFormat } from '@/i18n/useFormat';
 import { cn } from '@/lib/utils';
 import { BudgetDetail, RiskDetail, TicketDetail } from './details/BudgetRiskTicket';
@@ -62,6 +63,9 @@ export function StepDetail({ run, step, editable, draft, onDraft, children }: St
       }
     >
       {children}
+      {finished && (
+        <AiExplainButton kind="pipeline_step" runId={run.id} stepKey={step.key} className="mb-3" />
+      )}
       {(step.checks?.length ?? 0) > 0 && (
         <ul className="mb-3 flex flex-wrap gap-1.5" aria-label={t('detail.checks')}>
           {step.checks!.map((c) => (

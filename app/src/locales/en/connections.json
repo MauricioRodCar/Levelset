@@ -3,7 +3,7 @@
   "description": "Get your tickets into cTrader, MetaTrader 4/5, Alpaca or Interactive Brokers.",
   "noOrders": {
     "title": "Levelset never connects to your broker or sends orders",
-    "body": "You copy or export the ticket and place the order yourself on your platform. Every trade is your decision."
+    "body": "You copy, export or send the ticket to your platform, and you place the order yourself there. Every trade is your decision."
   },
   "card": {
     "tickets": "Tickets",
@@ -18,7 +18,9 @@
     "showSteps": "How to enter an order",
     "hideSteps": "Hide steps",
     "exportFormat": "Export format: {{format}}",
-    "goToTickets": "Go to your tickets"
+    "goToTickets": "Go to your tickets",
+    "bridgeAvailable": "Available",
+    "setUpBridge": "Set up below"
   },
   "howto": {
     "yourValues": "Your values",
@@ -99,6 +101,128 @@
         "If neither level is hit, close the position yourself by the flat-by time."
       ],
       "note": "In the IBKR mobile app or Client Portal, look for Attach Orders / Bracket when you create the order."
+    }
+  },
+  "bridges": {
+    "title": "In-platform bridges",
+    "intro": "Levelset writes the ticket to a folder. The bridge (a cBot or EA you install) shows it on your chart, and an order is placed only when you click Place there.",
+    "folder": {
+      "label": "Signals folder",
+      "hint": "Keep the default for MetaTrader: MT4 and MT5 can only read the terminal's Common Files folder (…\\MetaQuotes\\Terminal\\Common\\Files\\Levelset). The cTrader cBot can read any folder.",
+      "save": "Save folder",
+      "saved": "Signals folder saved",
+      "invalid": "Enter an absolute path, for example C:\\Users\\you\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\Levelset."
+    },
+    "status": {
+      "title": "Bridge status",
+      "enable": "Use {{platform}}",
+      "states": {
+        "online": "Online",
+        "offline": "Offline",
+        "not_installed": "Not installed",
+        "error": "Error"
+      },
+      "lastHeartbeat": "Last heartbeat {{time}}",
+      "never": "No heartbeat yet",
+      "demo": "Demo account",
+      "live": "Live account",
+      "version": "Bridge {{version}}",
+      "missing": "Symbols this account doesn't know: {{symbols}}",
+      "folder": "Folder: {{folder}}"
+    },
+    "install": {
+      "show": "Install the bridge",
+      "hide": "Hide install steps",
+      "file": "Source file: {{file}}",
+      "ctrader": [
+        "In Levelset, enable cTrader here and note the signals folder above.",
+        "Get bridges/ctrader/LevelsetBridge.cs from the Levelset repository (github.com/MauricioRodCar/Levelset).",
+        "In cTrader open Automate, create a new cBot named LevelsetBridge, paste the whole file and click Build.",
+        "Add the cBot to any chart. Leave Signals folder empty for the default, or paste the folder shown above.",
+        "Start it and allow Full Access when cTrader asks (it only reads and writes files in the signals folder).",
+        "The status here turns Online within 10 seconds."
+      ],
+      "mt5": [
+        "In MetaTrader 5 choose File > Open Data Folder and open MQL5\\Experts.",
+        "Copy bridges/mt5/LevelsetBridge.mq5 from the Levelset repository there.",
+        "Open it in MetaEditor (F4) and click Compile: it must finish with 0 errors.",
+        "In the Navigator, refresh Expert Advisors and drag LevelsetBridge onto any chart. Keep InpFolder = Levelset.",
+        "Turn on Algo Trading in the toolbar, otherwise Place can't send the order.",
+        "Enable MetaTrader 5 here and keep the default signals folder. The status turns Online within 10 seconds."
+      ],
+      "mt4": [
+        "In MetaTrader 4 choose File > Open Data Folder and open MQL4\\Experts.",
+        "Copy bridges/mt4/LevelsetBridge.mq4 from the Levelset repository there.",
+        "Open it in MetaEditor (F4) and click Compile: it must finish with 0 errors.",
+        "In the Navigator, refresh Expert Advisors and drag LevelsetBridge onto any chart. Keep InpFolder = Levelset.",
+        "Turn on AutoTrading and allow live trading in the EA's Common tab.",
+        "Enable MetaTrader 4 here and keep the default signals folder. The status turns Online within 10 seconds."
+      ],
+      "safety": "The bridge never places an order on its own: it only shows the panel. You click Place or Dismiss inside the platform."
+    },
+    "map": {
+      "title": "Symbol mapping",
+      "intro": "Brokers name stock CFDs differently (TSLA.US, #TSLA…). Add one row per platform and ticker. Volume = shares × volume per share, rounded down to the step, so the risk never grows.",
+      "lotsHint": "cTrader counts units (usually 1 per share). MT4/MT5 count lots: volume per share = 1 ÷ contract size (contract 1 → 1, contract 100 → 0.01).",
+      "platform": "Platform",
+      "usSymbol": "US ticker",
+      "brokerSymbol": "Broker symbol",
+      "volumePerShare": "Volume per share",
+      "minVolume": "Min volume",
+      "volumeStep": "Volume step",
+      "actions": "Actions",
+      "add": "Add row",
+      "delete": "Delete row {{n}}",
+      "save": "Save mapping",
+      "saved": "Symbol mapping saved",
+      "empty": "No symbols mapped yet. Add a row for each ticker you trade.",
+      "unsaved": "Unsaved changes",
+      "errors": {
+        "required": "Required",
+        "positive": "Must be greater than 0",
+        "duplicate": "This ticker already has a row for this platform"
+      }
+    },
+    "send": {
+      "menu": "Send to platform (you confirm there)",
+      "title": "Send {{symbol}} to your platform",
+      "description": "Levelset writes this ticket for the bridge. It appears on your chart with Place and Dismiss. Nothing is placed until you click Place inside the platform.",
+      "platforms": "Platforms",
+      "noPlatforms": "No platform is enabled. Enable one under Connections > In-platform bridges.",
+      "goToConnections": "Open Connections",
+      "volume": "{{symbol}} · {{volume}} {{unit}}",
+      "unmapped": "No symbol mapping for {{symbol}}",
+      "tooSmall": "{{volume}} {{unit}} is below the minimum {{min}}",
+      "confirm": "Send to platform",
+      "sent": "Sent to the platform. Confirm it there with Place or Dismiss.",
+      "units": {
+        "units": "units",
+        "lots": "lots"
+      }
+    },
+    "ticket": {
+      "label": "In platform",
+      "states": {
+        "written": "Sent, waiting for the bridge",
+        "shown": "Shown, waiting for your click",
+        "placed": "Placed by you",
+        "dismissed": "Dismissed",
+        "expired": "Expired",
+        "rejected": "Rejected: {{error}}",
+        "cancelled": "Cancelled"
+      },
+      "cancel": "Cancel in platform",
+      "cancelled": "Removed from the platform panel. An order you already placed is not changed."
+    },
+    "errors": {
+      "ticket_not_ready": "Only a ticket that passed the risk check can be sent.",
+      "ticket_not_found": "That ticket doesn't exist anymore.",
+      "bridge_disabled": "Enable the platform under Connections first.",
+      "bridge_symbol_unmapped": "This ticker has no symbol mapping for the platform. Add it under Connections.",
+      "bridge_volume_too_small": "The converted volume is below the symbol's minimum. Check the symbol mapping.",
+      "bridge_folder_unwritable": "Levelset can't write to the signals folder. Check the path and its permissions.",
+      "bridge_not_sent": "This ticket was not sent to a platform.",
+      "validation_error": "Some values are not valid. Please check and try again."
     }
   }
 }

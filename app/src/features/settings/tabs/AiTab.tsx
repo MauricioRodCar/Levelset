@@ -3,21 +3,35 @@ import { KeyRound, Loader2, Monitor, ShieldCheck, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/ui/button';
-import { Input, Label, Switch } from '@/components/ui/form';
+import { Input, Label, Select, Switch } from '@/components/ui/form';
 import { toast } from '@/components/ui/toaster';
-import { prefs } from '@/lib/prefs';
+import {
+  useAiSettings,
+  useAiStatus,
+  useRefreshAiStatus,
+  useUpdateAiSettings,
+  type AiModel,
+  type AiSettingsUpdate,
+} from '@/api';
+import { useFormat } from '@/i18n/useFormat';
 import { CLAUDE_KEY_NAME, deleteSecret, hasSecret, secretsAvailable, setSecret } from './secrets';
 import { validateApiKey, type ApiKeyError } from './validation';
 
-/** Local pref (not a secret): whether the user wants the optional AI summaries. */
-const AI_ENABLED_PREF = 'ai.enabled';
-
-/** Settings > AI (optional): off by default; BYO Claude API key kept in Windows Credential Manager. */
+/** Settings > AI (optional): off by default. Engine-side settings (on/off, model, monthly cap,
+ * spend) plus the BYO Claude API key, kept in Windows Credential Manager by the Tauri shell,
+ * which pushes it to the engine. The UI can never read the key back. */
 export function AiTab() {
   const { t } = useTranslation('settings');
+  const { t: ta } = useTranslation('ai');
   const uid = useId();
   const desktop = secretsAvailable();
-  const [enabled, setEnabled] = useState(() => prefs.get<boolean>(AI_ENABLED_PREF, false));
+  const f = useFormat();
+  const settings = useAiSettings();
+  const status = useAiStatus();
+  const update = useUpdateAiSettings();
+  const refreshStatus = useRefreshAiStatus();
+  const [cap, setCap] = useState('');
+  const [capError, setCapError] = useState(false);
   const [saved, setSaved] = useState<boolean | null>(null);
   const [key, setKey] = useState('');
   const [error, setError] = useState<ApiKeyError | null>(null);
@@ -34,10 +48,26 @@ export function AiTab() {
     };
   }, [desktop]);
 
-  const toggle = (v: boolean) => {
-    setEnabled(v);
-    prefs.set(AI_ENABLED_PREF, v);
+  useEffect(() => {
+    if (settings.data) setCap(String(settings.data.monthlyCapUsd));
+  }, [settings.data]);
+
+  const patch = (body: AiSettingsUpdate) =>
+    update.mutate(body, {
+      onSuccess: () => toast(ta('settings.saved')),
+      onError: () => toast.error(ta('settings.saveFailed')),
+    });
+
+  const onCapSave = (e: FormEvent) => {
+    e.preventDefault();
+    const v = Number(cap.replace(',', '.'));
+    const bad = cap.trim() === '' || !Number.isFinite(v) || v < 0 || v > 1000;
+    setCapError(bad);
+    if (!bad) patch({ monthlyCapUsd: Math.round(v * 100) / 100 });
   };
+
+  /** The shell pushes the key to the engine in the background; re-read status shortly after. */
+  const afterKeyChange = () => window.setTimeout(refreshStatus, 1500);
 
   const onSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -49,6 +79,7 @@ export function AiTab() {
       await setSecret(CLAUDE_KEY_NAME, key.trim());
       setKey(''); // never keep the key in memory or show it back
       setSaved(true);
+      afterKeyChange();
       toast(t('ai.key.savedToast'));
     } catch {
       toast.error(t('ai.key.saveFailed'));
@@ -62,6 +93,7 @@ export function AiTab() {
     try {
       await deleteSecret(CLAUDE_KEY_NAME);
       setSaved(false);
+      afterKeyChange();
       toast(t('ai.key.removedToast'));
     } catch {
       toast.error(t('ai.key.removeFailed'));
@@ -73,26 +105,90 @@ export function AiTab() {
   const fieldId = `${uid}-key`;
 
   return (
-    <div className="grid max-w-5xl gap-5 lg:grid-cols-2">
+    <div className="grid max-w-6xl gap-5 lg:grid-cols-2 xl:grid-cols-3">
       <Card title={t('ai.title')} subtitle={t('ai.description')}>
         <div className="space-y-4 text-sm">
           <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-surface2 px-3 py-2.5">
             <div>
-              <Label htmlFor={`${uid}-enabled`}>{t('ai.enable')}</Label>
-              <p className="text-xs text-text-muted">{t('ai.enableHint')}</p>
+              <Label htmlFor={`${uid}-enabled`}>{ta('settings.enable')}</Label>
+              <p className="text-xs text-text-muted">{ta('settings.enableHint')}</p>
             </div>
-            <Switch id={`${uid}-enabled`} checked={enabled} onCheckedChange={toggle} />
+            <Switch
+              id={`${uid}-enabled`}
+              checked={settings.data?.enabled ?? false}
+              disabled={!settings.data || update.isPending}
+              onCheckedChange={(v) => patch({ enabled: v })}
+            />
           </div>
           <div className="space-y-1.5">
-            <p className="font-medium text-text">{t('ai.whatTitle')}</p>
+            <p className="font-medium text-text">{ta('settings.whatTitle')}</p>
             <ul className="list-disc space-y-1 pl-5 text-xs text-text-muted">
-              <li>{t('ai.what.earnings')}</li>
-              <li>{t('ai.what.news')}</li>
-              <li>{t('ai.what.filings')}</li>
+              <li>{ta('settings.what.explain')}</li>
+              <li>{ta('settings.what.coach')}</li>
+              <li>{ta('settings.what.chat')}</li>
             </ul>
-            <p className="text-xs text-text-muted">{t('ai.notNeeded')}</p>
-            <p className="text-xs text-text-muted">{t('ai.cost')}</p>
+            <p className="text-xs text-text">{ta('settings.never')}</p>
+            <p className="text-xs text-text-muted">{ta('settings.notNeeded')}</p>
+            <p className="text-xs text-text-muted">{ta('settings.billing')}</p>
           </div>
+        </div>
+      </Card>
+
+      <Card title={ta('settings.usageTitle')} subtitle={ta('settings.usageSubtitle')}>
+        <div className="space-y-4 text-sm">
+          <div className="space-y-1.5">
+            <Label htmlFor={`${uid}-model`}>{ta('settings.model')}</Label>
+            <Select
+              id={`${uid}-model`}
+              value={settings.data?.model ?? 'sonnet'}
+              disabled={!settings.data || update.isPending}
+              onChange={(e) => patch({ model: e.target.value as AiModel })}
+            >
+              {(['haiku', 'sonnet', 'opus'] as const).map((m) => (
+                <option key={m} value={m}>
+                  {ta(`settings.models.${m}`)}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <form onSubmit={onCapSave} noValidate className="space-y-1.5">
+            <Label htmlFor={`${uid}-cap`}>{ta('settings.cap')}</Label>
+            <div className="flex gap-2">
+              <Input
+                id={`${uid}-cap`}
+                inputMode="decimal"
+                className="tabular max-w-[10rem]"
+                value={cap}
+                disabled={!settings.data}
+                onChange={(e) => setCap(e.target.value)}
+                aria-invalid={capError ? true : undefined}
+                aria-describedby={`${uid}-cap-hint`}
+              />
+              <Button type="submit" disabled={!settings.data || update.isPending}>
+                {ta('settings.save')}
+              </Button>
+            </div>
+            <p id={`${uid}-cap-hint`} className="text-xs text-text-muted">
+              {capError ? ta('settings.capInvalid') : ta('settings.capHint')}
+            </p>
+          </form>
+          {status.data && (
+            <div className="rounded-md border border-border bg-surface2 px-3 py-2.5" data-testid="ai-spend">
+              <p className="text-xs text-text-muted">{ta('settings.spent')}</p>
+              <p className="tabular text-text">
+                {ta('settings.spentValue', {
+                  spent: f.money(status.data.spentThisMonthUsd),
+                  cap: f.money(status.data.monthlyCapUsd),
+                })}
+              </p>
+              <p className="mt-1 text-xs text-text-muted">
+                {status.data.keyPresent
+                  ? ta('settings.engineKey.present')
+                  : ta('settings.engineKey.missing')}
+              </p>
+            </div>
+          )}
+          {!desktop && <p className="text-xs text-text-muted">{ta('settings.demoNote')}</p>}
         </div>
       </Card>
 

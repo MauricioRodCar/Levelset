@@ -2,6 +2,7 @@ import { ExternalLink, FileText, Newspaper } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNews } from '@/api';
 import { Card } from '@/components/Card';
+import { AiExplainButton } from '@/features/ai';
 import { ErrorState } from '@/components/ErrorState';
 import { Skeleton } from '@/components/Skeleton';
 import { useFormat } from '@/i18n/useFormat';
@@ -16,6 +17,9 @@ export function NewsStrip({ tickers }: { tickers: string[] }) {
 
   return (
     <Card title={t('news.title')} subtitle={t('news.subtitle')} flush aria-label={t('news.title')}>
+      {tickers.length > 0 && (
+        <AiExplainButton kind="news_summary" tickers={tickers} hours={12} className="px-4 pb-3" />
+      )}
       {!tickers.length ? (
         <p className="px-4 pb-4 text-sm text-text-muted">{t('news.noWatchlist')}</p>
       ) : q.isLoading ? (

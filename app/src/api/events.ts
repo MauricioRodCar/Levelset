@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { getEngineInfo } from './engine';
+import { applyBridgeState, applyBridgeStatus } from './bridgeHooks';
+import type { BridgeStatus, BridgeTicketState } from './types';
 import { qk } from './queryKeys';
 import {
   ENGINE_EVENT_NAMES,
@@ -120,6 +122,25 @@ export function applyEngineEvent<K extends EngineEventName>(
     }
     case 'status.changed':
       qc.setQueryData(qk.status, data);
+      break;
+    // v1.1 paper account: positions, trade log, stats, the dashboard tile and Ticket.paper
+    case 'paper.opened':
+    case 'paper.closed':
+    case 'paper.skipped':
+    case 'paper.backfilled':
+      void qc.invalidateQueries({ queryKey: qk.paperAll });
+      void qc.invalidateQueries({ queryKey: qk.dashboard });
+      void qc.invalidateQueries({ queryKey: qk.ticketsAll });
+      break;
+    case 'congress.filing':
+      void qc.invalidateQueries({ queryKey: [...qk.congressAll, 'trades'] });
+      break;
+    // v1.1 platform bridges: Ticket.bridge (shown / placed / dismissed ...) and heartbeat status
+    case 'bridge.updated':
+      applyBridgeState(qc, data as BridgeTicketState);
+      break;
+    case 'bridge.status':
+      applyBridgeStatus(qc, data as BridgeStatus);
       break;
   }
 }

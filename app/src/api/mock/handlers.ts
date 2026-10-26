@@ -20,6 +20,10 @@ import type {
 import { getEngineInfo } from '../engine';
 import { db, demoNow, mockConfig, nextId, toEtIso } from './db';
 import * as fx from './fixtures';
+import { makePaperHandlers, paperPnlToday } from './paperMock';
+import { makeResearchHandlers } from './researchMock';
+import { makeBridgeHandlers } from './bridgeMock';
+import { makeAiHandlers } from './aiMock';
 import { createMockRun, mockBarsResponse, runMockStep } from './pipelineSim';
 
 /** Engine base URL (static in mock mode). Not a bare wildcard, so SPA routes like /settings are never intercepted. */
@@ -161,6 +165,7 @@ export const handlers = [
       ...db.dashboard,
       dailyLossLimit: db.settings.limits.maxDailyLossUsd ?? db.dashboard.dailyLossLimit,
       maxTradesPerDay: db.settings.limits.maxTradesPerDay ?? db.dashboard.maxTradesPerDay,
+      paperPnlToday: paperPnlToday(),
     });
   }),
 
@@ -501,6 +506,14 @@ export const handlers = [
     db.alerts = db.alerts.filter((a) => a.id !== params.alertId);
     return new HttpResponse(null, { status: 204 });
   }),
+
+  ...makePaperHandlers(P, latency),
+
+  ...makeResearchHandlers(P, latency),
+
+  ...makeBridgeHandlers(P, latency),
+
+  ...makeAiHandlers(P, latency),
 
   // SSE is simulated in-process (see eventBus.ts); answer the real URL so nothing leaks to the network.
   http.get(

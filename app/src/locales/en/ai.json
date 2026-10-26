@@ -1,0 +1,90 @@
+{
+  "disclaimer": "AI explanation for learning, not financial advice. It never tells you to buy or sell and never predicts prices; you decide and place every trade.",
+  "panel": {
+    "title": "Levelset AI",
+    "subtitle": "Explains and coaches with your own data",
+    "toggle": "AI",
+    "toggleTooltip": "Ask about your runs, tickets and paper results",
+    "open": "Open the AI assistant",
+    "close": "Close the AI assistant",
+    "inputLabel": "Message",
+    "placeholder": "Ask about your tickets, runs, paper results…",
+    "send": "Send",
+    "clear": "New conversation",
+    "empty": "Ask about your own Levelset data. The assistant explains and coaches; it never makes buy/sell calls or price predictions.",
+    "examplesTitle": "Try asking",
+    "examples": {
+      "winRate": "What's my paper win rate on TSLA this month?",
+      "blocked": "Why do my tickets get blocked most often?",
+      "stop": "Is my stop wider than TSLA's typical 5-minute range?"
+    },
+    "you": "You",
+    "assistant": "Levelset AI",
+    "thinking": "Reading your data…"
+  },
+  "explain": {
+    "pipeline_step": "Explain this step",
+    "blocked_ticket": "Why was this blocked, and what would change it?",
+    "news_summary": "Summarize today's headlines",
+    "analyst_quarter": "What changed this quarter?",
+    "loading": "Explaining…",
+    "hide": "Hide",
+    "again": "Explain again",
+    "regionLabel": "AI explanation"
+  },
+  "coach": {
+    "title": "AI coach",
+    "subtitle": "Reviews your paper results next to your manual fills and suggests experiments, not rule changes.",
+    "from": "From",
+    "to": "To",
+    "run": "Review my results",
+    "running": "Reviewing…"
+  },
+  "answer": {
+    "sources": "Data used",
+    "noSources": "No Levelset data was used for this answer.",
+    "usage": "{{input}} in · {{output}} out tokens · {{cost}}",
+    "usageLabel": "Tokens and cost of this request",
+    "model": "Model: {{model}}"
+  },
+  "notReady": {
+    "disabled": "AI is off. Turn it on in Settings › AI.",
+    "no_key": "Add your Claude API key in Settings › AI.",
+    "cap_reached": "This month's AI spending cap is reached. Raise it in Settings › AI.",
+    "openSettings": "Open Settings › AI"
+  },
+  "settings": {
+    "enable": "Use the AI assistant",
+    "enableHint": "Off by default. Nothing is sent to Claude while this is off.",
+    "whatTitle": "What it does",
+    "what": {
+      "explain": "Explain buttons on pipeline steps, blocked tickets, news and earnings.",
+      "coach": "A coach review of your paper results next to your manual fills.",
+      "chat": "A chat panel for questions about your own Levelset data."
+    },
+    "never": "It explains and coaches. It never makes buy/sell calls or price predictions.",
+    "notNeeded": "Every tool works without AI: the scanner, plans, the Time Machine, risk checks and tickets don't use it.",
+    "billing": "It uses your own Claude API key, so usage is billed to your Anthropic account.",
+    "usageTitle": "Model and spending",
+    "usageSubtitle": "Cost is shown on every answer.",
+    "model": "Model",
+    "models": {
+      "haiku": "Haiku: fastest, lowest cost",
+      "sonnet": "Sonnet: balanced (default)",
+      "opus": "Opus: most capable, highest cost"
+    },
+    "cap": "Monthly spending cap (USD)",
+    "capHint": "A soft cap: once this month's spend reaches it, AI stops answering until next month or until you raise it.",
+    "capInvalid": "Enter an amount from 0 to 1000",
+    "spent": "Spent this month",
+    "spentValue": "{{spent}} of {{cap}}",
+    "save": "Save",
+    "saved": "AI settings saved",
+    "saveFailed": "Couldn't save the AI settings",
+    "engineKey": {
+      "present": "The engine has your key for this session.",
+      "missing": "The engine doesn't have a key yet."
+    },
+    "demoNote": "In the browser demo the answers are canned examples; no key is needed or stored."
+  }
+}

@@ -1,16 +1,19 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import type { DashboardSummary } from '@/api';
 import { KpiTile } from '@/components/KpiTile';
 import { useFormat } from '@/i18n/useFormat';
 
-/** Day P/L · Risk used / limit · Trades today / max · Setups found. */
+/** Day P/L · Paper P/L today · Risk used / limit · Trades today / max · Setups found. */
 export function KpiRow({ data, loading }: { data?: DashboardSummary; loading?: boolean }) {
   const { t } = useTranslation('dashboard');
+  const { t: tp } = useTranslation('paper');
   const f = useFormat();
   const d = data;
   const pnl = d?.dayPnl ?? 0;
+  const paper = d?.paperPnlToday ?? null;
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="kpi-row">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5" data-testid="kpi-row">
       <KpiTile
         label={t('kpi.dayPnl')}
         loading={loading}
@@ -18,6 +21,18 @@ export function KpiRow({ data, loading }: { data?: DashboardSummary; loading?: b
         trend={pnl > 0 ? 'up' : pnl < 0 ? 'down' : undefined}
         sub={t('kpi.dayPnlSub')}
       />
+      <Link to="/paper" className="block rounded-lg focus-ring" data-testid="kpi-paper">
+        <KpiTile
+          label={tp('tile.label')}
+          loading={loading}
+          value={d ? (paper == null ? '—' : f.money(paper, { signed: true })) : '—'}
+          trend={
+            paper != null && paper > 0 ? 'up' : paper != null && paper < 0 ? 'down' : undefined
+          }
+          sub={d ? (paper == null ? tp('tile.off') : tp('tile.sub')) : undefined}
+          className="h-full hover:bg-surface2/60"
+        />
+      </Link>
       <KpiTile
         label={t('kpi.riskUsed')}
         loading={loading}

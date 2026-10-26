@@ -6,7 +6,8 @@
     "analyst": "Analyst",
     "pelosi": "Pelosi",
     "connections": "Connections",
-    "settings": "Settings"
+    "settings": "Settings",
+    "paper": "Paper account"
   },
   "sidebar": {
     "label": "Sidebar",
@@ -76,5 +77,11 @@
       "Who, ticker, buy or sell, amount range and days to disclose",
       "Flags trades in stocks on your watchlist"
     ]
+  },
+  "tray": {
+    "open": "Open Levelset",
+    "quit": "Quit Levelset",
+    "tooltip": "Levelset (running in the background)",
+    "hidden": "Levelset is still running in the system tray. Use the tray icon to open it or quit."
   }
 }

@@ -1,0 +1,192 @@
+{
+  "title": "Paper account",
+  "description": "Every signal followed automatically, with slippage, so you can see what you would have made before risking money.",
+  "badge": "Paper",
+  "badgeLabel": "Paper position (simulated, not at a broker)",
+  "loadFailed": "Couldn't load the paper account",
+  "account": {
+    "label": "Account",
+    "optionActive": "{{name}} (active)",
+    "period": "Period",
+    "periodN": "Period {{n}} · from {{date}}",
+    "periodCurrent": "Period {{n}} (current) · from {{date}}",
+    "allPeriods": "All periods",
+    "range": "Dates",
+    "ranges": {
+      "all": "All dates",
+      "month": "Last 30 days",
+      "week": "Last 7 days",
+      "today": "Today"
+    },
+    "active": "Active account",
+    "activeHint": "Auto-follow trades into the active account.",
+    "makeActive": "Make active",
+    "activated": "{{name}} is now the active account",
+    "new": "New account",
+    "reset": "Reset…",
+    "export": "Export CSV",
+    "equity": "Equity {{value}}",
+    "cash": "cash {{value}}",
+    "open_one": "{{count}} open position",
+    "open_other": "{{count}} open positions"
+  },
+  "create": {
+    "title": "New paper account",
+    "description": "You can have as many paper accounts as you like; each keeps its full history.",
+    "name": "Name",
+    "namePlaceholder": "Paper {{n}}",
+    "balance": "Starting balance (USD)",
+    "activate": "Make it the active account (auto-follow trades into it)",
+    "submit": "Create account",
+    "created": "Created {{name}}",
+    "invalidBalance": "Enter an amount above 0."
+  },
+  "reset": {
+    "title": "Reset {{name}}?",
+    "body": "Open paper positions close at the latest price (exit reason \"Account reset\") and a new period starts at the balance below. The old period and its trades stay in the history.",
+    "balance": "New starting balance (USD)",
+    "confirm": "Reset account",
+    "done": "{{name}} was reset. Period {{n}} started."
+  },
+  "stats": {
+    "none": "—",
+    "r": "{{value}} R",
+    "pnl": "Total P/L",
+    "pnlSub": "{{start}} → {{end}}",
+    "winRate": "Win rate",
+    "winRateSub": "{{wins}} won · {{losses}} lost of {{trades}}",
+    "expectancy": "Expectancy",
+    "expectancySub": "avg R per trade · wins {{win}} · losses {{loss}}",
+    "profitFactor": "Profit factor",
+    "profitFactorSub": "gross wins ÷ gross losses",
+    "drawdown": "Max drawdown",
+    "drawdownSub": "{{pct}} from the peak",
+    "streak": "Longest losing streak",
+    "streakValue_one": "{{count}} trade",
+    "streakValue_other": "{{count}} trades",
+    "skipped_one": "{{count}} signal skipped",
+    "skipped_other": "{{count}} signals skipped"
+  },
+  "equity": {
+    "title": "Equity curve",
+    "subtitle": "After each closed trade, slippage included. Dotted line: starting balance.",
+    "aria": "Paper equity curve from {{start}} to {{end}}",
+    "empty": "No closed trades in this range yet."
+  },
+  "breakdown": {
+    "title": "Breakdown",
+    "by": {
+      "ticker": "Ticker",
+      "setup": "Setup",
+      "hour": "Hour",
+      "weekday": "Weekday"
+    },
+    "cols": {
+      "trades": "Trades",
+      "winRate": "Win rate",
+      "expectancy": "Avg R",
+      "pnl": "P/L"
+    },
+    "hourKey": "{{hour}}:00 ET",
+    "weekdays": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "empty": "No closed trades to group yet."
+  },
+  "log": {
+    "title": "Trade log",
+    "subtitle": "Newest first. Skipped rows are tickets the account did not trade.",
+    "filter": {
+      "all": "All",
+      "closed": "Closed",
+      "skipped": "Skipped"
+    },
+    "cols": {
+      "symbol": "Ticker",
+      "entry": "Entry",
+      "exit": "Exit",
+      "reason": "Exit reason",
+      "r": "R",
+      "pnl": "P/L",
+      "flow": "Pipeline run"
+    },
+    "qty": "{{qty}} shares",
+    "slippage": "slippage {{value}}",
+    "viewFlow": "View flow",
+    "viewFlowFor": "View the pipeline run for {{symbol}}",
+    "backfilled": "Backfilled",
+    "backfilledHint": "Recorded by the catch-up run when Levelset started (it was closed at the time), using that day's bars.",
+    "skippedRow": "Skipped: {{reason}}",
+    "empty": "No paper trades in this range.",
+    "more_one": "Show {{count}} more",
+    "more_other": "Show {{count}} more"
+  },
+  "exitReason": {
+    "stop": "Stop loss",
+    "target": "Take profit",
+    "flat_by": "Flat by close",
+    "reset": "Account reset"
+  },
+  "skipReason": {
+    "blocked": "blocked by the risk check",
+    "stale": "stale ticket",
+    "duplicate": "already holding this ticker"
+  },
+  "positions": {
+    "title": "Open paper positions",
+    "empty": "No open paper positions.",
+    "entered": "{{qty}} filled at {{price}}, {{time}}"
+  },
+  "compare": {
+    "title": "Signals vs. you",
+    "subtitle": "Paper (every signal followed) next to your recorded fills: same days, same tickers.",
+    "paper": "Signals (paper)",
+    "manual": "You (recorded fills)",
+    "trades_one": "{{count}} trade",
+    "trades_other": "{{count}} trades",
+    "winRate": "{{value}} won",
+    "rTotal": "{{value}} R total",
+    "diff": "You vs. signals: {{value}}",
+    "matched_one": "{{count}} day and ticker in both",
+    "matched_other": "{{count}} days and tickers in both",
+    "paperOnly_one": "{{count}} only in paper",
+    "paperOnly_other": "{{count}} only in paper",
+    "manualOnly_one": "{{count}} only in your fills",
+    "manualOnly_other": "{{count}} only in your fills",
+    "note": "The two totals cover only the days and tickers where both traded. Each row is one day and ticker.",
+    "cols": {
+      "date": "Date",
+      "symbol": "Ticker",
+      "paper": "Paper",
+      "manual": "You"
+    },
+    "none": "no trade",
+    "empty": "Nothing to compare yet. Record your fills from a ticket to see them next to the signals."
+  },
+  "notes": {
+    "title": "How paper results work",
+    "fills": "Free data is delayed and bar-based, so fills are approximate: the entry is the next bar's open plus slippage ({{pct}} + {{perShare}} per share). If stop and target are both touched in the same bar, the stop counts first; gaps fill at the bar's open.",
+    "awake": "Live following needs the PC on, awake and online during market hours. Closing the window keeps Levelset running in the system tray.",
+    "catchup": "If Levelset was closed, it replays the day's missed intervals when it starts and marks those trades \"Backfilled\". Only live alerts are missed.",
+    "separate": "Paper trades never count toward your real daily limits and never reach a broker.",
+    "settings": "Paper settings",
+    "system": "Tray, autostart and keep awake"
+  },
+  "ticket": {
+    "opened": "Paper: opened {{price}}",
+    "pending": "Paper: waiting for the next bar",
+    "closed": "Paper: closed {{price}} · {{reason}} · {{pnl}}",
+    "skipped": "Paper: skipped ({{reason}})"
+  },
+  "tile": {
+    "label": "Paper P/L today",
+    "sub": "paper account, slippage included",
+    "off": "auto-follow is off"
+  }
+}

@@ -13,9 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { toast } from '@/components/ui/toaster';
+import { useSaveFile } from '@/components/useSaveFile';
 import { cn } from '@/lib/utils';
-import { EXPORT_FORMATS, exportFileName, saveTextFile } from './exportFile';
+import { EXPORT_FORMATS, exportFileName } from './exportFile';
 import { useCopyText } from './useCopyPrice';
 
 export interface ExportDialogProps {
@@ -36,6 +36,7 @@ export function ExportDialog({
   const [format, setFormat] = useState<TicketExportFormat>(initialFormat);
   const q = useTicketExport(ticket.id, format, { enabled: open });
   const copy = useCopyText();
+  const saveFile = useSaveFile();
   const fileName = exportFileName(ticket, format);
 
   return (
@@ -86,8 +87,7 @@ export function ExportDialog({
             disabled={q.data === undefined}
             onClick={() => {
               if (q.data === undefined) return;
-              saveTextFile(fileName, q.data);
-              toast(t('export.saved', { name: fileName }));
+              void saveFile(fileName, q.data, t(`export.formats.${format}`));
             }}
           >
             <Download aria-hidden />

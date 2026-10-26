@@ -119,7 +119,7 @@ describe('AI (optional)', () => {
   it('explains that keys are desktop-only in browser / mock mode', async () => {
     renderApp('/settings/ai');
     expect(await screen.findByTestId('ai-desktop-only')).toBeInTheDocument();
-    expect(screen.getByRole('switch', { name: 'Use AI summaries' })).toHaveAttribute(
+    expect(screen.getByRole('switch', { name: 'Use the AI assistant' })).toHaveAttribute(
       'aria-checked',
       'false',
     );

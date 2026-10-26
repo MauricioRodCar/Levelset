@@ -4,6 +4,7 @@ import AnalystPage from '@/features/analyst';
 import ConnectionsPage from '@/features/connections';
 import DashboardPage from '@/features/dashboard';
 import OnboardingPage from '@/features/onboarding';
+import PaperPage from '@/features/paper';
 import PelosiPage from '@/features/pelosi';
 import PipelinePage from '@/features/pipeline';
 import SettingsPage from '@/features/settings';
@@ -22,6 +23,7 @@ export const routes: RouteObject[] = [
       { path: 'pipeline', element: <PipelinePage /> },
       { path: 'pipeline/:runId', element: <PipelinePage /> },
       { path: 'alerts', element: <AlertsPage /> },
+      { path: 'paper', element: <PaperPage /> },
       { path: 'analyst', element: <AnalystPage /> },
       { path: 'pelosi', element: <PelosiPage /> },
       { path: 'connections', element: <ConnectionsPage /> },

@@ -1,5 +1,15 @@
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Bot, Database, Info, Languages, Palette, Wallet, type LucideIcon } from 'lucide-react';
+import {
+  Bot,
+  Database,
+  FlaskConical,
+  Info,
+  Languages,
+  MonitorCog,
+  Palette,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,8 +19,10 @@ import { AiTab } from './tabs/AiTab';
 import { AppearanceTab } from './tabs/AppearanceTab';
 import { DataSecTab } from './tabs/DataSecTab';
 import { LanguageTab } from './tabs/LanguageTab';
+import { PaperTab } from './tabs/PaperTab';
+import { SystemTab } from './tabs/SystemTab';
 
-const SETTINGS_TABS = ['account', 'appearance', 'language', 'data', 'ai', 'about'] as const;
+const SETTINGS_TABS = ['account', 'appearance', 'language', 'data', 'paper', 'system', 'ai', 'about'] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number];
 
 const TABS: Record<SettingsTab, { icon: LucideIcon; Component: () => JSX.Element }> = {
@@ -18,6 +30,8 @@ const TABS: Record<SettingsTab, { icon: LucideIcon; Component: () => JSX.Element
   appearance: { icon: Palette, Component: AppearanceTab },
   language: { icon: Languages, Component: LanguageTab },
   data: { icon: Database, Component: DataSecTab },
+  paper: { icon: FlaskConical, Component: PaperTab },
+  system: { icon: MonitorCog, Component: SystemTab },
   ai: { icon: Bot, Component: AiTab },
   about: { icon: Info, Component: AboutTab },
 };

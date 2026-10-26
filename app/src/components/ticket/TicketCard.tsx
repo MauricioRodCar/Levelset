@@ -13,6 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useStartRun, type PipelineRun, type Ticket } from '@/api';
+import { EarningsBadge } from '@/components/EarningsBadge';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toaster';
@@ -23,11 +24,15 @@ import { cn } from '@/lib/utils';
 import { ExportDialog } from './ExportDialog';
 import { HowToDialog } from './HowToDialog';
 import { InstrumentNote } from './InstrumentNote';
+import { PaperLine } from './PaperLine';
 import { RecordFillDialog } from './RecordFillDialog';
 import { TicketLevels } from './TicketLevels';
 import { TicketMenu } from './TicketMenu';
 import { ticketText } from './ticketText';
 import { useCopyPrice, useCopyText } from './useCopyPrice';
+import { MonitorUp } from 'lucide-react';
+import { BridgeTicketLine, SendToPlatformDialog } from '@/features/connections/SendToPlatform';
+import { AiExplainButton } from '@/features/ai/AiExplainButton';
 
 export interface TicketCardProps {
   ticket: Ticket;
@@ -83,7 +88,7 @@ function ActiveTicketCard({ ticket, onRunStarted, className }: TicketCardProps) 
   const viewFlow = useViewFlow(ticket.runId);
   const startRun = useStartRun();
   const errorMessage = useErrorMessage();
-  const [dialog, setDialog] = useState<null | 'export' | 'howto' | 'fill'>(null);
+  const [dialog, setDialog] = useState<null | 'export' | 'howto' | 'fill' | 'bridge'>(null);
   const stale = ticket.status === 'stale';
 
   const copyAll = () =>
@@ -150,6 +155,7 @@ function ActiveTicketCard({ ticket, onRunStarted, className }: TicketCardProps) 
       <header className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
         <TicketTitle ticket={ticket} className={cn(stale && 'text-text-muted')} />
         <OrderMeta ticket={ticket} />
+        <EarningsBadge symbol={ticket.symbol} />
         <div className="ml-auto flex items-center gap-2">
           <SimpleTooltip
             label={
@@ -219,6 +225,9 @@ function ActiveTicketCard({ ticket, onRunStarted, className }: TicketCardProps) 
         )}
       </p>
 
+      {ticket.paper && <PaperLine paper={ticket.paper} className="mt-2" />}
+      <BridgeTicketLine ticket={ticket} />
+
       {stale && (
         <p className="mt-2 text-xs text-text-muted">
           {t('stale.reason', { time: f.marketDateTime(ticket.createdAt) })}
@@ -267,6 +276,17 @@ function ActiveTicketCard({ ticket, onRunStarted, className }: TicketCardProps) 
               icon: <NotebookPen aria-hidden />,
               onSelect: () => setDialog('fill'),
             },
+            // v1.1 bridges: only a PASS (ready) ticket; the user confirms with Place in the platform.
+            ...(stale
+              ? []
+              : [
+                  {
+                    key: 'bridge',
+                    label: t('connections:bridges.send.menu'),
+                    icon: <MonitorUp aria-hidden />,
+                    onSelect: () => setDialog('bridge'),
+                  },
+                ]),
           ]}
         />
       </div>
@@ -288,6 +308,13 @@ function ActiveTicketCard({ ticket, onRunStarted, className }: TicketCardProps) 
         open={dialog === 'fill'}
         onOpenChange={(o) => setDialog(o ? 'fill' : null)}
       />
+      {!stale && (
+        <SendToPlatformDialog
+          ticket={ticket}
+          open={dialog === 'bridge'}
+          onOpenChange={(o) => setDialog(o ? 'bridge' : null)}
+        />
+      )}
     </article>
   );
 }
@@ -341,6 +368,7 @@ function BlockedTicketRow({ ticket, className }: { ticket: Ticket; className?: s
       </button>
       {open && (
         <div id={detailId} className="space-y-3 border-t border-border px-4 py-3">
+          <AiExplainButton kind="blocked_ticket" ticketId={ticket.id} />
           <ul className="space-y-1">
             {reasons.map((r, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-text">
@@ -364,6 +392,7 @@ function BlockedTicketRow({ ticket, className }: { ticket: Ticket; className?: s
             · {t('levels.target')} {f.price(ticket.target)} ·{' '}
             {t('secondary.maxLoss', { value: f.money(ticket.maxLoss) })}
           </p>
+          {ticket.paper && <PaperLine paper={ticket.paper} />}
           <Button size="sm" variant="outline" onClick={viewFlow}>
             <Workflow aria-hidden />
             {t('actions.viewFlow')}

@@ -8,7 +8,9 @@
     "language": "Language",
     "data": "Data & SEC",
     "ai": "AI (optional)",
-    "about": "About"
+    "about": "About",
+    "paper": "Paper account",
+    "system": "System"
   },
   "account": {
     "title": "Account & limits",
@@ -291,5 +293,65 @@
     "confirmBody": "{{side}} {{qty}} {{symbol}} at {{price}} will be removed. Your positions, today's P/L and the daily risk count are recalculated. This can't be undone.",
     "delete": "Delete fill",
     "deleted": "Fill deleted"
+  },
+  "paper": {
+    "loadFailed": "Couldn't load the paper settings",
+    "saveFailed": "Couldn't save the paper settings",
+    "saved": "Slippage saved. It applies to fills from now on.",
+    "followOn": "Auto-follow is on",
+    "followOff": "Auto-follow is off",
+    "open": "Open the paper account",
+    "save": "Save slippage",
+    "follow": {
+      "title": "Auto-follow",
+      "subtitle": "The paper account trades every ticket that passes the risk check.",
+      "label": "Follow every signal in the active paper account",
+      "hint": "Blocked and stale tickets are not traded; the log records them as skipped.",
+      "separate": "Paper trades never count toward your real limits and never reach a broker."
+    },
+    "slippage": {
+      "title": "Slippage and spread",
+      "subtitle": "Applied to every paper fill so results aren't flattering.",
+      "pct": "Slippage (%)",
+      "pctHint": "Default 0.02 %. From 0 to 5.",
+      "pctError": "Enter a percent from 0 to 5.",
+      "perShare": "Spread ($ per share, each side)",
+      "perShareHint": "Default $0.01. From 0 to 1.",
+      "perShareError": "Enter an amount from 0 to 1.",
+      "example": "Example: a bar opening at {{open}} fills a buy at {{fill}}."
+    }
+  },
+  "system": {
+    "webNote": "These options are part of the Levelset desktop app. They are not available in the web demo.",
+    "loadFailed": "Couldn't read the system options: {{detail}}",
+    "saveFailed": "Couldn't change the option: {{detail}}",
+    "background": {
+      "title": "Running in the background",
+      "subtitle": "For live paper following and alerts while you do other things."
+    },
+    "autostart": {
+      "label": "Start with Windows",
+      "hint": "Levelset starts in the system tray when you sign in to Windows (just for your user, no admin needed)."
+    },
+    "keepAwake": {
+      "label": "Keep the PC awake during market hours",
+      "hint": "Stops Windows from sleeping while the US market is open and Levelset is running. The screen can still turn off."
+    },
+    "tray": "Closing the window keeps Levelset running in the system tray. Use the tray icon to open it again or to quit.",
+    "demo": {
+      "title": "Demo mode",
+      "subtitle": "Replays the TSLA example day (Oct 19, 2026) with bundled data.",
+      "on": "Demo mode is on",
+      "off": "Demo mode is off (live data)",
+      "explain": "Demo mode uses its own workspace, so your real settings, tickets and paper trades are not touched. Switching restarts Levelset.",
+      "env": "Demo mode is set by the LEVELSET_DEMO environment variable, so this switch can't change it.",
+      "turnOn": "Turn on demo mode…",
+      "turnOff": "Turn off demo mode…",
+      "confirmOnTitle": "Restart Levelset in demo mode?",
+      "confirmOffTitle": "Restart Levelset with live data?",
+      "confirmBody": "Levelset closes and opens again, which takes a few seconds. Anything running in the pipeline stops.",
+      "restart": "Restart now",
+      "failed": "Couldn't switch demo mode: {{detail}}"
+    }
   }
 }

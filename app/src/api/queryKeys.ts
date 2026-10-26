@@ -21,4 +21,18 @@ export const qk = {
   trades: ['trades'] as const,
   fills: ['fills'] as const,
   alerts: ['alerts'] as const,
+  // v1.1 paper account (all under 'paper' so one invalidation refreshes the page)
+  paperAll: ['paper'] as const,
+  paperAccounts: ['paper', 'accounts'] as const,
+  paperPositions: (accountId?: string) => ['paper', 'positions', accountId ?? 'active'] as const,
+  paperTrades: (q: object) => ['paper', 'trades', q] as const,
+  paperStats: (q: object) => ['paper', 'stats', q] as const,
+  paperCompare: (q: object) => ['paper', 'compare', q] as const,
+  paperSettings: ['paper', 'settings'] as const,
+  // v1.1 analyst + congress trades
+  analyst: (symbol: string, quarters = 6) => ['analyst', symbol, quarters] as const,
+  congressAll: ['congress'] as const,
+  congressTrades: (q: Record<string, string | number | boolean | undefined>) =>
+    ['congress', 'trades', q] as const,
+  congressSettings: ['congress', 'settings'] as const,
 };

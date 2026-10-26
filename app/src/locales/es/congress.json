@@ -1,0 +1,85 @@
+{
+  "title": "Operaciones del Congreso",
+  "description": "Operaciones con acciones que los miembros de la Cámara de Representantes declaran bajo la STOCK Act, leídas de los Periodic Transaction Reports del Clerk.",
+  "note": "Declaraciones públicas, con hasta 45 días de retraso después de la operación. Los montos son rangos. No es información privilegiada.",
+  "refresh": "Buscar reportes nuevos",
+  "refreshDone_one": "{{count}} reporte nuevo",
+  "refreshDone_many": "{{count}} reportes nuevos",
+  "refreshDone_other": "{{count}} reportes nuevos",
+  "refreshNone": "No hay reportes nuevos desde la última revisión.",
+  "lastChecked": "Última revisión: {{time}}",
+  "neverChecked": "Aún sin revisar",
+  "notify": {
+    "label": "Avísame cuando un reporte nuevo mencione mi watchlist",
+    "hint": "Incluye tu watchlist y las posiciones que tienes. Cada reporte avisa una sola vez."
+  },
+  "filters": {
+    "label": "Filtros",
+    "member": "Miembro",
+    "memberPlaceholder": "p. ej. Pelosi",
+    "ticker": "Ticker",
+    "tickerPlaceholder": "p. ej. NVDA",
+    "type": "Tipo",
+    "typeAll": "Todos los tipos",
+    "from": "Presentado desde",
+    "to": "Presentado hasta",
+    "watchlistOnly": "Solo mi watchlist y mis posiciones",
+    "clear": "Borrar filtros"
+  },
+  "types": {
+    "buy": "Compra",
+    "sell": "Venta",
+    "exchange": "Intercambio",
+    "partial": "Venta parcial"
+  },
+  "owners": {
+    "self": "Titular",
+    "spouse": "Cónyuge",
+    "joint": "Conjunta",
+    "dependent_child": "Hijo dependiente"
+  },
+  "cols": {
+    "member": "Miembro",
+    "owner": "Titular",
+    "ticker": "Ticker",
+    "type": "Tipo",
+    "amount": "Monto",
+    "tradeDate": "Fecha de operación",
+    "filed": "Presentado",
+    "days": "Días para declarar"
+  },
+  "count_one": "{{count}} operación",
+  "count_many": "{{count}} operaciones",
+  "count_other": "{{count}} operaciones",
+  "days_one": "{{count}} día",
+  "days_many": "{{count}} días",
+  "days_other": "{{count}} días",
+  "late": "Tardío: más de 45 días",
+  "flags": {
+    "watchlist": "En tu watchlist",
+    "position": "La tienes en cartera"
+  },
+  "option": "{{contracts}} opciones {{kind}}, strike {{strike}}, vencen el {{expires}}",
+  "optionExercised": "Ejerció {{contracts}} opciones {{kind}}, strike {{strike}}",
+  "optionKinds": {
+    "call": "call",
+    "put": "put"
+  },
+  "shares_one": "{{count}} acción",
+  "shares_many": "{{count}} acciones",
+  "shares_other": "{{count}} acciones",
+  "openFiling": "Abrir el PDF del reporte",
+  "empty": {
+    "title": "Ninguna operación coincide",
+    "description": "Cambia los filtros o busca reportes nuevos."
+  },
+  "unread": {
+    "title": "Reportes que no se pudieron leer",
+    "description": "Estos reportes no se pudieron leer automáticamente (pdftotext no está instalado o el reporte es un formulario en papel escaneado). Abre el PDF para leerlo.",
+    "open": "Abrir PDF"
+  },
+  "notification": {
+    "title": "Nuevo reporte del Congreso: {{member}}",
+    "body": "Menciona {{tickers}} (tu watchlist o tus posiciones). Declaración pública, con hasta 45 días de retraso."
+  }
+}

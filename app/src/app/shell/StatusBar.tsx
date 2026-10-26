@@ -2,6 +2,7 @@ import { CircleDot, Clock, FlaskConical, Moon, PlugZap, RotateCw, Sun, Unplug } 
 import { useTranslation } from 'react-i18next';
 import { useEngineConnection, useStatus } from '@/api';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
+import { AiPanelToggle } from '@/features/ai';
 import { Button } from '@/components/ui/button';
 import { SimpleTooltip } from '@/components/ui/tooltip';
 import { useMarketClock } from '@/hooks/useMarketClock';
@@ -147,6 +148,7 @@ export function StatusBar() {
         ) : (
           <span role="status">{t('engine.connecting')}</span>
         )}
+        <AiPanelToggle />
         <Divider />
         <LanguageSwitch />
       </div>

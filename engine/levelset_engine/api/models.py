@@ -56,7 +56,7 @@ class Status(ApiModel):
 
 
 class DashboardSummary(ApiModel):
-    NULLABLE = frozenset({"lastScanAt"})
+    NULLABLE = frozenset({"lastScanAt", "paperPnlToday"})
     day_pnl: float
     risk_used: float
     daily_loss_limit: float
@@ -64,6 +64,7 @@ class DashboardSummary(ApiModel):
     max_trades_per_day: int
     setups_found: int
     last_scan_at: Optional[str] = None
+    paper_pnl_today: Optional[float] = None
 
 
 class AccountSettings(ApiModel):
@@ -199,6 +200,44 @@ class TimeMachineSummary(ApiModel):
     history_lost: int
 
 
+BridgePlatform = Literal["ctrader", "mt4", "mt5"]
+
+
+class BridgeTicketPlatform(ApiModel):
+    NULLABLE = frozenset({"error"})
+    platform: BridgePlatform
+    broker_symbol: str
+    volume: float
+    volume_unit: Literal["units", "lots"]
+    state: Literal["written", "shown", "placed", "dismissed", "expired", "rejected", "cancelled"]
+    updated_at: str
+    error: Optional[str] = None
+
+
+class BridgeTicketState(ApiModel):
+    NULLABLE = frozenset({"cancelledAt"})
+    ticket_id: str
+    signal_id: str
+    sent_at: str
+    cancelled_at: Optional[str] = None
+    platforms: list[BridgeTicketPlatform] = Field(default_factory=list)
+
+
+class TicketPaper(ApiModel):
+    """v1.1: auto-follow outcome of a ticket in the paper account (absent while not followed)."""
+    NULLABLE = frozenset({"positionId", "entryPrice", "exitPrice", "exitReason", "pnl", "rMultiple", "skipReason"})
+    status: Literal["pending", "opened", "closed", "skipped"]
+    account_id: str
+    position_id: Optional[str] = None
+    entry_price: Optional[float] = None
+    exit_price: Optional[float] = None
+    exit_reason: Optional[Literal["stop", "target", "flat_by", "reset"]] = None
+    pnl: Optional[float] = None
+    r_multiple: Optional[float] = None
+    skip_reason: Optional[Literal["blocked", "stale", "duplicate"]] = None
+    backfilled: bool = False
+
+
 class Ticket(ApiModel):
     NULLABLE = frozenset({"timeMachine"})
     id: str
@@ -222,6 +261,8 @@ class Ticket(ApiModel):
     risk_detail: list[str] = Field(default_factory=list)
     time_machine: Optional[TimeMachineSummary] = None
     created_at: str
+    paper: Optional[TicketPaper] = None
+    bridge: Optional[BridgeTicketState] = None
 
 
 class OpenTrade(ApiModel):

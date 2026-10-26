@@ -1,5 +1,9 @@
 export * from './types';
 export * from './hooks';
+export * from './paperHooks';
+export * from './researchHooks';
+export * from './bridgeHooks';
+export * from './aiHooks';
 export * from './events';
 export { qk } from './queryKeys';
 export { ApiError, getApi, isNetworkError, unwrap } from './client';

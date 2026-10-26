@@ -1,0 +1,91 @@
+{
+  "title": "Analyst",
+  "description": "A company's reported numbers straight from its SEC filings: revenue, margins, net income and EPS, quarter by quarter.",
+  "disclaimer": "Numbers only, as filed with the SEC. Levelset never says whether a stock is a buy or a sell.",
+  "na": "n/a",
+  "search": {
+    "label": "Ticker",
+    "placeholder": "e.g. TSLA",
+    "submit": "Look up",
+    "invalid": "Enter a US ticker, like TSLA or BRK.B.",
+    "suggestions": "Your watchlist:"
+  },
+  "empty": {
+    "title": "Look up a company",
+    "description": "Type a ticker to see its last quarters, what changed, and its latest earnings release."
+  },
+  "secPrompt": {
+    "title": "SEC identity needed",
+    "description": "SEC asks every tool that reads EDGAR for a name and an email. Add yours in Settings › Data & SEC, then come back.",
+    "action": "Open Data & SEC"
+  },
+  "notFiler": {
+    "title": "No SEC numbers for {{symbol}}",
+    "description": "SEC has no reported quarterly numbers for this ticker. ETFs and many foreign companies do not file XBRL facts."
+  },
+  "header": {
+    "cik": "CIK {{cik}}",
+    "source": "Source: {{source}}",
+    "fetched": "Fetched {{time}}"
+  },
+  "badge": {
+    "label": "Earnings this week",
+    "tooltip": "This company reports (or just reported) earnings this week. Prices can jump on the report."
+  },
+  "ttm": {
+    "title": "Last 4 quarters (TTM)",
+    "revenue": "Revenue",
+    "netIncome": "Net income",
+    "eps": "Diluted EPS"
+  },
+  "chart": {
+    "title": "Revenue and EPS by quarter",
+    "revenue": "Revenue",
+    "eps": "Diluted EPS",
+    "aria": "Bar chart of revenue by quarter with a line for diluted EPS",
+    "empty": "Not enough quarters to draw a chart."
+  },
+  "table": {
+    "title": "Quarters",
+    "caption": "US dollars. YoY compares with the same quarter a year earlier; margins in percentage points.",
+    "quarter": "Quarter",
+    "end": "Ends",
+    "revenue": "Revenue",
+    "yoy": "YoY",
+    "grossMargin": "Gross margin",
+    "operatingMargin": "Operating margin",
+    "netMargin": "Net margin",
+    "netIncome": "Net income",
+    "eps": "Diluted EPS",
+    "pts": "{{value}} pts",
+    "derived": "derived",
+    "derivedTip": "Q4 is the 10-K year minus the three 10-Qs; derived EPS is approximate."
+  },
+  "changes": {
+    "title": "What changed",
+    "empty": "No quarter to compare yet."
+  },
+  "change": {
+    "quarter_summary": "Quarter ending {{end}}: revenue {{revenue}} ({{revenueYoy}} vs a year earlier), net income {{netIncome}} ({{netIncomeYoy}}), diluted EPS {{eps}} ({{epsYoy}}).",
+    "quarter_summary_derived": "Quarter ending {{end}} (derived from the 10-K): revenue {{revenue}} ({{revenueYoy}} vs a year earlier), net income {{netIncome}} ({{netIncomeYoy}}), diluted EPS {{eps}} ({{epsYoy}}).",
+    "gross_margin": "Gross margin {{value}}.",
+    "operating_margin": "Operating margin {{value}}.",
+    "net_margin": "Net margin {{value}}.",
+    "gross_margin_qoq": "Gross margin {{value}} ({{pts}} points vs the quarter before).",
+    "operating_margin_qoq": "Operating margin {{value}} ({{pts}} points vs the quarter before).",
+    "net_margin_qoq": "Net margin {{value}} ({{pts}} points vs the quarter before).",
+    "net_above_operating": "Net income ({{netIncome}}) is above operating income ({{operatingIncome}}): it includes gains outside the business (investments, tax items). Check the 10-Q before reading it as growth.",
+    "revenue_qoq": "Revenue {{pct}} vs the quarter before (many businesses are seasonal: compare with a year earlier first).",
+    "facts_stale": "SEC's XBRL facts stop at {{latestEnd}}, but a {{form}} for the period ending {{period}} was filed {{filed}}. Read it directly.",
+    "derived_quarters": "Derived quarters are the 10-K year minus the three 10-Qs; derived EPS is approximate."
+  },
+  "filings": {
+    "title": "Filings",
+    "earnings8k": "Latest earnings 8-K, filed {{date}}",
+    "pressRelease": "Press release",
+    "filing": "Filing",
+    "report": "Latest {{form}}, period ending {{period}}, filed {{date}}",
+    "open": "Open on sec.gov",
+    "none": "No recent 10-Q, 10-K or earnings 8-K found."
+  }
+}

@@ -8,7 +8,9 @@
     "language": "Idioma",
     "data": "Datos y SEC",
     "ai": "IA (opcional)",
-    "about": "Acerca de"
+    "about": "Acerca de",
+    "paper": "Cuenta de práctica",
+    "system": "Sistema"
   },
   "account": {
     "title": "Cuenta y límites",
@@ -294,5 +296,65 @@
     "confirmBody": "Se eliminará {{side}} de {{qty}} {{symbol}} a {{price}}. Se recalculan tus posiciones, la ganancia/pérdida de hoy y el conteo de riesgo del día. No se puede deshacer.",
     "delete": "Eliminar ejecución",
     "deleted": "Ejecución eliminada"
+  },
+  "paper": {
+    "loadFailed": "No se pudieron cargar los ajustes de práctica",
+    "saveFailed": "No se pudieron guardar los ajustes de práctica",
+    "saved": "Se guardó el slippage. Se aplica a las ejecuciones a partir de ahora.",
+    "followOn": "El seguimiento automático está encendido",
+    "followOff": "El seguimiento automático está apagado",
+    "open": "Abrir la cuenta de práctica",
+    "save": "Guardar slippage",
+    "follow": {
+      "title": "Seguimiento automático",
+      "subtitle": "La cuenta de práctica opera cada ticket que pasa el control de riesgo.",
+      "label": "Seguir cada señal en la cuenta de práctica activa",
+      "hint": "Los tickets bloqueados o vencidos no se operan; el registro los anota como omitidos.",
+      "separate": "Las operaciones de práctica nunca cuentan para tus límites reales y nunca llegan a un bróker."
+    },
+    "slippage": {
+      "title": "Slippage y spread",
+      "subtitle": "Se aplica a cada ejecución de práctica para que los resultados no se vean mejores de lo que son.",
+      "pct": "Slippage (%)",
+      "pctHint": "Predeterminado 0.02 %. De 0 a 5.",
+      "pctError": "Escribe un porcentaje de 0 a 5.",
+      "perShare": "Spread ($ por acción, cada lado)",
+      "perShareHint": "Predeterminado $0.01. De 0 a 1.",
+      "perShareError": "Escribe un monto de 0 a 1.",
+      "example": "Ejemplo: si una barra abre en {{open}}, la compra se ejecuta a {{fill}}."
+    }
+  },
+  "system": {
+    "webNote": "Estas opciones son de la app de escritorio de Levelset. No están disponibles en la demo web.",
+    "loadFailed": "No se pudieron leer las opciones del sistema: {{detail}}",
+    "saveFailed": "No se pudo cambiar la opción: {{detail}}",
+    "background": {
+      "title": "En segundo plano",
+      "subtitle": "Para seguir las señales de práctica y las alertas en vivo mientras haces otras cosas."
+    },
+    "autostart": {
+      "label": "Iniciar con Windows",
+      "hint": "Levelset se abre en la bandeja del sistema cuando inicias sesión en Windows (solo para tu usuario, sin permisos de administrador)."
+    },
+    "keepAwake": {
+      "label": "Mantener la PC despierta en horario de mercado",
+      "hint": "Evita que Windows entre en suspensión mientras el mercado de EE. UU. está abierto y Levelset está funcionando. La pantalla sí se puede apagar."
+    },
+    "tray": "Al cerrar la ventana, Levelset sigue funcionando en la bandeja del sistema. Usa el ícono de la bandeja para abrirlo de nuevo o para salir.",
+    "demo": {
+      "title": "Modo demo",
+      "subtitle": "Repite el día de ejemplo de TSLA (19 de octubre de 2026) con datos incluidos.",
+      "on": "El modo demo está encendido",
+      "off": "El modo demo está apagado (datos en vivo)",
+      "explain": "El modo demo usa su propio espacio de trabajo, así que no toca tus ajustes, tickets ni operaciones de práctica reales. Al cambiarlo, Levelset se reinicia.",
+      "env": "El modo demo lo define la variable de entorno LEVELSET_DEMO, así que este interruptor no puede cambiarlo.",
+      "turnOn": "Encender el modo demo…",
+      "turnOff": "Apagar el modo demo…",
+      "confirmOnTitle": "¿Reiniciar Levelset en modo demo?",
+      "confirmOffTitle": "¿Reiniciar Levelset con datos en vivo?",
+      "confirmBody": "Levelset se cierra y se vuelve a abrir, lo que tarda unos segundos. Lo que esté corriendo en el pipeline se detiene.",
+      "restart": "Reiniciar ahora",
+      "failed": "No se pudo cambiar el modo demo: {{detail}}"
+    }
   }
 }

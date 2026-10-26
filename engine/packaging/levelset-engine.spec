@@ -39,6 +39,12 @@ hiddenimports = (
     skill_imports()
     + collect_submodules("levelset_engine")
     + collect_submodules("uvicorn")      # loops/protocols/lifespan are picked by string
+    # AI assistant: the engine imports the Claude SDK lazily (only when AI is used), so
+    # PyInstaller cannot follow the import; list it and its HTTP stack explicitly.
+    + collect_submodules("anthropic")
+    + collect_submodules("httpx2")
+    + collect_submodules("httpcore2")
+    + ["jiter", "anyio", "sniffio", "docstring_parser", "truststore", "opentelemetry.trace"]
     + ["email.mime.text", "email.mime.multipart", "html.parser", "zlib", "csv", "statistics"]
 )
 

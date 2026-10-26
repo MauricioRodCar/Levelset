@@ -28,12 +28,15 @@ describe('app shell', () => {
     ]) {
       expect(within(nav).getByRole('link', { name: new RegExp(label) })).toBeInTheDocument();
     }
-    expect(within(nav).getAllByText('v1.1')).toHaveLength(2);
+    expect(within(nav).queryByText('v1.1')).not.toBeInTheDocument();
     expect(await screen.findByText('Market open')).toBeInTheDocument();
     expect(screen.getByText('closes 16:00 ET')).toBeInTheDocument();
     expect(screen.getByText('Data delayed 15 min')).toBeInTheDocument();
     expect(screen.getByTestId('ny-clock').textContent).toMatch(/10:1\d:\d\d ET/);
-    expect(screen.getByText('Paper')).toBeInTheDocument();
+    // sidebar footer mode label (PAPER badges elsewhere on the dashboard say "Paper" too)
+    expect(
+      within(screen.getByText('Free tier').parentElement!).getByText('Paper'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Free tier')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
     expect(screen.getByText('Not financial advice.')).toBeInTheDocument();
@@ -64,9 +67,9 @@ describe('app shell', () => {
     expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
   });
 
-  it('shows the coming-soon page for v1.1 features', async () => {
+  it('serves the v1.1 Analyst and Congress trades pages', async () => {
     renderApp('/analyst');
-    expect(await screen.findByText('Coming in v1.1')).toBeInTheDocument();
+    expect(await screen.findByText('Look up a company')).toBeInTheDocument();
   });
 
   it('redirects to onboarding on first run', async () => {

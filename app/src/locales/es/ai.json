@@ -1,0 +1,90 @@
+{
+  "disclaimer": "Explicación de IA para aprender, no es asesoría financiera. Nunca te dice que compres o vendas ni predice precios; tú decides y colocas cada operación.",
+  "panel": {
+    "title": "Levelset IA",
+    "subtitle": "Explica y te orienta con tus propios datos",
+    "toggle": "IA",
+    "toggleTooltip": "Pregunta por tus corridas, tickets y resultados en papel",
+    "open": "Abrir el asistente de IA",
+    "close": "Cerrar el asistente de IA",
+    "inputLabel": "Mensaje",
+    "placeholder": "Pregunta por tus tickets, corridas, resultados en papel…",
+    "send": "Enviar",
+    "clear": "Nueva conversación",
+    "empty": "Pregunta sobre tus propios datos de Levelset. El asistente explica y te orienta; nunca hace recomendaciones de compra o venta ni predice precios.",
+    "examplesTitle": "Prueba preguntar",
+    "examples": {
+      "winRate": "¿Cuál es mi tasa de aciertos en papel con TSLA este mes?",
+      "blocked": "¿Por qué se bloquean mis tickets más seguido?",
+      "stop": "¿Mi stop es más amplio que el rango típico de 5 minutos de TSLA?"
+    },
+    "you": "Tú",
+    "assistant": "Levelset IA",
+    "thinking": "Leyendo tus datos…"
+  },
+  "explain": {
+    "pipeline_step": "Explicar este paso",
+    "blocked_ticket": "¿Por qué se bloqueó y qué lo cambiaría?",
+    "news_summary": "Resumir los titulares de hoy",
+    "analyst_quarter": "¿Qué cambió este trimestre?",
+    "loading": "Explicando…",
+    "hide": "Ocultar",
+    "again": "Explicar de nuevo",
+    "regionLabel": "Explicación de IA"
+  },
+  "coach": {
+    "title": "Coach de IA",
+    "subtitle": "Revisa tus resultados en papel junto a tus operaciones manuales y sugiere experimentos, no cambios de reglas.",
+    "from": "Desde",
+    "to": "Hasta",
+    "run": "Revisar mis resultados",
+    "running": "Revisando…"
+  },
+  "answer": {
+    "sources": "Datos usados",
+    "noSources": "Esta respuesta no usó datos de Levelset.",
+    "usage": "{{input}} de entrada · {{output}} de salida · {{cost}}",
+    "usageLabel": "Tokens y costo de esta solicitud",
+    "model": "Modelo: {{model}}"
+  },
+  "notReady": {
+    "disabled": "La IA está apagada. Actívala en Configuración › IA.",
+    "no_key": "Agrega tu clave de API de Claude en Configuración › IA.",
+    "cap_reached": "Llegaste al límite de gasto de IA de este mes. Súbelo en Configuración › IA.",
+    "openSettings": "Abrir Configuración › IA"
+  },
+  "settings": {
+    "enable": "Usar el asistente de IA",
+    "enableHint": "Desactivado por defecto. Mientras esté apagado no se envía nada a Claude.",
+    "whatTitle": "Qué hace",
+    "what": {
+      "explain": "Botones de explicación en los pasos del pipeline, tickets bloqueados, noticias y resultados.",
+      "coach": "Una revisión tipo coach de tus resultados en papel junto a tus operaciones manuales.",
+      "chat": "Un panel de chat para preguntas sobre tus propios datos de Levelset."
+    },
+    "never": "Explica y te orienta. Nunca hace recomendaciones de compra o venta ni predice precios.",
+    "notNeeded": "Todas las herramientas funcionan sin IA: el escáner, los planes, la Máquina del Tiempo, la revisión de riesgo y los tickets no la usan.",
+    "billing": "Usa tu propia clave de API de Claude, así que el uso se cobra en tu cuenta de Anthropic.",
+    "usageTitle": "Modelo y gasto",
+    "usageSubtitle": "Cada respuesta muestra su costo.",
+    "model": "Modelo",
+    "models": {
+      "haiku": "Haiku: el más rápido, el menor costo",
+      "sonnet": "Sonnet: equilibrado (predeterminado)",
+      "opus": "Opus: el más capaz, el mayor costo"
+    },
+    "cap": "Límite de gasto mensual (USD)",
+    "capHint": "Un límite flexible: cuando el gasto del mes lo alcanza, la IA deja de responder hasta el próximo mes o hasta que lo subas.",
+    "capInvalid": "Escribe un monto de 0 a 1000",
+    "spent": "Gastado este mes",
+    "spentValue": "{{spent}} de {{cap}}",
+    "save": "Guardar",
+    "saved": "Configuración de IA guardada",
+    "saveFailed": "No se pudo guardar la configuración de IA",
+    "engineKey": {
+      "present": "El motor tiene tu clave para esta sesión.",
+      "missing": "El motor todavía no tiene una clave."
+    },
+    "demoNote": "En el demo del navegador las respuestas son ejemplos fijos; no se necesita ni se guarda ninguna clave."
+  }
+}

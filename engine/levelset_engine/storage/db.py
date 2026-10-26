@@ -56,9 +56,49 @@ CREATE TABLE IF NOT EXISTS alerts (
     created_at TEXT NOT NULL,
     data TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS paper_accounts (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT UNIQUE NOT NULL,
+    created_at TEXT NOT NULL,
+    data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS paper_positions (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT UNIQUE NOT NULL,
+    account_id TEXT NOT NULL,
+    period_id TEXT NOT NULL,
+    ticket_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    data TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS paper_positions_account ON paper_positions (account_id, status);
+CREATE TABLE IF NOT EXISTS paper_fills (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT UNIQUE NOT NULL,
+    position_id TEXT NOT NULL,
+    account_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS paper_events (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id TEXT,
+    type TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    data TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS kv (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS bridge_symbol_map (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform TEXT NOT NULL,
+    us_symbol TEXT NOT NULL,
+    data TEXT NOT NULL,
+    UNIQUE (platform, us_symbol)
 );
 """
 
@@ -215,3 +255,31 @@ class Database:
 
     def kv_set(self, key: str, value: Any) -> None:
         self._exec("INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)", (key, _dumps(value)))
+
+    # ---------------------------------------------------------------- paper (WP1; rows in paper/store.py)
+    def set_ticket_paper(self, ticket_id: str, paper: dict[str, Any]) -> bool:
+        """Set Ticket.paper in place (keeps the ticket's list order; other fields untouched)."""
+        with self._lock:
+            cur = self._conn.execute("UPDATE tickets SET data = json_set(data, '$.paper', json(?)) WHERE id = ?",
+                                     (_dumps(paper), ticket_id))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    # ---------------------------------------------------------------- bridges (WP5)
+    def set_ticket_bridge(self, ticket_id: str, state: dict[str, Any]) -> bool:
+        """Set Ticket.bridge in place (keeps the ticket's list order; other fields untouched)."""
+        with self._lock:
+            cur = self._conn.execute("UPDATE tickets SET data = json_set(data, '$.bridge', json(?)) WHERE id = ?",
+                                     (_dumps(state), ticket_id))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    def list_symbol_map(self) -> list[dict[str, Any]]:
+        return [json.loads(r["data"]) for r in self._all("SELECT data FROM bridge_symbol_map ORDER BY seq")]
+
+    def replace_symbol_map(self, rows: list[dict[str, Any]]) -> None:
+        with self._lock:
+            self._conn.execute("DELETE FROM bridge_symbol_map")
+            self._conn.executemany("INSERT INTO bridge_symbol_map (platform, us_symbol, data) VALUES (?,?,?)",
+                                   [(r["platform"], r["usSymbol"], _dumps(r)) for r in rows])
+            self._conn.commit()

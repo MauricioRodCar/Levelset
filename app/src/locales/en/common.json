@@ -49,5 +49,10 @@
       "en": "EN",
       "es": "ES"
     }
+  },
+  "file": {
+    "saved": "Saved {{name}}",
+    "savedTo": "Saved to {{path}}",
+    "saveFailed": "Couldn't save the file: {{detail}}"
   }
 }

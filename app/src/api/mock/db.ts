@@ -1,5 +1,9 @@
 import * as fx from './fixtures';
 import { historyRuns } from './pipelineScenarios';
+import { freshPaper, withTicketPaper, type PaperMockState } from './paperFixtures';
+import { freshResearch, type ResearchMockState } from './researchFixtures';
+import { freshBridges, type BridgeMockState } from './bridgeFixtures';
+import { freshAi, type AiMockState } from './aiFixtures';
 import type {
   Alert,
   Fill,
@@ -22,22 +26,35 @@ export interface MockDb {
   fills: Fill[];
   alerts: Alert[];
   dashboard: DashboardSummary;
+  /** v1.1 paper account (paperFixtures.ts / paperMock.ts). */
+  paper: PaperMockState;
+  /** v1.1 analyst + congress trades (researchFixtures.ts / researchMock.ts). */
+  research: ResearchMockState;
+  /** v1.1 platform bridges (bridgeFixtures.ts / bridgeMock.ts). */
+  bridges: BridgeMockState;
+  /** v1.1 AI assistant (aiFixtures.ts / aiMock.ts). */
+  ai: AiMockState;
   seq: number;
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
 
 function fresh(): MockDb {
+  const paper = freshPaper();
   return {
     settings: clone(fx.settings),
     watchlist: clone(fx.watchlist),
     news: clone(fx.news),
     runs: historyRuns(),
-    tickets: clone(fx.tickets),
+    tickets: withTicketPaper(clone(fx.tickets), paper),
     trades: clone(fx.trades),
     fills: clone(fx.fills),
     alerts: clone(fx.alerts),
     dashboard: clone(fx.dashboard),
+    paper,
+    research: freshResearch(),
+    bridges: freshBridges(),
+    ai: freshAi(),
     seq: 1,
   };
 }

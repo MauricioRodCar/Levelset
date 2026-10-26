@@ -6,7 +6,8 @@
     "analyst": "Analista",
     "pelosi": "Pelosi",
     "connections": "Conexiones",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "paper": "Cuenta de práctica"
   },
   "sidebar": {
     "label": "Barra lateral",
@@ -76,5 +77,11 @@
       "Quién, ticker, compra o venta, rango de monto y días que tardó en declararse",
       "Marca las operaciones en acciones de tu watchlist"
     ]
+  },
+  "tray": {
+    "open": "Abrir Levelset",
+    "quit": "Salir de Levelset",
+    "tooltip": "Levelset (en segundo plano)",
+    "hidden": "Levelset sigue funcionando en la bandeja del sistema. Usa el ícono de la bandeja para abrirlo o salir."
   }
 }

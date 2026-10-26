@@ -1,0 +1,91 @@
+{
+  "title": "Analista",
+  "description": "Las cifras que reporta una empresa, tomadas directo de sus reportes ante la SEC: ingresos, márgenes, utilidad neta y EPS, trimestre por trimestre.",
+  "disclaimer": "Solo cifras, tal como se presentaron ante la SEC. Levelset nunca dice si una acción es para comprar o vender.",
+  "na": "n/d",
+  "search": {
+    "label": "Ticker",
+    "placeholder": "p. ej. TSLA",
+    "submit": "Buscar",
+    "invalid": "Escribe un ticker de EE. UU., como TSLA o BRK.B.",
+    "suggestions": "Tu watchlist:"
+  },
+  "empty": {
+    "title": "Busca una empresa",
+    "description": "Escribe un ticker para ver sus últimos trimestres, qué cambió y su último reporte de resultados."
+  },
+  "secPrompt": {
+    "title": "Falta tu identidad para la SEC",
+    "description": "La SEC pide un nombre y un correo a toda herramienta que lee EDGAR. Agrega los tuyos en Configuración › Datos y SEC y vuelve aquí.",
+    "action": "Abrir Datos y SEC"
+  },
+  "notFiler": {
+    "title": "No hay cifras de la SEC para {{symbol}}",
+    "description": "La SEC no tiene cifras trimestrales reportadas para este ticker. Los ETF y muchas empresas extranjeras no presentan datos XBRL."
+  },
+  "header": {
+    "cik": "CIK {{cik}}",
+    "source": "Fuente: {{source}}",
+    "fetched": "Consultado {{time}}"
+  },
+  "badge": {
+    "label": "Resultados esta semana",
+    "tooltip": "Esta empresa reporta (o acaba de reportar) resultados esta semana. El precio puede saltar con el reporte."
+  },
+  "ttm": {
+    "title": "Últimos 4 trimestres (TTM)",
+    "revenue": "Ingresos",
+    "netIncome": "Utilidad neta",
+    "eps": "EPS diluido"
+  },
+  "chart": {
+    "title": "Ingresos y EPS por trimestre",
+    "revenue": "Ingresos",
+    "eps": "EPS diluido",
+    "aria": "Gráfica de barras de ingresos por trimestre con una línea de EPS diluido",
+    "empty": "No hay suficientes trimestres para la gráfica."
+  },
+  "table": {
+    "title": "Trimestres",
+    "caption": "Dólares estadounidenses. YoY compara con el mismo trimestre del año anterior; márgenes en puntos porcentuales.",
+    "quarter": "Trimestre",
+    "end": "Cierra",
+    "revenue": "Ingresos",
+    "yoy": "YoY",
+    "grossMargin": "Margen bruto",
+    "operatingMargin": "Margen operativo",
+    "netMargin": "Margen neto",
+    "netIncome": "Utilidad neta",
+    "eps": "EPS diluido",
+    "pts": "{{value}} pts",
+    "derived": "derivado",
+    "derivedTip": "El Q4 es el año del 10-K menos los tres 10-Q; el EPS derivado es aproximado."
+  },
+  "changes": {
+    "title": "Qué cambió",
+    "empty": "Todavía no hay un trimestre para comparar."
+  },
+  "change": {
+    "quarter_summary": "Trimestre al {{end}}: ingresos {{revenue}} ({{revenueYoy}} vs. un año antes), utilidad neta {{netIncome}} ({{netIncomeYoy}}), EPS diluido {{eps}} ({{epsYoy}}).",
+    "quarter_summary_derived": "Trimestre al {{end}} (derivado del 10-K): ingresos {{revenue}} ({{revenueYoy}} vs. un año antes), utilidad neta {{netIncome}} ({{netIncomeYoy}}), EPS diluido {{eps}} ({{epsYoy}}).",
+    "gross_margin": "Margen bruto {{value}}.",
+    "operating_margin": "Margen operativo {{value}}.",
+    "net_margin": "Margen neto {{value}}.",
+    "gross_margin_qoq": "Margen bruto {{value}} ({{pts}} puntos vs. el trimestre anterior).",
+    "operating_margin_qoq": "Margen operativo {{value}} ({{pts}} puntos vs. el trimestre anterior).",
+    "net_margin_qoq": "Margen neto {{value}} ({{pts}} puntos vs. el trimestre anterior).",
+    "net_above_operating": "La utilidad neta ({{netIncome}}) supera la utilidad operativa ({{operatingIncome}}): incluye ganancias fuera del negocio (inversiones, partidas fiscales). Revisa el 10-Q antes de leerlo como crecimiento.",
+    "revenue_qoq": "Ingresos {{pct}} vs. el trimestre anterior (muchos negocios son estacionales: compara primero con un año antes).",
+    "facts_stale": "Los datos XBRL de la SEC llegan hasta el {{latestEnd}}, pero ya se presentó un {{form}} del periodo al {{period}} (el {{filed}}). Léelo directamente.",
+    "derived_quarters": "Los trimestres derivados son el año del 10-K menos los tres 10-Q; el EPS derivado es aproximado."
+  },
+  "filings": {
+    "title": "Reportes",
+    "earnings8k": "Último 8-K de resultados, presentado el {{date}}",
+    "pressRelease": "Comunicado de prensa",
+    "filing": "Reporte",
+    "report": "Último {{form}}, periodo al {{period}}, presentado el {{date}}",
+    "open": "Abrir en sec.gov",
+    "none": "No se encontró un 10-Q, 10-K ni 8-K de resultados reciente."
+  }
+}

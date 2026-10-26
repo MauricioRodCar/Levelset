@@ -5,7 +5,7 @@ import {
   requestPermission,
   sendNotification,
 } from '@tauri-apps/plugin-notification';
-import { engineEvents, type Alert } from '@/api';
+import { engineEvents, useCongressSettings, type Alert, type CongressFilingEvent } from '@/api';
 import { toast } from '@/components/ui/toaster';
 import { isTauri } from '@/lib/env';
 import { prefs } from '@/lib/prefs';
@@ -90,4 +90,19 @@ export async function deliver(title: string, body: string) {
  */
 export function useAlertNotifications() {
   useEffect(() => engineEvents.on('alert.rung', (a) => void notifyAlertRung(a)), []);
+  // v1.1 congress trades: the engine sends congress.filing once per new filing that mentions the
+  // watchlist or a position, only while CongressSettings.notifyOnWatchlist is on. Reading the
+  // settings once at start also lets the engine start its periodic check of the House Clerk.
+  useCongressSettings({ staleTime: Infinity, retry: false });
+  useEffect(() => engineEvents.on('congress.filing', (e) => void notifyCongressFiling(e)), []);
+}
+
+/** A new House PTR mentions the watchlist / a position: toast + chime + Windows notification. */
+export async function notifyCongressFiling(e: CongressFilingEvent) {
+  const t = i18n.t.bind(i18n);
+  const tickers = [...new Set(e.trades.map((x) => x.ticker).filter(Boolean))].join(', ');
+  await deliver(
+    t('congress:notification.title', { member: e.filing.member }),
+    t('congress:notification.body', { tickers }),
+  );
 }

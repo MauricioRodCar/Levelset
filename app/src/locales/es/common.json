@@ -49,5 +49,10 @@
       "en": "EN",
       "es": "ES"
     }
+  },
+  "file": {
+    "saved": "Se guardó {{name}}",
+    "savedTo": "Guardado en {{path}}",
+    "saveFailed": "No se pudo guardar el archivo: {{detail}}"
   }
 }

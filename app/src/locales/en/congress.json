@@ -1,0 +1,81 @@
+{
+  "title": "Congress trades",
+  "description": "Stock trades that members of the House disclose under the STOCK Act, read from the Clerk's Periodic Transaction Reports.",
+  "note": "Public disclosures, delayed up to 45 days after the trade. Amounts are ranges. Not inside information.",
+  "refresh": "Check for new filings",
+  "refreshDone_one": "{{count}} new filing",
+  "refreshDone_other": "{{count}} new filings",
+  "refreshNone": "No new filings since the last check.",
+  "lastChecked": "Last checked {{time}}",
+  "neverChecked": "Not checked yet",
+  "notify": {
+    "label": "Notify me when a new filing mentions my watchlist",
+    "hint": "Covers your watchlist and the positions you hold. Each filing notifies once."
+  },
+  "filters": {
+    "label": "Filters",
+    "member": "Member",
+    "memberPlaceholder": "e.g. Pelosi",
+    "ticker": "Ticker",
+    "tickerPlaceholder": "e.g. NVDA",
+    "type": "Type",
+    "typeAll": "All types",
+    "from": "Filed from",
+    "to": "Filed to",
+    "watchlistOnly": "Only my watchlist and positions",
+    "clear": "Clear filters"
+  },
+  "types": {
+    "buy": "Buy",
+    "sell": "Sell",
+    "exchange": "Exchange",
+    "partial": "Partial sale"
+  },
+  "owners": {
+    "self": "Self",
+    "spouse": "Spouse",
+    "joint": "Joint",
+    "dependent_child": "Dependent child"
+  },
+  "cols": {
+    "member": "Member",
+    "owner": "Owner",
+    "ticker": "Ticker",
+    "type": "Type",
+    "amount": "Amount",
+    "tradeDate": "Trade date",
+    "filed": "Filed",
+    "days": "Days to disclose"
+  },
+  "count_one": "{{count}} trade",
+  "count_other": "{{count}} trades",
+  "days_one": "{{count}} day",
+  "days_other": "{{count}} days",
+  "late": "Late: over 45 days",
+  "flags": {
+    "watchlist": "On your watchlist",
+    "position": "You hold it"
+  },
+  "option": "{{contracts}} {{kind}} options, strike {{strike}}, expire {{expires}}",
+  "optionExercised": "Exercised {{contracts}} {{kind}} options, strike {{strike}}",
+  "optionKinds": {
+    "call": "call",
+    "put": "put"
+  },
+  "shares_one": "{{count}} share",
+  "shares_other": "{{count}} shares",
+  "openFiling": "Open the filing PDF",
+  "empty": {
+    "title": "No trades match",
+    "description": "Change the filters, or check for new filings."
+  },
+  "unread": {
+    "title": "Filings not read into rows",
+    "description": "These reports could not be read automatically (pdftotext is not installed, or the filing is a scanned paper form). Open the PDF to read it.",
+    "open": "Open PDF"
+  },
+  "notification": {
+    "title": "New Congress filing: {{member}}",
+    "body": "Mentions {{tickers}} (your watchlist or positions). Public disclosure, delayed up to 45 days."
+  }
+}

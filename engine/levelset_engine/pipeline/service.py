@@ -44,6 +44,7 @@ class PipelineService:
     def __init__(self, ctx: EngineContext) -> None:
         self.ctx = ctx
         self._busy: set[str] = set()
+        self.ticket_hooks: list[Any] = []  # called with each new ticket (the paper account's auto-follow)
         self.recover()
 
     # ---------------------------------------------------------------- serialization
@@ -185,6 +186,11 @@ class PipelineService:
             db.put_ticket(outcome.ticket)
             db.update_run(run_id, ticket_id=outcome.ticket["id"])
             ctx.bus.publish("ticket.created", _public_ticket(outcome.ticket))
+            for hook in self.ticket_hooks:
+                try:
+                    hook(outcome.ticket)
+                except Exception:  # noqa: BLE001 - a hook never breaks the run
+                    log.error("ticket hook failed:\n%s", traceback.format_exc())
         self._publish_step(run_id, key)
         self._publish_run(run_id)
         return outcome

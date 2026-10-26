@@ -32,8 +32,10 @@ def status(s: Services = Depends(services)) -> dict:
 
 
 @router.get("/dashboard", response_model=DashboardSummary)
-async def dashboard(s: Services = Depends(services)) -> dict:
-    return await s.trading.dashboard()
+async def dashboard(request: Request, s: Services = Depends(services)) -> dict:
+    d = await s.trading.dashboard()
+    d["paperPnlToday"] = request.app.state.paper.pnl_today()  # v1.1; never part of dayPnl
+    return d
 
 
 @router.get("/settings", response_model=Settings)

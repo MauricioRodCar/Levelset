@@ -7,10 +7,13 @@ import { PlatformHowTo } from '@/components/ticket/PlatformHowTo';
 import { InstrumentNote } from '@/components/ticket/InstrumentNote';
 import { PLATFORMS, type PlatformInfo } from '@/components/ticket/platforms';
 import { cn } from '@/lib/utils';
+import { BridgesSection } from './BridgesSection';
 
 /**
- * Connections (docs/SCREENS.md S5). v1 has no broker link and never sends orders: every platform card
- * offers copy / export plus a step-by-step guide. Bridges (v1.1) and direct APIs (Pro) are labelled only.
+ * Connections (docs/SCREENS.md S5). Levelset has no broker link and never sends orders: every platform card
+ * offers copy / export plus a step-by-step guide. v1.1 adds the in-platform bridges (cTrader cBot,
+ * MT4/MT5 EAs) that show a ticket on the chart for the user to Place or Dismiss there.
+ * Direct APIs (Pro) are labelled only.
  */
 export default function ConnectionsPage() {
   const { t } = useTranslation('connections');
@@ -33,6 +36,7 @@ export default function ConnectionsPage() {
           {t('card.goToTickets')}
         </Link>
       </div>
+      <BridgesSection />
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
         {PLATFORMS.map((p) => (
           <PlatformCard key={p.id} platform={p} />
@@ -77,19 +81,27 @@ function PlatformCard({ platform }: { platform: PlatformInfo }) {
         </li>
         <li className="flex items-start gap-2">
           {bridge ? (
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden />
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-profit" aria-hidden />
           ) : (
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden />
           )}
           <div className="min-w-0">
-            <span className="text-text-muted">{bridge ? t('card.bridge') : t('card.api')}</span>
+            <span className={bridge ? 'text-text' : 'text-text-muted'}>
+              {bridge ? t('card.bridge') : t('card.api')}
+            </span>
             <p className="text-xs text-text-muted">
-              {bridge ? t('card.bridgeHint') : t('card.apiHint')}
+              {bridge ? `${t('card.bridgeHint')} ${t('card.setUpBridge')}` : t('card.apiHint')}
             </p>
           </div>
-          <span className="ml-auto shrink-0 rounded-full border border-border bg-surface2 px-2 py-0.5 text-xs font-medium text-text-muted">
-            {bridge ? t('card.comingV11') : t('card.pro')}
-          </span>
+          {bridge ? (
+            <span className="ml-auto shrink-0 rounded-full border border-profit/40 bg-profit/10 px-2 py-0.5 text-xs font-medium text-text">
+              {t('card.bridgeAvailable')}
+            </span>
+          ) : (
+            <span className="ml-auto shrink-0 rounded-full border border-border bg-surface2 px-2 py-0.5 text-xs font-medium text-text-muted">
+              {t('card.pro')}
+            </span>
+          )}
         </li>
         <li className="text-xs text-text-muted">
           {t('card.exportFormat', { format: tt(`export.formats.${platform.exportFormat}`) })}

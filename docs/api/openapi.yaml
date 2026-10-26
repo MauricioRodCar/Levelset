@@ -1,19 +1,38 @@
 openapi: 3.1.0
 info:
   title: Levelset Engine API
-  version: 0.1.1
+  version: 0.2.0
   description: |
     Local HTTP API served by levelset-engine on 127.0.0.1:<port>.
     Every request carries `Authorization: Bearer <token>` (token passed by the Tauri shell at launch;
     in dev the engine reads LEVELSET_TOKEN, default "dev").
     All prices are USD numbers. All timestamps are ISO-8601 with offset. Market times are America/New_York.
+    Dates (format: date, YYYY-MM-DD) are New York trading days.
     This file is the contract between engine (WP1) and UI (WP2-5). Change it only through the lead.
     Error codes (Problem.code) the UI must translate: unauthorized, not_found, validation_error,
     previous_step_not_done, scan_failed (502), news_failed (502), insufficient_position (422),
     invalid_alert (422), alert_not_found (404), fill_not_found (404), fill_in_use (409), bars_failed (502), run_busy, no_ticker.
+    v1.1 adds: ticket_not_found (404), paper_account_not_found (404),
+    ai_disabled (409), ai_no_key (409), ai_cap_reached (429), ai_failed (502), invalid_ai_key (422),
+    sec_identity_missing (422), no_sec_filer (404), analyst_failed (502), congress_failed (502),
+    ticket_not_ready (409), bridge_disabled (409), bridge_symbol_unmapped (422),
+    bridge_volume_too_small (422), bridge_folder_unwritable (500), bridge_not_sent (404).
     A run-all that stops early (e.g. entry still waiting) ends with status
     "check" and the remaining steps "pending". News tags map the skill's people->leadership,
     capital/risk->other.
+
+    v1.1 notes:
+    - Demo mode is chosen by the Tauri shell when it starts the engine (`--demo`, separate workspace
+      `<app data>\workspace\demo`). The Settings toggle is a shell command (it writes or removes the
+      `<app data>\demo` marker file and restarts Levelset); there is no engine endpoint, because an engine
+      cannot switch workspace while running. The active mode stays readable in Status.mode and
+      Settings.data.demoMode. The browser mock / web demo is always demo and hides the toggle.
+    - Tray, autostart and "keep the PC awake during market hours" are shell-only preferences (the shell
+      reads Status.marketOpen / nextOpen / nextClose); no engine contract.
+    - Paper trading is simulated inside the engine. It never touches trader/state/broker.json, never
+      counts toward the real daily limits, and never sends anything to a broker.
+    - Bridges only write signal files that a cBot / EA shows inside the platform; the user clicks Place
+      there. Levelset never places, modifies or closes an order.
 servers:
   - url: http://127.0.0.1:8765
 security:
@@ -189,9 +208,311 @@ paths:
           ticket.created -> Ticket
           alert.rung     -> Alert
           status.changed -> Status
+          paper.opened     -> PaperPosition     (auto-follow filled a ticket; also refresh Ticket.paper)
+          paper.closed     -> PaperTrade        (kind closed: stop, target, flat_by or reset)
+          paper.skipped    -> PaperTrade        (kind skipped: blocked, stale or duplicate)
+          paper.backfilled -> PaperBackfill     (catch-up after engine start finished)
+          congress.filing  -> CongressFilingEvent (new PTR that mentions the watchlist or a position;
+                                                   only when CongressSettings.notifyOnWatchlist)
+          bridge.updated   -> BridgeTicketState (a bridge acknowledged a signal: shown, placed, dismissed...)
+          bridge.status    -> BridgeStatus      (a platform's bridge went online / offline / error)
+        Backfilled paper events are not sent one by one; one paper.backfilled summarises them.
         Token may be passed as ?token= because EventSource can't set headers.
       responses:
         "200": { description: stream, content: { text/event-stream: { schema: { type: string } } } }
+
+  # ------------------------------------------------------------------ v1.1: paper account
+  /paper/accounts:
+    get:
+      summary: |
+        Every paper account, oldest first. Never empty: on first use the engine creates "Paper 1"
+        (active, starting balance = Settings.account.accountSizeUsd).
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/PaperAccount" } } } } }
+    post:
+      summary: Create a paper account (unlimited). activate=true (default) makes it the one auto-follow trades into.
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PaperAccountCreate" } } } }
+      responses:
+        "201": { description: created, content: { application/json: { schema: { $ref: "#/components/schemas/PaperAccount" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+  /paper/accounts/{accountId}/reset:
+    post:
+      summary: |
+        Start a new account period (the UI confirms first). Open positions of the current period are
+        closed at the latest price with exitReason "reset"; the old period and its trades are kept
+        and stay selectable with periodId. The new period starts at startingBalanceUsd
+        (default Settings.account.accountSizeUsd).
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PaperAccountReset" } } } }
+      responses:
+        "200": { description: reset, content: { application/json: { schema: { $ref: "#/components/schemas/PaperAccount" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /paper/accounts/{accountId}/activate:
+    post:
+      summary: Make this the active account (exactly one is active). Open positions in other accounts keep running to their exits.
+      parameters: [ { $ref: "#/components/parameters/accountId" } ]
+      responses:
+        "200": { description: activated, content: { application/json: { schema: { $ref: "#/components/schemas/PaperAccount" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /paper/positions:
+    get:
+      summary: |
+        Open paper positions. This is the separate list the Open trades view shows with a PAPER badge;
+        GET /trades stays real (manual fills) only. Default: the active account.
+      parameters:
+        - { $ref: "#/components/parameters/accountIdQuery" }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/PaperPosition" } } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /paper/trades:
+    get:
+      summary: |
+        Paper trade log, newest first (by createdAt): closed trades and skipped entries. Open positions
+        are in /paper/positions; a position keeps its id when it closes. Defaults: the active account,
+        its current period, every date.
+      parameters:
+        - { $ref: "#/components/parameters/accountIdQuery" }
+        - { $ref: "#/components/parameters/periodIdQuery" }
+        - { $ref: "#/components/parameters/fromDate" }
+        - { $ref: "#/components/parameters/toDate" }
+        - { name: symbol, in: query, schema: { type: string } }
+        - { name: kind, in: query, schema: { type: string, enum: [closed, skipped, all], default: all } }
+        - { name: limit, in: query, schema: { type: integer, default: 500, minimum: 1, maximum: 5000 } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/PaperTrade" } } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /paper/trades/export:
+    get:
+      summary: |
+        The same rows as GET /paper/trades (no limit) as CSV, UTF-8, comma separated, header row, with
+        Content-Disposition attachment; filename="levelset-paper-<accountId>.csv". Columns, in order:
+        id,accountId,periodId,kind,symbol,setup,qty,entryAt,entryPrice,exitAt,exitPrice,exitReason,
+        rMultiple,pnl,slippageUsd,skipReason,backfilled,ticketId,runId,createdAt (empty cell = null).
+      parameters:
+        - { $ref: "#/components/parameters/accountIdQuery" }
+        - { $ref: "#/components/parameters/periodIdQuery" }
+        - { $ref: "#/components/parameters/fromDate" }
+        - { $ref: "#/components/parameters/toDate" }
+        - { name: kind, in: query, schema: { type: string, enum: [closed, skipped, all], default: all } }
+      responses:
+        "200": { description: ok, content: { text/csv: { schema: { type: string } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /paper/stats:
+    get:
+      summary: |
+        Report numbers over closed trades in the range (skipped entries are only counted). Defaults:
+        the active account, its current period, every date, no breakdown.
+      parameters:
+        - { $ref: "#/components/parameters/accountIdQuery" }
+        - { $ref: "#/components/parameters/periodIdQuery" }
+        - { $ref: "#/components/parameters/fromDate" }
+        - { $ref: "#/components/parameters/toDate" }
+        - { name: groupBy, in: query, schema: { type: string, enum: [ticker, setup, hour, weekday] } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/PaperStats" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /paper/compare:
+    get:
+      summary: |
+        "Signals vs. you": paper results (every signal followed) next to the user's recorded manual
+        round trips (GET /fills), per day and ticker. Totals cover only rows where both sides traded
+        (same days, same tickers). Defaults: the active account, its current period, every date.
+      parameters:
+        - { $ref: "#/components/parameters/accountIdQuery" }
+        - { $ref: "#/components/parameters/periodIdQuery" }
+        - { $ref: "#/components/parameters/fromDate" }
+        - { $ref: "#/components/parameters/toDate" }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/PaperComparison" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /paper/settings:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/PaperSettings" } } } }
+    patch:
+      summary: Change any PaperSettings field; applies to fills made after the change.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PaperSettingsUpdate" } } } }
+      responses:
+        "200": { description: saved, content: { application/json: { schema: { $ref: "#/components/schemas/PaperSettings" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+
+  # ------------------------------------------------------------------ v1.1: AI assistant
+  /ai/key:
+    put:
+      summary: |
+        Write-only. Called by the Tauri shell (never by the UI) with the Claude API key it read from
+        Windows Credential Manager, after the engine is healthy and whenever the key is saved. The engine
+        keeps it in memory only: never persisted, logged or returned. 422 invalid_ai_key when it does not
+        look like an Anthropic key.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AiKey" } } } }
+      responses:
+        "204": { description: stored in memory }
+        "422": { $ref: "#/components/responses/Problem" }
+    delete:
+      summary: Forget the key (shell calls it when the user deletes the key). Idempotent.
+      responses:
+        "204": { description: forgotten }
+  /ai/status:
+    get:
+      summary: Whether AI can answer now, and this month's spend. Never contains the key.
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/AiStatus" } } } }
+  /ai/settings:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/AiSettings" } } } }
+    patch:
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AiSettingsUpdate" } } } }
+      responses:
+        "200": { description: saved, content: { application/json: { schema: { $ref: "#/components/schemas/AiSettings" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+  /ai/explain:
+    post:
+      summary: |
+        Layer 1 "Explain" buttons. Explains with the user's own data; never a buy/sell call or a price
+        prediction. Errors (all Problem): 409 ai_disabled, 409 ai_no_key, 429 ai_cap_reached,
+        502 ai_failed, 404 not_found / ticket_not_found for unknown ids, 422 validation_error when the
+        fields required by kind are missing.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AiExplainRequest" } } } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/AiAnswer" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+  /ai/coach:
+    post:
+      summary: Layer 2 review of paper vs. manual results over a date range; suggests experiments, not rule changes. Same errors as /ai/explain.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AiCoachRequest" } } } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/AiAnswer" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+  /ai/chat:
+    post:
+      summary: |
+        Layer 3 chat panel, scoped to Levelset data. Stateless: the UI sends the whole history each time
+        (last message role user). Answers in lang. Same errors as /ai/explain.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AiChatRequest" } } } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/AiAnswer" } } } }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "429": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+
+  # ------------------------------------------------------------------ v1.1: analyst (trader-analyst)
+  /analyst/{symbol}:
+    get:
+      summary: |
+        Reported numbers from SEC EDGAR XBRL company facts (trader-analyst facts.py --json) for one
+        company. 422 sec_identity_missing when Settings.data.secUserAgent is empty (live mode),
+        404 no_sec_filer when SEC has no CIK / XBRL facts for the ticker (ETFs, many foreign filers),
+        502 analyst_failed when SEC cannot be reached.
+      parameters:
+        - { name: symbol, in: path, required: true, schema: { type: string } }
+        - { name: quarters, in: query, schema: { type: integer, default: 6, minimum: 1, maximum: 12 } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/AnalystReport" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
+
+  # ------------------------------------------------------------------ v1.1: congress trades (trader-pelosi)
+  /congress/trades:
+    get:
+      summary: |
+        Stored House PTR rows (trader-pelosi ptr.py), newest filing first. Reads the local store only;
+        POST /congress/refresh fetches new filings. from/to filter filedDate. Public disclosures,
+        delayed up to 45 days; not inside information.
+      parameters:
+        - { name: member, in: query, schema: { type: string }, description: "case-insensitive substring of the member's name" }
+        - { name: ticker, in: query, schema: { type: string } }
+        - { name: type, in: query, schema: { type: string, enum: [buy, sell, exchange] } }
+        - { $ref: "#/components/parameters/fromDate" }
+        - { $ref: "#/components/parameters/toDate" }
+        - { name: watchlistOnly, in: query, schema: { type: boolean, default: false }, description: "only rows with inWatchlist or inPositions" }
+        - { name: limit, in: query, schema: { type: integer, default: 200, minimum: 1, maximum: 2000 } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/CongressFeed" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+  /congress/refresh:
+    post:
+      summary: Fetch the House Clerk index, download and read new PTRs, store their rows. 502 congress_failed when the Clerk site cannot be reached.
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/CongressRefreshResult" } } } }
+        "502": { $ref: "#/components/responses/Problem" }
+  /congress/settings:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/CongressSettings" } } } }
+    patch:
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/CongressSettingsUpdate" } } } }
+      responses:
+        "200": { description: saved, content: { application/json: { schema: { $ref: "#/components/schemas/CongressSettings" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+
+  # ------------------------------------------------------------------ v1.1: platform bridges
+  /bridges/settings:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/BridgeSettings" } } } }
+    patch:
+      summary: Change the signals folder and/or enable platforms. 422 validation_error for a relative path, 500 bridge_folder_unwritable when the folder cannot be created.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/BridgeSettingsUpdate" } } } }
+      responses:
+        "200": { description: saved, content: { application/json: { schema: { $ref: "#/components/schemas/BridgeSettings" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+        "500": { $ref: "#/components/responses/Problem" }
+  /bridges/status:
+    get:
+      summary: One row per platform (ctrader, mt4, mt5), from each bridge's heartbeat file.
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/BridgeStatus" } } } } }
+  /bridges/symbol-map:
+    get:
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/SymbolMap" } } } }
+    put:
+      summary: Replace the whole mapping table. 422 validation_error for a duplicate (platform, usSymbol) or a bad number.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/SymbolMap" } } } }
+      responses:
+        "200": { description: saved, content: { application/json: { schema: { $ref: "#/components/schemas/SymbolMap" } } } }
+        "422": { $ref: "#/components/responses/Problem" }
+  /tickets/{ticketId}/send-to-bridge:
+    post:
+      summary: |
+        Show this ticket inside the trading platform for the user to confirm. The engine only writes a
+        signal file (BridgeSignal) per platform; the cBot / EA displays it and the user clicks Place or
+        Dismiss there. Levelset never places an order. Sending again replaces the previous signal (a
+        cancel file is written for the old signalId). Errors: 404 ticket_not_found, 409 ticket_not_ready
+        (only status ready can be sent), 409 bridge_disabled (none of the platforms is enabled),
+        422 bridge_symbol_unmapped, 422 bridge_volume_too_small, 500 bridge_folder_unwritable.
+      parameters: [ { $ref: "#/components/parameters/ticketId" } ]
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/BridgeSendRequest" } } } }
+      responses:
+        "200": { description: signal files written, content: { application/json: { schema: { $ref: "#/components/schemas/BridgeTicketState" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "500": { $ref: "#/components/responses/Problem" }
+  /tickets/{ticketId}/cancel-bridge:
+    post:
+      summary: |
+        Withdraw the ticket from the platforms: writes a BridgeCancel file per platform so the panel
+        disappears. It cannot undo an order the user already placed in the platform. 404 ticket_not_found,
+        404 bridge_not_sent when the ticket was never sent.
+      parameters: [ { $ref: "#/components/parameters/ticketId" } ]
+      responses:
+        "200": { description: cancel files written, content: { application/json: { schema: { $ref: "#/components/schemas/BridgeTicketState" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
 
 components:
   securitySchemes:
@@ -200,6 +521,11 @@ components:
     runId: { name: runId, in: path, required: true, schema: { type: string } }
     ticketId: { name: ticketId, in: path, required: true, schema: { type: string } }
     stepKey: { name: stepKey, in: path, required: true, schema: { $ref: "#/components/schemas/StepKey" } }
+    accountId: { name: accountId, in: path, required: true, schema: { type: string } }
+    accountIdQuery: { name: accountId, in: query, schema: { type: string }, description: "paper account; default the active one (404 paper_account_not_found)" }
+    periodIdQuery: { name: periodId, in: query, schema: { type: string }, description: "account period id, or \"all\"; default the account's current period" }
+    fromDate: { name: from, in: query, schema: { type: string, format: date }, description: "first day included (New York date)" }
+    toDate: { name: to, in: query, schema: { type: string, format: date }, description: "last day included (New York date)" }
   responses:
     Problem:
       description: Error (RFC 9457)
@@ -233,6 +559,7 @@ components:
         maxTradesPerDay: { type: integer }
         setupsFound: { type: integer }
         lastScanAt: { type: [string, "null"], format: date-time }
+        paperPnlToday: { type: [number, "null"], description: "v1.1: active paper account, today's realized + unrealized P/L after slippage; null when auto-follow is off and nothing traded today. Never part of dayPnl." }
     Settings:
       type: object
       required: [account, limits, data]
@@ -262,7 +589,7 @@ components:
           type: object
           properties:
             secUserAgent: { type: string }
-            demoMode: { type: boolean, readOnly: true, description: "chosen at engine start (--demo); ignored on PUT" }
+            demoMode: { type: boolean, readOnly: true, description: "chosen at engine start (--demo); ignored on PUT. v1.1: the Settings toggle is a Tauri shell command that writes/removes the <app data>\\demo marker and restarts Levelset (no engine endpoint)." }
     ScanRequest:
       type: object
       properties:
@@ -415,6 +742,8 @@ components:
             historyWon: { type: integer }
             historyLost: { type: integer }
         createdAt: { type: string, format: date-time }
+        paper: { $ref: "#/components/schemas/TicketPaper" }
+        bridge: { $ref: "#/components/schemas/BridgeTicketState" }
     OpenTrade:
       type: object
       required: [symbol, qty, avgPrice]
@@ -475,3 +804,692 @@ components:
             status: { type: string, enum: [armed, rung] }
             createdAt: { type: string, format: date-time }
             rungAt: { type: [string, "null"], format: date-time }
+
+    # ---------------------------------------------------------------- v1.1: paper account
+    TicketPaper:
+      type: object
+      description: |
+        Auto-follow outcome for this ticket in the active paper account. Absent while auto-follow is off
+        or the engine has not processed the ticket yet. pending = risk PASS, waiting for the next bar's
+        open; opened -> "Paper: opened 364.20"; closed; skipped (skipReason).
+      required: [status, accountId, positionId, entryPrice, exitPrice, exitReason, pnl, rMultiple, skipReason, backfilled]
+      properties:
+        status: { type: string, enum: [pending, opened, closed, skipped] }
+        accountId: { type: string }
+        positionId: { type: [string, "null"], description: "PaperPosition.id; the closed PaperTrade keeps the same id" }
+        entryPrice: { type: [number, "null"], description: "fill incl. slippage" }
+        exitPrice: { type: [number, "null"] }
+        exitReason: { oneOf: [ { $ref: "#/components/schemas/PaperExitReason" }, { type: "null" } ] }
+        pnl: { type: [number, "null"] }
+        rMultiple: { type: [number, "null"] }
+        skipReason: { oneOf: [ { $ref: "#/components/schemas/PaperSkipReason" }, { type: "null" } ] }
+        backfilled: { type: boolean }
+    PaperExitReason:
+      type: string
+      enum: [stop, target, flat_by, reset]
+      description: "stop first when stop and target touch in the same bar; gaps fill at the bar's open; reset = closed by POST .../reset"
+    PaperSkipReason:
+      type: string
+      enum: [blocked, stale, duplicate]
+      description: "duplicate = the account already holds an open paper position in the symbol"
+    PaperPeriod:
+      type: object
+      required: [id, number, startingBalanceUsd, startedAt, endedAt, realizedPnl, trades]
+      properties:
+        id: { type: string }
+        number: { type: integer, minimum: 1, description: "1 for the account's first period, +1 per reset" }
+        startingBalanceUsd: { type: number }
+        startedAt: { type: string, format: date-time }
+        endedAt: { type: [string, "null"], format: date-time, description: "null for the current period" }
+        realizedPnl: { type: number }
+        trades: { type: integer, description: "closed trades in the period" }
+    PaperAccount:
+      type: object
+      required: [id, name, active, startingBalanceUsd, cashUsd, equityUsd, realizedPnl, unrealizedPnl, openPositions, currentPeriodId, periods, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        active: { type: boolean, description: "exactly one account is active; auto-follow trades into it" }
+        startingBalanceUsd: { type: number, description: "of the current period" }
+        cashUsd: { type: number, description: "starting balance + realized P/L of the current period" }
+        equityUsd: { type: number, description: "cashUsd + unrealized P/L of open positions" }
+        realizedPnl: { type: number, description: "current period" }
+        unrealizedPnl: { type: number }
+        openPositions: { type: integer }
+        currentPeriodId: { type: string }
+        periods: { type: array, items: { $ref: "#/components/schemas/PaperPeriod" }, description: "oldest first; the last is current" }
+        createdAt: { type: string, format: date-time }
+    PaperAccountCreate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60, description: "default \"Paper <n>\"" }
+        startingBalanceUsd: { type: number, exclusiveMinimum: 0, description: "default Settings.account.accountSizeUsd" }
+        activate: { type: boolean, default: true }
+    PaperAccountReset:
+      type: object
+      properties:
+        startingBalanceUsd: { type: number, exclusiveMinimum: 0, description: "default Settings.account.accountSizeUsd" }
+    PaperPosition:
+      description: |
+        An open paper position. Shares OpenTrade's fields so the Open trades table can render it with a
+        PAPER badge: avgPrice = entry fill incl. slippage, ticketId always set.
+      allOf:
+        - $ref: "#/components/schemas/OpenTrade"
+        - type: object
+          required: [id, accountId, periodId, runId, entryAt, slippageUsd, backfilled]
+          properties:
+            id: { type: string }
+            accountId: { type: string }
+            periodId: { type: string }
+            runId: { type: string }
+            setup: { type: string }
+            entryAt: { type: string, format: date-time, description: "bar open used for the fill" }
+            unrealizedR: { type: [number, "null"] }
+            slippageUsd: { type: number, description: "slippage + spread cost paid on the entry" }
+            backfilled: { type: boolean, description: "opened by the catch-up run after an engine start" }
+    PaperTrade:
+      type: object
+      description: |
+        One trade-log row. kind closed: a finished position (same id as the PaperPosition it was).
+        kind skipped: a ticket the account did not trade (entry/exit fields null, skipReason set).
+        pnl is net of slippage; rMultiple = pnl / (riskPerShare * qty) from the ticket.
+      required: [id, accountId, periodId, kind, symbol, qty, ticketId, runId, entryAt, entryPrice, exitAt, exitPrice, exitReason, rMultiple, pnl, slippageUsd, skipReason, backfilled, createdAt]
+      properties:
+        id: { type: string }
+        accountId: { type: string }
+        periodId: { type: string }
+        kind: { type: string, enum: [closed, skipped] }
+        symbol: { type: string }
+        setup: { type: string, description: "the run's setup, e.g. orb" }
+        qty: { type: integer, description: "the ticket's qty" }
+        ticketId: { type: string }
+        runId: { type: string, description: "for \"View flow\"" }
+        entryAt: { type: [string, "null"], format: date-time }
+        entryPrice: { type: [number, "null"], description: "fill incl. slippage" }
+        exitAt: { type: [string, "null"], format: date-time }
+        exitPrice: { type: [number, "null"], description: "fill incl. slippage" }
+        exitReason: { oneOf: [ { $ref: "#/components/schemas/PaperExitReason" }, { type: "null" } ] }
+        rMultiple: { type: [number, "null"] }
+        pnl: { type: [number, "null"] }
+        slippageUsd: { type: [number, "null"], description: "entry + exit slippage and spread cost (already inside pnl)" }
+        skipReason: { oneOf: [ { $ref: "#/components/schemas/PaperSkipReason" }, { type: "null" } ] }
+        backfilled: { type: boolean }
+        createdAt: { type: string, format: date-time, description: "when the ticket was handled (sort key)" }
+    PaperEquityPoint:
+      type: object
+      required: [t, equityUsd]
+      properties:
+        t: { type: string, format: date-time, description: "range start, then each closed trade's exitAt" }
+        equityUsd: { type: number }
+        tradeId: { type: [string, "null"] }
+    PaperBreakdownRow:
+      type: object
+      required: [key, trades, wins, losses, winRatePct, totalPnl, expectancyR]
+      properties:
+        key: { type: string, description: "ticker: symbol; setup: setup code; hour: entry hour ET \"09\"..\"15\"; weekday: mon..fri" }
+        trades: { type: integer }
+        wins: { type: integer }
+        losses: { type: integer }
+        winRatePct: { type: [number, "null"] }
+        totalPnl: { type: number }
+        expectancyR: { type: [number, "null"] }
+    PaperStats:
+      type: object
+      description: |
+        Over closed trades. A win is pnl > 0. expectancyR = mean R per closed trade (the PRD's "average R"
+        and "expectancy"); avgWinR / avgLossR split it. profitFactor = gross wins / |gross losses| (null
+        when there are no losses). Drawdown is peak-to-trough on equityCurve.
+      required: [accountId, periodId, from, to, startingBalanceUsd, endingEquityUsd, totalPnl, trades, wins, losses, skipped,
+                 winRatePct, expectancyR, avgWinR, avgLossR, profitFactor, maxDrawdownUsd, maxDrawdownPct,
+                 longestLosingStreak, equityCurve, groupBy, breakdown]
+      properties:
+        accountId: { type: string }
+        periodId: { type: string, description: "a period id or \"all\"" }
+        from: { type: [string, "null"], format: date }
+        to: { type: [string, "null"], format: date }
+        startingBalanceUsd: { type: number }
+        endingEquityUsd: { type: number }
+        totalPnl: { type: number }
+        trades: { type: integer }
+        wins: { type: integer }
+        losses: { type: integer }
+        skipped: { type: integer }
+        winRatePct: { type: [number, "null"] }
+        expectancyR: { type: [number, "null"] }
+        avgWinR: { type: [number, "null"] }
+        avgLossR: { type: [number, "null"], description: "negative" }
+        profitFactor: { type: [number, "null"] }
+        maxDrawdownUsd: { type: number, description: "positive amount" }
+        maxDrawdownPct: { type: number }
+        longestLosingStreak: { type: integer }
+        equityCurve: { type: array, items: { $ref: "#/components/schemas/PaperEquityPoint" } }
+        groupBy: { type: [string, "null"], enum: [ticker, setup, hour, weekday, null] }
+        breakdown: { type: array, items: { $ref: "#/components/schemas/PaperBreakdownRow" }, description: "empty without groupBy; sorted by key" }
+    PaperCompareSide:
+      type: object
+      required: [trades, pnl, rTotal, winRatePct]
+      properties:
+        trades: { type: integer, description: "round trips (paper: closed trades; manual: buy then sell fills)" }
+        pnl: { type: number }
+        rTotal: { type: [number, "null"], description: "manual: only when every round trip is linked to a ticket" }
+        winRatePct: { type: [number, "null"] }
+    PaperCompareRow:
+      type: object
+      required: [date, symbol, paper, manual]
+      properties:
+        date: { type: string, format: date }
+        symbol: { type: string }
+        paper: { oneOf: [ { $ref: "#/components/schemas/PaperCompareSide" }, { type: "null" } ], description: "null: no paper trade that day in that ticker" }
+        manual: { oneOf: [ { $ref: "#/components/schemas/PaperCompareSide" }, { type: "null" } ], description: "null: no manual round trip" }
+    PaperComparison:
+      type: object
+      required: [accountId, from, to, rows, totals]
+      properties:
+        accountId: { type: string }
+        from: { type: [string, "null"], format: date }
+        to: { type: [string, "null"], format: date }
+        rows: { type: array, items: { $ref: "#/components/schemas/PaperCompareRow" }, description: "newest date first" }
+        totals:
+          type: object
+          required: [matched, paperOnly, manualOnly, paper, manual]
+          properties:
+            matched: { type: integer, description: "rows where both sides traded; paper/manual totals cover only these" }
+            paperOnly: { type: integer }
+            manualOnly: { type: integer }
+            paper: { $ref: "#/components/schemas/PaperCompareSide" }
+            manual: { $ref: "#/components/schemas/PaperCompareSide" }
+    PaperSettings:
+      type: object
+      description: |
+        Buy fill = bar open * (1 + slippagePct/100) + slippagePerShare; sell fill = price * (1 - slippagePct/100)
+        - slippagePerShare. A fill is never better than the bar allows.
+      required: [autoFollow, slippagePct, slippagePerShare]
+      properties:
+        autoFollow: { type: boolean, default: true }
+        slippagePct: { type: number, minimum: 0, maximum: 5, default: 0.02, description: "percent: 0.02 = 0.02 %" }
+        slippagePerShare: { type: number, minimum: 0, maximum: 1, default: 0.01, description: "USD per share, each side" }
+    PaperSettingsUpdate:
+      type: object
+      properties:
+        autoFollow: { type: boolean }
+        slippagePct: { type: number, minimum: 0, maximum: 5 }
+        slippagePerShare: { type: number, minimum: 0, maximum: 1 }
+    PaperBackfill:
+      type: object
+      description: "paper.backfilled payload: what the catch-up run after an engine start recorded"
+      required: [accountId, from, to, opened, closed, skipped]
+      properties:
+        accountId: { type: string }
+        from: { type: string, format: date-time, description: "first missed interval replayed" }
+        to: { type: string, format: date-time }
+        opened: { type: integer }
+        closed: { type: integer }
+        skipped: { type: integer }
+
+    # ---------------------------------------------------------------- v1.1: AI assistant
+    AiModel:
+      type: string
+      enum: [haiku, sonnet, opus]
+      description: "the engine maps each to the latest Claude model of that family (AiStatus.modelId)"
+    AiLang:
+      type: string
+      enum: [en, es]
+    AiKey:
+      type: object
+      required: [key]
+      properties:
+        key: { type: string, minLength: 1, writeOnly: true }
+    AiStatus:
+      type: object
+      required: [keyPresent, enabled, ready, reason, model, modelId, month, monthlyCapUsd, spentThisMonthUsd, remainingUsd]
+      properties:
+        keyPresent: { type: boolean }
+        enabled: { type: boolean }
+        ready: { type: boolean, description: "enabled, key present and cap not reached" }
+        reason: { type: [string, "null"], enum: [disabled, no_key, cap_reached, null], description: "why not ready (first that applies, in this order)" }
+        model: { $ref: "#/components/schemas/AiModel" }
+        modelId: { type: string, description: "API model id used, e.g. claude-sonnet-..." }
+        month: { type: string, example: "2026-10", description: "spend month (New York time)" }
+        monthlyCapUsd: { type: number }
+        spentThisMonthUsd: { type: number }
+        remainingUsd: { type: number, description: "max(0, cap - spent)" }
+    AiSettings:
+      type: object
+      description: |
+        Soft cap: a request is refused (429 ai_cap_reached) once spentThisMonthUsd >= monthlyCapUsd; the
+        request that crosses the cap still completes. Raising the cap or a new month re-enables AI.
+      required: [enabled, model, monthlyCapUsd]
+      properties:
+        enabled: { type: boolean, default: false }
+        model: { allOf: [ { $ref: "#/components/schemas/AiModel" } ], default: sonnet }
+        monthlyCapUsd: { type: number, minimum: 0, maximum: 1000, default: 5 }
+    AiSettingsUpdate:
+      type: object
+      properties:
+        enabled: { type: boolean }
+        model: { $ref: "#/components/schemas/AiModel" }
+        monthlyCapUsd: { type: number, minimum: 0, maximum: 1000 }
+    AiExplainRequest:
+      type: object
+      description: |
+        Required fields by kind: pipeline_step -> runId + stepKey; blocked_ticket -> ticketId;
+        news_summary -> tickers (default: the watchlist) and hours (default 12);
+        analyst_quarter -> symbol (+ quarterEnd, default the latest quarter).
+      required: [kind, lang]
+      properties:
+        kind: { type: string, enum: [pipeline_step, blocked_ticket, news_summary, analyst_quarter] }
+        lang: { $ref: "#/components/schemas/AiLang" }
+        runId: { type: string }
+        stepKey: { $ref: "#/components/schemas/StepKey" }
+        ticketId: { type: string }
+        tickers: { type: array, items: { type: string }, maxItems: 50 }
+        hours: { type: integer, minimum: 1, maximum: 72 }
+        symbol: { type: string }
+        quarterEnd: { type: string, format: date, description: "AnalystQuarter.end" }
+    AiCoachRequest:
+      type: object
+      required: [from, to, lang]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        lang: { $ref: "#/components/schemas/AiLang" }
+        accountId: { type: string, description: "paper account; default the active one" }
+    AiChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string, minLength: 1, maxLength: 8000 }
+    AiChatRequest:
+      type: object
+      required: [messages, lang]
+      properties:
+        messages: { type: array, items: { $ref: "#/components/schemas/AiChatMessage" }, minItems: 1, maxItems: 40 }
+        lang: { $ref: "#/components/schemas/AiLang" }
+    AiCitation:
+      type: object
+      description: "one read-only engine tool the answer used"
+      required: [tool, label]
+      properties:
+        tool: { type: string, description: "tool name, e.g. get_run, get_ticket, get_paper_stats, get_paper_trades, get_fills, get_settings, get_news, get_analyst" }
+        label: { type: string, description: "short human label in the request's lang, e.g. \"Paper stats, TSLA, Oct 2026\"" }
+        ref:
+          type: object
+          description: "what the UI can link to, when there is one"
+          required: [kind, id]
+          properties:
+            kind: { type: string, enum: [run, ticket, paper_trade, paper_account, fill, news, analyst, settings] }
+            id: { type: string }
+        params: { type: object, additionalProperties: true, description: "the tool's arguments" }
+    AiUsage:
+      type: object
+      required: [inputTokens, outputTokens, costUsd]
+      properties:
+        inputTokens: { type: integer }
+        outputTokens: { type: integer }
+        costUsd: { type: number }
+    AiAnswer:
+      type: object
+      description: |
+        text is plain text with light Markdown (paragraphs, bullet lists, **bold**). It explains and coaches;
+        it never contains a buy/sell call or a price prediction. The UI always shows the footer
+        disclaimerKey (an i18n key, e.g. ai.disclaimer) under it.
+      required: [text, lang, citations, usage, model, disclaimerKey]
+      properties:
+        text: { type: string }
+        lang: { $ref: "#/components/schemas/AiLang" }
+        citations: { type: array, items: { $ref: "#/components/schemas/AiCitation" } }
+        usage: { $ref: "#/components/schemas/AiUsage" }
+        model: { type: string, description: "API model id used" }
+        disclaimerKey: { type: string, example: "ai.disclaimer" }
+
+    # ---------------------------------------------------------------- v1.1: analyst
+    AnalystQuarter:
+      type: object
+      description: |
+        One fiscal quarter. Money in USD (not millions). *YoyPct = percent change vs the same quarter a
+        year earlier; *YoyPts = margin change in percentage points vs that quarter. null when the number
+        or its year-earlier quarter is not in the facts. derived = Q4 computed as the 10-K year minus
+        three 10-Qs (EPS approximate).
+      required: [end, fiscal, derived, revenue, revenueYoyPct, grossMarginPct, grossMarginYoyPts, operatingMarginPct, operatingMarginYoyPts,
+                 netMarginPct, netMarginYoyPts, netIncome, netIncomeYoyPct, epsDiluted, epsDilutedYoyPct]
+      properties:
+        end: { type: string, format: date }
+        start: { type: [string, "null"], format: date }
+        fiscal: { type: string, example: "Q3 2026" }
+        derived: { type: boolean }
+        revenue: { type: [number, "null"] }
+        revenueYoyPct: { type: [number, "null"] }
+        grossProfit: { type: [number, "null"] }
+        grossMarginPct: { type: [number, "null"] }
+        grossMarginYoyPts: { type: [number, "null"] }
+        operatingIncome: { type: [number, "null"] }
+        operatingMarginPct: { type: [number, "null"] }
+        operatingMarginYoyPts: { type: [number, "null"] }
+        netMarginPct: { type: [number, "null"] }
+        netMarginYoyPts: { type: [number, "null"] }
+        netIncome: { type: [number, "null"] }
+        netIncomeYoyPct: { type: [number, "null"] }
+        epsDiluted: { type: [number, "null"] }
+        epsDilutedYoyPct: { type: [number, "null"] }
+        form: { type: [string, "null"], example: "10-Q" }
+        filed: { type: [string, "null"], format: date }
+    AnalystChange:
+      type: object
+      description: |
+        One "what changed" line, structured so the UI translates it (analyst.change.<code>). Codes and values:
+          quarter_summary     {end, derived, revenue, revenueYoyPct, netIncome, netIncomeYoyPct, epsDiluted, epsDilutedYoyPct}
+          gross_margin        {valuePct, qoqPts}   (qoqPts vs the quarter before, may be null)
+          operating_margin    {valuePct, qoqPts}
+          net_margin          {valuePct, qoqPts}
+          net_above_operating {netIncome, operatingIncome}  (gains outside the business: check the 10-Q)
+          revenue_qoq         {pct}                (vs the quarter before; seasonal, compare YoY first)
+          facts_stale         {latestEnd, form, period, filed, url}  (SEC facts lag a filed report)
+          derived_quarters    {}                   (some quarters are derived from the 10-K)
+      required: [code, values, text]
+      properties:
+        code: { type: string, enum: [quarter_summary, gross_margin, operating_margin, net_margin, net_above_operating, revenue_qoq, facts_stale, derived_quarters] }
+        values: { type: object, additionalProperties: true }
+        text: { type: string, description: "the skill's English sentence (fallback)" }
+    AnalystFiling:
+      type: object
+      required: [form, filed, url]
+      properties:
+        form: { type: string, example: "8-K" }
+        filed: { type: string, format: date }
+        period: { type: [string, "null"], format: date, description: "report period (10-Q/10-K); null for an 8-K" }
+        url: { type: string, description: "primary document on sec.gov" }
+        pressReleaseUrl: { type: [string, "null"], description: "8-K only: the EX-99.1 press release, else the filing index" }
+    AnalystReport:
+      type: object
+      required: [symbol, entity, cik, quarters, ttm, changes, latestReport, earnings8k, reportsThisWeek, source, fetchedAt]
+      properties:
+        symbol: { type: string }
+        entity: { type: [string, "null"], description: "company name" }
+        cik: { type: string, description: "10 digits" }
+        quarters: { type: array, items: { $ref: "#/components/schemas/AnalystQuarter" }, description: "newest first" }
+        ttm:
+          type: object
+          description: "sum of the last four quarters; a field is null when four consecutive quarters are not available"
+          required: [revenue, netIncome, epsDiluted]
+          properties:
+            revenue: { type: [number, "null"] }
+            netIncome: { type: [number, "null"] }
+            epsDiluted: { type: [number, "null"] }
+        changes: { type: array, items: { $ref: "#/components/schemas/AnalystChange" } }
+        latestReport: { oneOf: [ { $ref: "#/components/schemas/AnalystFiling" }, { type: "null" } ], description: "newest 10-Q / 10-K / 20-F / 40-F" }
+        earnings8k: { oneOf: [ { $ref: "#/components/schemas/AnalystFiling" }, { type: "null" } ], description: "newest earnings 8-K (item 2.02)" }
+        reportsThisWeek: { type: boolean, description: "same rule as the News step's earnings_this_week check" }
+        source: { type: string, example: "SEC XBRL company facts" }
+        fetchedAt: { type: string, format: date-time }
+
+    # ---------------------------------------------------------------- v1.1: congress trades
+    CongressOption:
+      type: object
+      required: [kind, strike, expires]
+      properties:
+        kind: { type: string, enum: [call, put] }
+        strike: { type: number }
+        expires: { type: [string, "null"], format: date }
+        contracts: { type: [integer, "null"] }
+        exercised: { type: boolean }
+    CongressTrade:
+      type: object
+      description: "one transaction row of a House PTR. type: purchase -> buy, sale and partial sale -> sell (partial true), exchange -> exchange."
+      required: [id, docId, member, owner, ticker, assetName, type, partial, option, tradeDate, filedDate, amountRange,
+                 amountLow, amountHigh, daysToDisclose, late, inWatchlist, inPositions, filingUrl]
+      properties:
+        id: { type: string, description: "<docId>-<row index from 1>" }
+        docId: { type: string }
+        member: { type: string, description: "as filed, e.g. \"Hon. Nancy Pelosi\"" }
+        district: { type: [string, "null"], example: "CA11" }
+        owner: { type: string, enum: [self, spouse, joint, dependent_child] }
+        ticker: { type: [string, "null"] }
+        assetName: { type: string }
+        assetType: { type: [string, "null"], description: "PTR asset code, e.g. ST stock, OP option" }
+        type: { type: string, enum: [buy, sell, exchange] }
+        partial: { type: boolean }
+        option: { oneOf: [ { $ref: "#/components/schemas/CongressOption" }, { type: "null" } ] }
+        shares: { type: [integer, "null"] }
+        tradeDate: { type: string, format: date }
+        notifiedDate: { type: [string, "null"], format: date }
+        filedDate: { type: string, format: date }
+        amountRange: { type: string, example: "$1,000,001 - $5,000,000" }
+        amountLow: { type: [integer, "null"] }
+        amountHigh: { type: [integer, "null"] }
+        daysToDisclose: { type: [integer, "null"] }
+        late: { type: boolean, description: "disclosed more than 45 days after the trade" }
+        description: { type: [string, "null"] }
+        inWatchlist: { type: boolean }
+        inPositions: { type: boolean, description: "the user holds it (trader/portfolio.json)" }
+        filingUrl: { type: string, description: "the PTR PDF on disclosures-clerk.house.gov" }
+    CongressFiling:
+      type: object
+      required: [docId, member, filedDate, filingUrl, parsed, tradeCount]
+      properties:
+        docId: { type: string }
+        member: { type: string }
+        district: { type: [string, "null"] }
+        filedDate: { type: string, format: date }
+        filingUrl: { type: string }
+        parsed: { type: boolean, description: "false when the PDF could not be read into rows (e.g. a scanned paper filing); the UI links the PDF" }
+        tradeCount: { type: integer }
+    CongressFeed:
+      type: object
+      required: [trades, unreadFilings, lastCheckedAt]
+      properties:
+        trades: { type: array, items: { $ref: "#/components/schemas/CongressTrade" } }
+        unreadFilings: { type: array, items: { $ref: "#/components/schemas/CongressFiling" }, description: "filings in the range with parsed false" }
+        lastCheckedAt: { type: [string, "null"], format: date-time }
+    CongressRefreshResult:
+      type: object
+      required: [checkedAt, newFilings, newTrades, unreadFilings]
+      properties:
+        checkedAt: { type: string, format: date-time }
+        newFilings: { type: integer }
+        newTrades: { type: integer }
+        unreadFilings: { type: integer, description: "new filings that could not be read into rows" }
+    CongressSettings:
+      type: object
+      required: [notifyOnWatchlist, members]
+      properties:
+        notifyOnWatchlist: { type: boolean, default: true, description: "send congress.filing when a new filing mentions the watchlist or a position" }
+        members: { type: array, items: { type: string }, default: [], description: "last names to track; empty = every House PTR" }
+    CongressSettingsUpdate:
+      type: object
+      properties:
+        notifyOnWatchlist: { type: boolean }
+        members: { type: array, items: { type: string } }
+    CongressFilingEvent:
+      type: object
+      description: "congress.filing payload"
+      required: [filing, trades]
+      properties:
+        filing: { $ref: "#/components/schemas/CongressFiling" }
+        trades: { type: array, items: { $ref: "#/components/schemas/CongressTrade" }, description: "only the rows with inWatchlist or inPositions" }
+
+    # ---------------------------------------------------------------- v1.1: platform bridges
+    BridgePlatform:
+      type: string
+      enum: [ctrader, mt4, mt5]
+    BridgeSettings:
+      type: object
+      description: |
+        Folder layout under signalsFolder (one sub-folder per platform, so each bridge sees symbols and
+        volume already converted for it):
+          <signalsFolder>\<platform>\signals\<signalId>.json   BridgeSignal    (engine writes)
+          <signalsFolder>\<platform>\cancel\<signalId>.json    BridgeCancel    (engine writes)
+          <signalsFolder>\<platform>\acks\<signalId>.json      BridgeAck       (bridge writes)
+          <signalsFolder>\<platform>\heartbeat.json            BridgeHeartbeat (bridge writes every 5 s)
+        Files are UTF-8 without BOM, flat JSON, written to <name>.tmp then renamed. Default signalsFolder:
+        %APPDATA%\MetaQuotes\Terminal\Common\Files\Levelset (readable by MT4/MT5 with FILE_COMMON and by a
+        cBot with AccessRights.FileSystem).
+      required: [signalsFolder, platforms]
+      properties:
+        signalsFolder: { type: string, description: "absolute path" }
+        platforms:
+          type: object
+          required: [ctrader, mt4, mt5]
+          properties:
+            ctrader: { $ref: "#/components/schemas/BridgePlatformSettings" }
+            mt4: { $ref: "#/components/schemas/BridgePlatformSettings" }
+            mt5: { $ref: "#/components/schemas/BridgePlatformSettings" }
+    BridgePlatformSettings:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean, default: false }
+    BridgeSettingsUpdate:
+      type: object
+      properties:
+        signalsFolder: { type: string }
+        platforms:
+          type: object
+          properties:
+            ctrader: { $ref: "#/components/schemas/BridgePlatformSettings" }
+            mt4: { $ref: "#/components/schemas/BridgePlatformSettings" }
+            mt5: { $ref: "#/components/schemas/BridgePlatformSettings" }
+    BridgeStatus:
+      type: object
+      description: "online = heartbeat younger than 30 s; offline = older; not_installed = no heartbeat file yet; error = heartbeat state error"
+      required: [platform, enabled, state, folder, lastHeartbeatAt, bridgeVersion, platformVersion, accountIsDemo, error]
+      properties:
+        platform: { $ref: "#/components/schemas/BridgePlatform" }
+        enabled: { type: boolean }
+        state: { type: string, enum: [not_installed, offline, online, error] }
+        folder: { type: string, description: "<signalsFolder>\\<platform>" }
+        lastHeartbeatAt: { type: [string, "null"], format: date-time }
+        bridgeVersion: { type: [string, "null"] }
+        platformVersion: { type: [string, "null"] }
+        accountIsDemo: { type: [boolean, "null"] }
+        missingSymbols: { type: array, items: { type: string }, description: "mapped broker symbols the platform does not know" }
+        error: { type: [string, "null"] }
+    SymbolMapRow:
+      type: object
+      description: |
+        volume = qtyShares * volumePerShare, rounded DOWN to a multiple of volumeStep; below minVolume the
+        send is refused (bridge_volume_too_small). cTrader: volume in units (stock CFDs usually
+        volumePerShare 1). MT4/MT5: volume in lots (volumePerShare = 1 / contract size).
+      required: [platform, usSymbol, brokerSymbol, volumePerShare, minVolume, volumeStep]
+      properties:
+        platform: { $ref: "#/components/schemas/BridgePlatform" }
+        usSymbol: { type: string, example: "TSLA" }
+        brokerSymbol: { type: string, example: "TSLA.US" }
+        volumePerShare: { type: number, exclusiveMinimum: 0 }
+        minVolume: { type: number, exclusiveMinimum: 0 }
+        volumeStep: { type: number, exclusiveMinimum: 0 }
+    SymbolMap:
+      type: object
+      required: [rows]
+      properties:
+        rows: { type: array, items: { $ref: "#/components/schemas/SymbolMapRow" }, description: "(platform, usSymbol) is unique" }
+    BridgeSendRequest:
+      type: object
+      properties:
+        platforms: { type: array, items: { $ref: "#/components/schemas/BridgePlatform" }, minItems: 1, description: "default every enabled platform" }
+    BridgeTicketPlatform:
+      type: object
+      required: [platform, brokerSymbol, volume, volumeUnit, state, updatedAt, error]
+      properties:
+        platform: { $ref: "#/components/schemas/BridgePlatform" }
+        brokerSymbol: { type: string }
+        volume: { type: number }
+        volumeUnit: { type: string, enum: [units, lots] }
+        state: { type: string, enum: [written, shown, placed, dismissed, expired, rejected, cancelled], description: "written by the engine; shown..rejected from the bridge's ack (placed = the user clicked Place in the platform); cancelled after cancel-bridge" }
+        updatedAt: { type: string, format: date-time }
+        error: { type: [string, "null"], description: "rejected: the platform's message" }
+    BridgeTicketState:
+      type: object
+      description: "the ticket's current signal; also carried on Ticket.bridge once sent"
+      required: [ticketId, signalId, sentAt, cancelledAt, platforms]
+      properties:
+        ticketId: { type: string }
+        signalId: { type: string }
+        sentAt: { type: string, format: date-time }
+        cancelledAt: { type: [string, "null"], format: date-time }
+        platforms: { type: array, items: { $ref: "#/components/schemas/BridgeTicketPlatform" } }
+    BridgeSignal:
+      type: object
+      description: |
+        FILE FORMAT (not an HTTP body): <signalsFolder>\<platform>\signals\<signalId>.json, written by the
+        engine. The bridge shows a panel with these values and Place / Dismiss buttons; nothing goes to
+        the broker until the user clicks Place. The bridge ignores the signal after expiresAtUnix and when
+        a cancel file with the same signalId exists. Times are Unix seconds (UTC). Example:
+          {"schema":"levelset.signal/1","signalId":"sig_8f2c","ticketId":"t_tsla_1","platform":"ctrader",
+           "usSymbol":"TSLA","brokerSymbol":"TSLA.US","side":"buy","orderType":"market","entry":364.18,
+           "stopLoss":358.32,"takeProfit":370.04,"qtyShares":8,"volume":8,"volumeUnit":"units",
+           "maxLossUsd":46.88,"flatBy":"15:55","flatByUnix":1792439700,"createdAt":"2026-10-19T10:15:00-04:00",
+           "createdAtUnix":1792419300,"expiresAtUnix":1792438200,"comment":"Levelset TSLA 8 sh"}
+      required: [schema, signalId, ticketId, platform, usSymbol, brokerSymbol, side, orderType, entry, stopLoss, takeProfit,
+                 qtyShares, volume, volumeUnit, maxLossUsd, flatBy, flatByUnix, createdAt, createdAtUnix, expiresAtUnix, comment]
+      properties:
+        schema: { type: string, const: "levelset.signal/1" }
+        signalId: { type: string }
+        ticketId: { type: string }
+        platform: { $ref: "#/components/schemas/BridgePlatform" }
+        usSymbol: { type: string }
+        brokerSymbol: { type: string }
+        side: { type: string, enum: [buy, sell] }
+        orderType: { type: string, enum: [market, limit] }
+        entry: { type: number, description: "limit price, or the reference price for a market order" }
+        stopLoss: { type: number, description: "absolute price" }
+        takeProfit: { type: number, description: "absolute price" }
+        qtyShares: { type: integer }
+        volume: { type: number, description: "already converted with the symbol map" }
+        volumeUnit: { type: string, enum: [units, lots] }
+        maxLossUsd: { type: number }
+        flatBy: { type: string, example: "15:55", description: "New York time" }
+        flatByUnix: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdAtUnix: { type: integer }
+        expiresAtUnix: { type: integer, description: "end of today's entry window (Settings.limits.noEntriesAfter)" }
+        comment: { type: string, maxLength: 31, description: "label / comment the order carries if the user places it (MT limit 31 chars)" }
+    BridgeCancel:
+      type: object
+      description: |
+        FILE FORMAT: <signalsFolder>\<platform>\cancel\<signalId>.json, written by the engine. The bridge
+        removes the panel for signalId. It never touches an order the user already placed.
+        Example: {"schema":"levelset.cancel/1","signalId":"sig_8f2c","ticketId":"t_tsla_1","reason":"user","createdAtUnix":1792419900}
+      required: [schema, signalId, ticketId, reason, createdAtUnix]
+      properties:
+        schema: { type: string, const: "levelset.cancel/1" }
+        signalId: { type: string }
+        ticketId: { type: string }
+        reason: { type: string, enum: [user, replaced, stale] }
+        createdAtUnix: { type: integer }
+    BridgeAck:
+      type: object
+      description: |
+        FILE FORMAT: <signalsFolder>\<platform>\acks\<signalId>.json, written (overwritten) by the bridge each
+        time the signal changes state. The engine reads it into BridgeTicketState and sends bridge.updated.
+        Example: {"schema":"levelset.ack/1","signalId":"sig_8f2c","ticketId":"t_tsla_1","platform":"mt5","state":"placed","timeUnix":1792419360,"error":""}
+      required: [schema, signalId, ticketId, platform, state, timeUnix]
+      properties:
+        schema: { type: string, const: "levelset.ack/1" }
+        signalId: { type: string }
+        ticketId: { type: string }
+        platform: { $ref: "#/components/schemas/BridgePlatform" }
+        state: { type: string, enum: [shown, placed, dismissed, expired, rejected] }
+        timeUnix: { type: integer }
+        error: { type: string, description: "rejected: the platform's message; empty otherwise" }
+    BridgeHeartbeat:
+      type: object
+      description: |
+        FILE FORMAT: <signalsFolder>\<platform>\heartbeat.json, overwritten by the bridge every 5 s while it runs.
+        No account number or credentials. Example:
+          {"schema":"levelset.heartbeat/1","platform":"ctrader","bridgeVersion":"1.1.0","platformVersion":"5.0.40",
+           "state":"running","accountIsDemo":true,"broker":"Pepperstone","timeUnix":1792419305,"pendingSignals":1,
+           "missingSymbols":[],"error":""}
+      required: [schema, platform, bridgeVersion, state, timeUnix]
+      properties:
+        schema: { type: string, const: "levelset.heartbeat/1" }
+        platform: { $ref: "#/components/schemas/BridgePlatform" }
+        bridgeVersion: { type: string }
+        platformVersion: { type: string }
+        state: { type: string, enum: [running, paused, error] }
+        accountIsDemo: { type: boolean }
+        broker: { type: string }
+        timeUnix: { type: integer }
+        pendingSignals: { type: integer, description: "panels currently shown" }
+        missingSymbols: { type: array, items: { type: string } }
+        error: { type: string }

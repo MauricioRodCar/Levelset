@@ -3,7 +3,7 @@
   "description": "Lleva tus tickets a cTrader, MetaTrader 4/5, Alpaca o Interactive Brokers.",
   "noOrders": {
     "title": "Levelset nunca se conecta con tu bróker ni envía órdenes",
-    "body": "Copias o exportas el ticket y colocas la orden tú mismo en tu plataforma. Cada operación es decisión tuya."
+    "body": "Copias, exportas o envías el ticket a tu plataforma, y colocas la orden tú mismo allí. Cada operación es decisión tuya."
   },
   "card": {
     "tickets": "Tickets",
@@ -18,7 +18,9 @@
     "showSteps": "Cómo ingresar una orden",
     "hideSteps": "Ocultar pasos",
     "exportFormat": "Formato de exportación: {{format}}",
-    "goToTickets": "Ir a tus tickets"
+    "goToTickets": "Ir a tus tickets",
+    "bridgeAvailable": "Disponible",
+    "setUpBridge": "Configúralo abajo"
   },
   "howto": {
     "yourValues": "Tus valores",
@@ -99,6 +101,128 @@
         "Si no se toca ninguno de los niveles, cierra la posición tú mismo antes de la hora de cierre."
       ],
       "note": "En la app móvil de IBKR o en Client Portal, busca Attach Orders / Bracket al crear la orden."
+    }
+  },
+  "bridges": {
+    "title": "Puentes dentro de la plataforma",
+    "intro": "Levelset escribe el ticket en una carpeta. El puente (un cBot o EA que instalas) lo muestra en tu gráfico, y la orden solo se coloca cuando haces clic en Place allí.",
+    "folder": {
+      "label": "Carpeta de señales",
+      "hint": "Deja la predeterminada si usas MetaTrader: MT4 y MT5 solo pueden leer la carpeta Common Files de la terminal (…\\MetaQuotes\\Terminal\\Common\\Files\\Levelset). El cBot de cTrader puede leer cualquier carpeta.",
+      "save": "Guardar carpeta",
+      "saved": "Carpeta de señales guardada",
+      "invalid": "Ingresa una ruta absoluta, por ejemplo C:\\Users\\tu\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\Levelset."
+    },
+    "status": {
+      "title": "Estado de los puentes",
+      "enable": "Usar {{platform}}",
+      "states": {
+        "online": "En línea",
+        "offline": "Sin conexión",
+        "not_installed": "No instalado",
+        "error": "Error"
+      },
+      "lastHeartbeat": "Última señal de vida {{time}}",
+      "never": "Todavía sin señal de vida",
+      "demo": "Cuenta demo",
+      "live": "Cuenta real",
+      "version": "Puente {{version}}",
+      "missing": "Símbolos que esta cuenta no conoce: {{symbols}}",
+      "folder": "Carpeta: {{folder}}"
+    },
+    "install": {
+      "show": "Instalar el puente",
+      "hide": "Ocultar pasos de instalación",
+      "file": "Archivo fuente: {{file}}",
+      "ctrader": [
+        "En Levelset, activa cTrader aquí y anota la carpeta de señales de arriba.",
+        "Descarga bridges/ctrader/LevelsetBridge.cs del repositorio de Levelset (github.com/MauricioRodCar/Levelset).",
+        "En cTrader abre Automate, crea un cBot nuevo llamado LevelsetBridge, pega el archivo completo y haz clic en Build.",
+        "Agrega el cBot a cualquier gráfico. Deja Signals folder vacío para usar la carpeta predeterminada, o pega la carpeta de arriba.",
+        "Inícialo y permite Full Access cuando cTrader lo pida (solo lee y escribe archivos en la carpeta de señales).",
+        "El estado aquí cambia a En línea en menos de 10 segundos."
+      ],
+      "mt5": [
+        "En MetaTrader 5 elige Archivo > Abrir carpeta de datos y abre MQL5\\Experts.",
+        "Copia allí bridges/mt5/LevelsetBridge.mq5 del repositorio de Levelset.",
+        "Ábrelo en MetaEditor (F4) y haz clic en Compilar: debe terminar con 0 errores.",
+        "En el Navegador, actualiza Asesores Expertos y arrastra LevelsetBridge a cualquier gráfico. Deja InpFolder = Levelset.",
+        "Activa Algo Trading en la barra de herramientas; si no, Place no puede enviar la orden.",
+        "Activa MetaTrader 5 aquí y deja la carpeta de señales predeterminada. El estado cambia a En línea en menos de 10 segundos."
+      ],
+      "mt4": [
+        "En MetaTrader 4 elige Archivo > Abrir carpeta de datos y abre MQL4\\Experts.",
+        "Copia allí bridges/mt4/LevelsetBridge.mq4 del repositorio de Levelset.",
+        "Ábrelo en MetaEditor (F4) y haz clic en Compilar: debe terminar con 0 errores.",
+        "En el Navegador, actualiza Asesores Expertos y arrastra LevelsetBridge a cualquier gráfico. Deja InpFolder = Levelset.",
+        "Activa AutoTrading y permite el trading real en la pestaña Común del EA.",
+        "Activa MetaTrader 4 aquí y deja la carpeta de señales predeterminada. El estado cambia a En línea en menos de 10 segundos."
+      ],
+      "safety": "El puente nunca coloca una orden por su cuenta: solo muestra el panel. Tú haces clic en Place o Dismiss dentro de la plataforma."
+    },
+    "map": {
+      "title": "Mapeo de símbolos",
+      "intro": "Cada bróker nombra distinto los CFD de acciones (TSLA.US, #TSLA…). Agrega una fila por plataforma y ticker. Volumen = acciones × volumen por acción, redondeado hacia abajo al paso, para que el riesgo nunca crezca.",
+      "lotsHint": "cTrader cuenta unidades (normalmente 1 por acción). MT4/MT5 cuentan lotes: volumen por acción = 1 ÷ tamaño del contrato (contrato 1 → 1, contrato 100 → 0.01).",
+      "platform": "Plataforma",
+      "usSymbol": "Ticker de EE. UU.",
+      "brokerSymbol": "Símbolo del bróker",
+      "volumePerShare": "Volumen por acción",
+      "minVolume": "Volumen mínimo",
+      "volumeStep": "Paso de volumen",
+      "actions": "Acciones",
+      "add": "Agregar fila",
+      "delete": "Eliminar fila {{n}}",
+      "save": "Guardar mapeo",
+      "saved": "Mapeo de símbolos guardado",
+      "empty": "Todavía no hay símbolos mapeados. Agrega una fila por cada ticker que operes.",
+      "unsaved": "Cambios sin guardar",
+      "errors": {
+        "required": "Obligatorio",
+        "positive": "Debe ser mayor que 0",
+        "duplicate": "Este ticker ya tiene una fila para esta plataforma"
+      }
+    },
+    "send": {
+      "menu": "Enviar a la plataforma (confirmas allí)",
+      "title": "Enviar {{symbol}} a tu plataforma",
+      "description": "Levelset escribe este ticket para el puente. Aparece en tu gráfico con Place y Dismiss. No se coloca nada hasta que hagas clic en Place dentro de la plataforma.",
+      "platforms": "Plataformas",
+      "noPlatforms": "No hay ninguna plataforma activada. Activa una en Conexiones > Puentes dentro de la plataforma.",
+      "goToConnections": "Abrir Conexiones",
+      "volume": "{{symbol}} · {{volume}} {{unit}}",
+      "unmapped": "Sin mapeo de símbolo para {{symbol}}",
+      "tooSmall": "{{volume}} {{unit}} está por debajo del mínimo {{min}}",
+      "confirm": "Enviar a la plataforma",
+      "sent": "Enviado a la plataforma. Confírmalo allí con Place o Dismiss.",
+      "units": {
+        "units": "unidades",
+        "lots": "lotes"
+      }
+    },
+    "ticket": {
+      "label": "En la plataforma",
+      "states": {
+        "written": "Enviado, esperando al puente",
+        "shown": "Mostrado, esperando tu clic",
+        "placed": "Colocado por ti",
+        "dismissed": "Descartado",
+        "expired": "Vencido",
+        "rejected": "Rechazado: {{error}}",
+        "cancelled": "Cancelado"
+      },
+      "cancel": "Cancelar en la plataforma",
+      "cancelled": "Se quitó del panel de la plataforma. Una orden que ya colocaste no cambia."
+    },
+    "errors": {
+      "ticket_not_ready": "Solo se puede enviar un ticket que pasó la revisión de riesgo.",
+      "ticket_not_found": "Ese ticket ya no existe.",
+      "bridge_disabled": "Primero activa la plataforma en Conexiones.",
+      "bridge_symbol_unmapped": "Este ticker no tiene mapeo de símbolo para la plataforma. Agrégalo en Conexiones.",
+      "bridge_volume_too_small": "El volumen convertido está por debajo del mínimo del símbolo. Revisa el mapeo de símbolos.",
+      "bridge_folder_unwritable": "Levelset no puede escribir en la carpeta de señales. Revisa la ruta y sus permisos.",
+      "bridge_not_sent": "Este ticket no se envió a ninguna plataforma.",
+      "validation_error": "Algunos valores no son válidos. Revísalos e inténtalo de nuevo."
     }
   }
 }

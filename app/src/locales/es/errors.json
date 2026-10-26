@@ -12,6 +12,15 @@
     "scan_failed": "El escáner no pudo obtener datos de mercado. Vuelve a intentarlo en un momento.",
     "news_failed": "No se pudieron cargar las noticias. Vuelve a intentarlo en un momento.",
     "insufficient_position": "No tienes suficientes acciones para vender esa cantidad.",
-    "invalid_alert": "Esta alerta no es válida. Revisa el tipo y el nivel u hora."
+    "invalid_alert": "Esta alerta no es válida. Revisa el tipo y el nivel u hora.",
+    "sec_identity_missing": "La SEC necesita primero tu nombre y correo. Agrégalos en Configuración › Datos y SEC.",
+    "no_sec_filer": "La SEC no tiene cifras reportadas para este ticker (los ETF y muchas empresas extranjeras no las presentan).",
+    "analyst_failed": "No se pudo conectar con SEC EDGAR en este momento. Intenta de nuevo en un rato.",
+    "congress_failed": "No se pudo conectar con el sitio de declaraciones del Clerk de la Cámara. Intenta de nuevo en un rato.",
+    "ai_disabled": "La IA está apagada. Actívala en Configuración › IA.",
+    "ai_no_key": "Todavía no hay una clave de API de Claude. Agrégala en Configuración › IA.",
+    "ai_cap_reached": "Llegaste al límite de gasto de IA de este mes. Súbelo en Configuración › IA o espera al próximo mes.",
+    "ai_failed": "Falló la solicitud a la API de Claude. Revisa tu clave y tu conexión, y vuelve a intentarlo.",
+    "invalid_ai_key": "Eso no parece una clave de API de Claude."
   }
 }

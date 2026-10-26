@@ -1,0 +1,200 @@
+{
+  "title": "Cuenta de práctica",
+  "description": "Cada señal se sigue automáticamente, con slippage, para que veas cuánto habrías ganado antes de arriesgar dinero.",
+  "badge": "Práctica",
+  "badgeLabel": "Posición de práctica (simulada, no está en un bróker)",
+  "loadFailed": "No se pudo cargar la cuenta de práctica",
+  "account": {
+    "label": "Cuenta",
+    "optionActive": "{{name}} (activa)",
+    "period": "Periodo",
+    "periodN": "Periodo {{n}} · desde {{date}}",
+    "periodCurrent": "Periodo {{n}} (actual) · desde {{date}}",
+    "allPeriods": "Todos los periodos",
+    "range": "Fechas",
+    "ranges": {
+      "all": "Todas las fechas",
+      "month": "Últimos 30 días",
+      "week": "Últimos 7 días",
+      "today": "Hoy"
+    },
+    "active": "Cuenta activa",
+    "activeHint": "El seguimiento automático opera en la cuenta activa.",
+    "makeActive": "Activar",
+    "activated": "{{name}} ahora es la cuenta activa",
+    "new": "Nueva cuenta",
+    "reset": "Reiniciar…",
+    "export": "Exportar CSV",
+    "equity": "Capital {{value}}",
+    "cash": "efectivo {{value}}",
+    "open_one": "{{count}} posición abierta",
+    "open_many": "{{count}} posiciones abiertas",
+    "open_other": "{{count}} posiciones abiertas"
+  },
+  "create": {
+    "title": "Nueva cuenta de práctica",
+    "description": "Puedes tener todas las cuentas de práctica que quieras; cada una guarda todo su historial.",
+    "name": "Nombre",
+    "namePlaceholder": "Práctica {{n}}",
+    "balance": "Saldo inicial (USD)",
+    "activate": "Hacerla la cuenta activa (el seguimiento automático opera en ella)",
+    "submit": "Crear cuenta",
+    "created": "Se creó {{name}}",
+    "invalidBalance": "Escribe un monto mayor que 0."
+  },
+  "reset": {
+    "title": "¿Reiniciar {{name}}?",
+    "body": "Las posiciones de práctica abiertas se cierran al último precio (motivo de salida \"Cuenta reiniciada\") y empieza un periodo nuevo con el saldo de abajo. El periodo anterior y sus operaciones se quedan en el historial.",
+    "balance": "Nuevo saldo inicial (USD)",
+    "confirm": "Reiniciar cuenta",
+    "done": "Se reinició {{name}}. Empezó el periodo {{n}}."
+  },
+  "stats": {
+    "none": "—",
+    "r": "{{value}} R",
+    "pnl": "G/P total",
+    "pnlSub": "{{start}} → {{end}}",
+    "winRate": "Tasa de acierto",
+    "winRateSub": "{{wins}} ganadas · {{losses}} perdidas de {{trades}}",
+    "expectancy": "Expectativa",
+    "expectancySub": "R promedio por operación · ganadoras {{win}} · perdedoras {{loss}}",
+    "profitFactor": "Factor de ganancia",
+    "profitFactorSub": "ganancias brutas ÷ pérdidas brutas",
+    "drawdown": "Drawdown máximo",
+    "drawdownSub": "{{pct}} desde el máximo",
+    "streak": "Racha perdedora más larga",
+    "streakValue_one": "{{count}} operación",
+    "streakValue_many": "{{count}} operaciones",
+    "streakValue_other": "{{count}} operaciones",
+    "skipped_one": "{{count}} señal omitida",
+    "skipped_many": "{{count}} señales omitidas",
+    "skipped_other": "{{count}} señales omitidas"
+  },
+  "equity": {
+    "title": "Curva de capital",
+    "subtitle": "Después de cada operación cerrada, con slippage. Línea punteada: saldo inicial.",
+    "aria": "Curva de capital de práctica de {{start}} a {{end}}",
+    "empty": "Todavía no hay operaciones cerradas en este rango."
+  },
+  "breakdown": {
+    "title": "Desglose",
+    "by": {
+      "ticker": "Ticker",
+      "setup": "Setup",
+      "hour": "Hora",
+      "weekday": "Día"
+    },
+    "cols": {
+      "trades": "Operaciones",
+      "winRate": "Acierto",
+      "expectancy": "R prom.",
+      "pnl": "G/P"
+    },
+    "hourKey": "{{hour}}:00 ET",
+    "weekdays": {
+      "mon": "Lunes",
+      "tue": "Martes",
+      "wed": "Miércoles",
+      "thu": "Jueves",
+      "fri": "Viernes",
+      "sat": "Sábado",
+      "sun": "Domingo"
+    },
+    "empty": "Todavía no hay operaciones cerradas para agrupar."
+  },
+  "log": {
+    "title": "Registro de operaciones",
+    "subtitle": "Las más recientes primero. Las filas omitidas son tickets que la cuenta no operó.",
+    "filter": {
+      "all": "Todas",
+      "closed": "Cerradas",
+      "skipped": "Omitidas"
+    },
+    "cols": {
+      "symbol": "Ticker",
+      "entry": "Entrada",
+      "exit": "Salida",
+      "reason": "Motivo de salida",
+      "r": "R",
+      "pnl": "G/P",
+      "flow": "Ejecución del pipeline"
+    },
+    "qty": "{{qty}} acciones",
+    "slippage": "slippage {{value}}",
+    "viewFlow": "Ver flujo",
+    "viewFlowFor": "Ver la ejecución del pipeline de {{symbol}}",
+    "backfilled": "Recuperada",
+    "backfilledHint": "La registró la recuperación al iniciar Levelset (estaba cerrado en ese momento), con las barras de ese día.",
+    "skippedRow": "Omitida: {{reason}}",
+    "empty": "No hay operaciones de práctica en este rango.",
+    "more_one": "Mostrar {{count}} más",
+    "more_many": "Mostrar {{count}} más",
+    "more_other": "Mostrar {{count}} más"
+  },
+  "exitReason": {
+    "stop": "Stop loss",
+    "target": "Take profit",
+    "flat_by": "Cierre del día",
+    "reset": "Cuenta reiniciada"
+  },
+  "skipReason": {
+    "blocked": "bloqueado por el control de riesgo",
+    "stale": "ticket vencido",
+    "duplicate": "ya hay una posición en este ticker"
+  },
+  "positions": {
+    "title": "Posiciones de práctica abiertas",
+    "empty": "No hay posiciones de práctica abiertas.",
+    "entered": "{{qty}} compradas a {{price}}, {{time}}"
+  },
+  "compare": {
+    "title": "Señales vs. tú",
+    "subtitle": "Práctica (siguiendo cada señal) junto a tus ejecuciones registradas: mismos días, mismos tickers.",
+    "paper": "Señales (práctica)",
+    "manual": "Tú (ejecuciones registradas)",
+    "trades_one": "{{count}} operación",
+    "trades_many": "{{count}} operaciones",
+    "trades_other": "{{count}} operaciones",
+    "winRate": "{{value}} ganadas",
+    "rTotal": "{{value}} R en total",
+    "diff": "Tú vs. señales: {{value}}",
+    "matched_one": "{{count}} día y ticker en ambos",
+    "matched_many": "{{count}} días y tickers en ambos",
+    "matched_other": "{{count}} días y tickers en ambos",
+    "paperOnly_one": "{{count}} solo en práctica",
+    "paperOnly_many": "{{count}} solo en práctica",
+    "paperOnly_other": "{{count}} solo en práctica",
+    "manualOnly_one": "{{count}} solo en tus ejecuciones",
+    "manualOnly_many": "{{count}} solo en tus ejecuciones",
+    "manualOnly_other": "{{count}} solo en tus ejecuciones",
+    "note": "Los dos totales cubren solo los días y tickers en los que ambos operaron. Cada fila es un día y un ticker.",
+    "cols": {
+      "date": "Fecha",
+      "symbol": "Ticker",
+      "paper": "Práctica",
+      "manual": "Tú"
+    },
+    "none": "sin operación",
+    "empty": "Todavía no hay nada que comparar. Registra tus ejecuciones desde un ticket para verlas junto a las señales."
+  },
+  "notes": {
+    "title": "Cómo funcionan los resultados de práctica",
+    "fills": "Los datos gratuitos tienen retraso y van por barras, así que las ejecuciones son aproximadas: la entrada es la apertura de la siguiente barra más el slippage ({{pct}} + {{perShare}} por acción). Si el stop y el objetivo se tocan en la misma barra, cuenta primero el stop; los gaps se ejecutan a la apertura de la barra.",
+    "awake": "Para seguir las señales en vivo, la PC debe estar encendida, despierta y en línea durante el horario de mercado. Al cerrar la ventana, Levelset sigue funcionando en la bandeja del sistema.",
+    "catchup": "Si Levelset estaba cerrado, al iniciar repite los intervalos perdidos del día y marca esas operaciones como \"Recuperada\". Solo se pierden las alertas en vivo.",
+    "separate": "Las operaciones de práctica nunca cuentan para tus límites diarios reales y nunca llegan a un bróker.",
+    "settings": "Ajustes de práctica",
+    "system": "Bandeja, inicio automático y mantener despierta"
+  },
+  "ticket": {
+    "opened": "Práctica: abierta a {{price}}",
+    "pending": "Práctica: esperando la siguiente barra",
+    "closed": "Práctica: cerrada a {{price}} · {{reason}} · {{pnl}}",
+    "skipped": "Práctica: omitida ({{reason}})"
+  },
+  "tile": {
+    "label": "G/P de práctica hoy",
+    "sub": "cuenta de práctica, con slippage",
+    "off": "el seguimiento automático está apagado"
+  }
+}

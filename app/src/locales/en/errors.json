@@ -12,6 +12,15 @@
     "scan_failed": "The scan couldn't get market data. Try again in a moment.",
     "news_failed": "Couldn't load the news right now. Try again in a moment.",
     "insufficient_position": "You don't hold enough shares to sell that quantity.",
-    "invalid_alert": "This alert isn't valid. Check the type and the level or time."
+    "invalid_alert": "This alert isn't valid. Check the type and the level or time.",
+    "sec_identity_missing": "SEC needs your name and email first. Add them in Settings › Data & SEC.",
+    "no_sec_filer": "SEC has no reported numbers for this ticker (ETFs and many foreign companies don't file them).",
+    "analyst_failed": "Couldn't reach SEC EDGAR right now. Try again in a moment.",
+    "congress_failed": "Couldn't reach the House Clerk's disclosure site. Try again in a moment.",
+    "ai_disabled": "AI is off. Turn it on in Settings › AI.",
+    "ai_no_key": "No Claude API key yet. Add one in Settings › AI.",
+    "ai_cap_reached": "You reached this month's AI spending cap. Raise it in Settings › AI or wait for next month.",
+    "ai_failed": "The Claude API request failed. Check your key and connection, then try again.",
+    "invalid_ai_key": "That doesn't look like a Claude API key."
   }
 }

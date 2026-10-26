@@ -4,9 +4,11 @@ import { getEngineInfo, useEngineEvents, useStatus } from '@/api';
 import { DisclaimerBanner } from '@/components/Disclaimer';
 import { ErrorState } from '@/components/ErrorState';
 import { useAlertNotifications } from '@/features/alerts/notifications';
+import { AiChatPanel } from '@/features/ai';
 import { useUiStore } from '../uiStore';
 import { Sidebar } from './Sidebar';
 import { StatusBar } from './StatusBar';
+import { useTrayLabels } from './useTrayLabels';
 
 /** Global frame: sidebar + status bar + page outlet + disclaimer banner. */
 export function AppShell() {
@@ -15,6 +17,7 @@ export function AppShell() {
   const location = useLocation();
   const status = useStatus();
   useEngineEvents();
+  useTrayLabels();
   useAlertNotifications();
 
   if (!onboardingDone)
@@ -56,6 +59,7 @@ export function AppShell() {
         </main>
         <DisclaimerBanner dataDelaySeconds={status.data?.dataDelaySeconds} />
       </div>
+      <AiChatPanel />
     </div>
   );
 }

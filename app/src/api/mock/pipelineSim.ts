@@ -8,6 +8,7 @@ import type { Bars, PipelineRun, PipelineRunRequest, Step, StepKey } from '../ty
 import { STEP_KEYS } from '../types';
 import { db, demoNow, mockConfig, nextId, toEtIso } from './db';
 import { mockEmit } from './eventBus';
+import { paperFollow } from './paperMock';
 import {
   HISTORY_SPECS,
   SESSION_OPEN,
@@ -54,7 +55,8 @@ function execute(run: PipelineRun, key: StepKey): Step {
   let ticketId: string | null = null;
   if (key === 'ticket') {
     ticketId = nextId('tkt');
-    const ticket = ticketFor(spec, ticketId, toEtIso(demoNow()));
+    // v1.1: auto-follow fills it in the active paper account (or logs it as skipped)
+    const ticket = paperFollow(ticketFor(spec, ticketId, toEtIso(demoNow())));
     db.tickets = [ticket, ...db.tickets.filter((x) => x.symbol !== ticket.symbol)];
     run.ticketId = ticketId;
     spec.ticketId = ticketId;

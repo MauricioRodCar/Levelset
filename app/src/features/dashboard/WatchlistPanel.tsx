@@ -2,6 +2,7 @@ import { Hourglass, Moon, TimerOff, Zap, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useWatchlist, type WatchItem } from '@/api';
 import { Card } from '@/components/Card';
+import { EarningsBadge } from '@/components/EarningsBadge';
 import { ErrorState } from '@/components/ErrorState';
 import { PriceValue } from '@/components/PriceValue';
 import { Skeleton } from '@/components/Skeleton';
@@ -46,7 +47,10 @@ export function WatchlistPanel() {
                 data-testid={`watch-${w.symbol}`}
               >
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-text">{w.symbol}</div>
+                  <div className="flex items-center gap-1 text-sm font-semibold text-text">
+                    {w.symbol}
+                    <EarningsBadge symbol={w.symbol} iconOnly />
+                  </div>
                   {w.setup && (
                     <div
                       className="truncate text-xs text-text-muted"

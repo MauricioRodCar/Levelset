@@ -1,15 +1,21 @@
 import { useTranslation } from 'react-i18next';
-import { useTrades, type OpenTrade } from '@/api';
+import { usePaperPositions, useTrades, type OpenTrade } from '@/api';
 import { Card } from '@/components/Card';
 import { ErrorState } from '@/components/ErrorState';
+import { PaperBadge } from '@/components/PaperBadge';
 import { PriceValue } from '@/components/PriceValue';
 import { Skeleton } from '@/components/Skeleton';
 import { useFormat } from '@/i18n/useFormat';
 
-/** Open positions from recorded fills: qty @ price, unrealized P/L, stop -> target bar, flat-by. */
+/**
+ * Open positions from recorded fills: qty @ price, unrealized P/L, stop -> target bar, flat-by.
+ * v1.1: open paper positions (GET /paper/positions, a separate list) follow with a PAPER badge.
+ */
 export function OpenTradesPanel() {
   const { t } = useTranslation('dashboard');
   const q = useTrades({ refetchInterval: 15_000 });
+  const paper = usePaperPositions(undefined, { refetchInterval: 15_000 });
+  const paperRows = paper.data ?? [];
   return (
     <Card title={t('trades.title')} flush aria-label={t('trades.title')}>
       {q.isLoading ? (
@@ -20,12 +26,15 @@ export function OpenTradesPanel() {
         <div className="px-4 pb-4">
           <ErrorState compact error={q.error} onRetry={() => void q.refetch()} />
         </div>
-      ) : !q.data?.length ? (
+      ) : !q.data?.length && !paperRows.length ? (
         <p className="px-4 pb-4 text-sm text-text-muted">{t('trades.empty')}</p>
       ) : (
         <ul className="divide-y divide-border border-t border-border">
-          {q.data.map((tr, i) => (
+          {(q.data ?? []).map((tr, i) => (
             <TradeRow key={`${tr.symbol}-${i}`} trade={tr} />
+          ))}
+          {paperRows.map((tr) => (
+            <TradeRow key={tr.id} trade={tr} paper />
           ))}
         </ul>
       )}
@@ -33,7 +42,7 @@ export function OpenTradesPanel() {
   );
 }
 
-function TradeRow({ trade }: { trade: OpenTrade }) {
+function TradeRow({ trade, paper }: { trade: OpenTrade; paper?: boolean }) {
   const { t } = useTranslation('dashboard');
   const { t: tt } = useTranslation('tickets');
   const f = useFormat();
@@ -43,9 +52,13 @@ function TradeRow({ trade }: { trade: OpenTrade }) {
     ? Math.max(0, Math.min(1, (price - trade.stop!) / (trade.target! - trade.stop!)))
     : null;
   return (
-    <li className="space-y-2 px-4 py-3" data-testid={`trade-${trade.symbol}`}>
+    <li
+      className="space-y-2 px-4 py-3"
+      data-testid={paper ? `paper-trade-${trade.symbol}` : `trade-${trade.symbol}`}
+    >
       <div className="flex items-baseline gap-2">
         <span className="text-sm font-semibold text-text">{trade.symbol}</span>
+        {paper && <PaperBadge className="self-center" />}
         <span className="tabular text-xs text-text-muted">
           {t('trades.qtyAt', { qty: f.number(trade.qty, 0), price: f.price(trade.avgPrice) })}
         </span>

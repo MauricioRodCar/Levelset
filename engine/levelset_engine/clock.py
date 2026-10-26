@@ -6,7 +6,10 @@ of March to 2:00 a.m. on the first Sunday of November (US rule since 2007).
 
 from __future__ import annotations
 
+import contextlib
+import contextvars
 import datetime as dt
+from typing import Iterator
 
 UTC = dt.timezone.utc
 DEMO_NOW_ET = dt.datetime(2026, 10, 19, 10, 15)  # the README example, New York time
@@ -61,6 +64,11 @@ def parse_iso(text: str | None) -> dt.datetime | None:
     return d
 
 
+# "As of" a past moment, for the current task and the tasks it starts only (the paper catch-up re-runs
+# the pipeline at missed times; requests keep the real clock).
+_AS_OF: contextvars.ContextVar[dt.datetime | None] = contextvars.ContextVar("levelset_as_of", default=None)
+
+
 class Clock:
     """Engine clock. In demo mode it is pinned to 2026-10-19 10:15 New York."""
 
@@ -71,7 +79,23 @@ class Clock:
     def pinned(self) -> bool:
         return self._fixed is not None
 
+    @contextlib.contextmanager
+    def as_of(self, moment: dt.datetime) -> Iterator[None]:
+        """now() returns `moment` inside this block (this task and the tasks it creates), and skills get --now."""
+        token = _AS_OF.set(moment.astimezone(UTC).replace(microsecond=0))
+        try:
+            yield
+        finally:
+            _AS_OF.reset(token)
+
+    @property
+    def overridden(self) -> bool:
+        return _AS_OF.get() is not None
+
     def now(self) -> dt.datetime:
+        over = _AS_OF.get()
+        if over is not None:
+            return over
         if self._fixed is not None:
             return self._fixed
         return dt.datetime.now(UTC).replace(microsecond=0)
@@ -84,12 +108,12 @@ class Clock:
 
     def skill_now(self) -> str | None:
         """The --now value for skills ("2026-10-19 10:15", New York) or None for the real clock."""
-        if self._fixed is None:
+        if self._fixed is None and not self.overridden:
             return None
         return self.now_ny().strftime("%Y-%m-%d %H:%M")
 
     def skill_now_iso(self) -> str | None:
         """--now for skills that read ISO with an offset (trader-news)."""
-        if self._fixed is None:
+        if self._fixed is None and not self.overridden:
             return None
         return self.now_ny().isoformat(timespec="seconds")
