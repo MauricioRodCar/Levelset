@@ -99,7 +99,9 @@ export function AccountLimitsForm({
     }
   };
 
-  if (query.isLoading) {
+  // Wait for real settings: a disabled query (engine info not resolved yet) is pending but not
+  // "loading", and rendering DEFAULT_SETTINGS then would let a save overwrite the user's config.
+  if (!query.data && !query.isError) {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
         {Array.from({ length: 6 }, (_, i) => (
