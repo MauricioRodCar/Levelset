@@ -1,5 +1,104 @@
 {
   "title": "Connections",
   "description": "Get your tickets into cTrader, MetaTrader 4/5, Alpaca or Interactive Brokers.",
-  "placeholder": "Platform cards with copy, export and step-by-step guides will appear here."
+  "noOrders": {
+    "title": "Levelset never connects to your broker or sends orders",
+    "body": "You copy or export the ticket and place the order yourself on your platform. Every trade is your decision."
+  },
+  "card": {
+    "tickets": "Tickets",
+    "copyExport": "copy / export",
+    "available": "Available",
+    "bridge": "In-platform bridge",
+    "api": "Direct API",
+    "comingV11": "Coming in v1.1",
+    "pro": "Pro",
+    "bridgeHint": "A cBot / EA that shows the ticket inside the platform for you to confirm.",
+    "apiHint": "Send the order through the platform's API, with your confirmation on every order.",
+    "showSteps": "How to enter an order",
+    "hideSteps": "Hide steps",
+    "exportFormat": "Export format: {{format}}",
+    "goToTickets": "Go to your tickets"
+  },
+  "howto": {
+    "yourValues": "Your values",
+    "symbol": "Symbol",
+    "side": "Side",
+    "quantity": "Quantity"
+  },
+  "platforms": {
+    "ctrader": {
+      "name": "cTrader",
+      "kind": "CFD platform",
+      "steps": [
+        "Find the symbol in the Watchlist search. Brokers often name stock CFDs differently (for example TSLA.US or Tesla).",
+        "Open the order ticket: click the symbol and choose New Order (or press F9).",
+        "Choose Market Order and the side: Buy or Sell.",
+        "Enter the quantity. Check whether this symbol is traded in shares, units or lots at your broker.",
+        "Turn on Stop Loss, switch it to Price (not pips) and paste the stop loss.",
+        "Turn on Take Profit, switch it to Price and paste the take profit.",
+        "Click Place Order, then check the Positions tab shows the stop loss and take profit.",
+        "If neither level is hit, close the position yourself by the flat-by time."
+      ],
+      "note": "Some brokers only accept the stop loss and take profit as a distance in pips. Then use the difference between the entry and each level."
+    },
+    "mt4": {
+      "name": "MetaTrader 4",
+      "kind": "CFD platform",
+      "steps": [
+        "In Market Watch, right-click and choose Symbols to find your broker's CFD for the stock.",
+        "Right-click the symbol and open Specification to check the contract size (1 lot may be 1 share or 100).",
+        "Double-click the symbol (or press F9) to open the Order window.",
+        "Set Type to Market Execution and enter the Volume in lots.",
+        "Paste the stop loss into Stop Loss and the take profit into Take Profit.",
+        "Click Buy by Market (or Sell by Market).",
+        "Open the Terminal (Ctrl+T), Trade tab, and check the S/L and T/P columns.",
+        "If neither level is hit, close the position yourself by the flat-by time."
+      ],
+      "note": "If your account uses instant execution and won't accept S/L and T/P on a market order, open the position first, then right-click it and choose Modify order to add them."
+    },
+    "mt5": {
+      "name": "MetaTrader 5",
+      "kind": "CFD platform",
+      "steps": [
+        "Open Market Watch (Ctrl+M) and find your broker's CFD symbol for the stock.",
+        "Right-click the symbol, choose Specification and check the contract size and volume step.",
+        "Press F9 (New Order) or double-click the symbol.",
+        "Choose Market Execution (or Instant Execution) and enter the Volume in lots.",
+        "Paste the stop loss into Stop Loss and the take profit into Take Profit.",
+        "Click Buy by Market (or Sell by Market).",
+        "Open the Toolbox (Ctrl+T), Trade tab, and check the S/L and T/P columns.",
+        "If neither level is hit, close the position yourself by the flat-by time."
+      ],
+      "note": "Fractional volumes depend on the broker's volume step. Round the quantity to a size your broker accepts and re-check the max loss."
+    },
+    "alpaca": {
+      "name": "Alpaca",
+      "kind": "US stock broker",
+      "steps": [
+        "Sign in to the Alpaca dashboard and make sure you are in the account you mean to use (Paper or Live).",
+        "Search for the ticker and open the trade panel.",
+        "Choose Buy (or Sell), order type Market, the quantity in shares and time in force Day.",
+        "If a bracket (take profit + stop loss) option is offered, pick it and enter the take profit limit price and the stop loss stop price.",
+        "Review the order and submit it.",
+        "Check the Orders list: the take profit and stop loss orders should be waiting.",
+        "If neither level is hit, close the position yourself by the flat-by time."
+      ],
+      "note": "Without a bracket option, place the stop and the take profit as separate orders after the fill, and cancel the other one when one of them fills."
+    },
+    "ibkr": {
+      "name": "Interactive Brokers",
+      "kind": "US stock broker",
+      "steps": [
+        "In Trader Workstation (TWS), enter the ticker in Order Entry and pick the stock (SMART routing).",
+        "Choose Buy (or Sell), then open Attach and select Bracket Order.",
+        "Parent order: type MKT, quantity in shares, time in force DAY.",
+        "Profit taker: LMT at the take profit. Stop loss: STP at the stop loss.",
+        "Click Submit and review the order confirmation.",
+        "Check Orders / Activity: the two attached orders should be working.",
+        "If neither level is hit, close the position yourself by the flat-by time."
+      ],
+      "note": "In the IBKR mobile app or Client Portal, look for Attach Orders / Bracket when you create the order."
+    }
+  }
 }

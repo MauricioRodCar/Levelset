@@ -32,13 +32,15 @@
     "daily_loss": "Today's losses have reached your daily limit",
     "window": "Outside your entry window",
     "duplicate": "Duplicate of an order already placed today",
-    "max_loss_per_trade": "Loss at the stop is above your max loss per trade"
+    "max_loss_per_trade": "Loss at the stop is above your max loss per trade",
+    "unknown": "Blocked by a risk rule ({{code}})"
   },
   "secondary": {
     "maxLoss": "Max loss {{value}}",
     "r": "{{value}}R",
     "odds": "Odds: {{verdict}}",
-    "flatBy": "Flat by {{time}}"
+    "flatBy": "Flat by {{time}}",
+    "oddsDetail": "Time Machine: target first {{target}} · stop first {{stop}} · neither by the close {{open}}"
   },
   "verdict": {
     "favorable": "favourable",
@@ -51,5 +53,73 @@
   },
   "preview": {
     "label": "Sample ticket"
-  }
+  },
+  "card": {
+    "label": "Ticket {{side}} {{qty}} {{symbol}}",
+    "labelBlocked": "Blocked ticket {{side}} {{qty}} {{symbol}}"
+  },
+  "shortcuts": {
+    "label": "Keyboard shortcuts",
+    "title": "With this ticket focused:",
+    "entry": "copy entry",
+    "stop": "copy stop loss",
+    "target": "copy take profit",
+    "all": "copy the full ticket",
+    "flow": "view the flow"
+  },
+  "copyText": {
+    "toast": "{{symbol}} ticket",
+    "maxLoss": "Max loss {{value}}",
+    "flatBy": "flat by {{time}}"
+  },
+  "menu": {
+    "more": "More ticket actions",
+    "export": "Export…",
+    "howto": "How to enter in cTrader / MT4 / MT5",
+    "recordFill": "Record fill…"
+  },
+  "stale": {
+    "badge": "Stale",
+    "rerun": "Stale — re-run",
+    "reason": "Created {{time}}. The entry window has passed or the price has moved; re-run the pipeline for fresh levels.",
+    "started": "Re-running the pipeline for {{symbol}}"
+  },
+  "blocked": {
+    "show": "Details",
+    "hide": "Hide",
+    "detail": "Risk check detail",
+    "noReason": "Blocked by the risk check"
+  },
+  "export": {
+    "title": "Export {{symbol}} ticket",
+    "description": "Pick a format, then copy it or save it as a file.",
+    "format": "Format",
+    "formats": {
+      "text": "Text",
+      "csv": "CSV",
+      "json": "JSON",
+      "ctrader": "cTrader",
+      "mt4": "MT4",
+      "mt5": "MT5"
+    },
+    "copy": "Copy",
+    "save": "Save file",
+    "saved": "Saved {{name}}"
+  },
+  "howto": {
+    "title": "How to enter {{symbol}} on your platform",
+    "description": "Levelset never sends orders. Enter the order yourself with these values."
+  },
+  "fill": {
+    "title": "Record a fill for {{symbol}}",
+    "description": "Write down what you actually got at your broker so P/L and daily risk stay right.",
+    "side": "Side",
+    "qty": "Quantity",
+    "price": "Fill price",
+    "invalid": "Enter a whole quantity of at least 1 and a price above 0.",
+    "noBroker": "This only records the fill in Levelset. Nothing is sent to a broker.",
+    "submit": "Record fill",
+    "recorded": "Recorded {{side}} {{qty}} {{symbol}} at {{price}}"
+  },
+  "instrumentNote": "At your broker the CFD symbol and contract size may differ from the US stock analysed. Check them before you enter."
 }

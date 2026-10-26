@@ -1,10 +1,8 @@
 import { Copy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@/components/ui/toaster';
 import { useFormat } from '@/i18n/useFormat';
-import { copyText } from '@/lib/clipboard';
-import { priceForCopy } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useCopyPrice } from './useCopyPrice';
 
 /**
  * THE TICKET RULE (shared by every ticket card in the app):
@@ -13,7 +11,8 @@ import { cn } from '@/lib/utils';
  * - Stop / target identity only via a 3 px top bar + a small dot in --ls-loss / --ls-profit.
  *   Entry uses a neutral marker (--ls-text-muted).
  * - Order is always Entry -> Stop loss -> Take profit, left to right.
- * - Clicking a value copies it ("Copied 358.32"). Copy text is locale-independent (dot decimal).
+ * - Clicking a value copies it. The clipboard gets the raw dot-decimal value ("358.32"); the toast
+ *   shows it in the UI locale ("Copied 358.32" / "Copiado 358,32").
  */
 export type LevelKind = 'entry' | 'stop' | 'target';
 
@@ -35,11 +34,9 @@ export function LevelBlock({ kind, value, delta, className }: LevelBlockProps) {
   const { t } = useTranslation('tickets');
   const { t: tc } = useTranslation('common');
   const f = useFormat();
+  const copyPrice = useCopyPrice();
   const label = t(`levels.${kind}`);
-  const copy = async () => {
-    const text = priceForCopy(value);
-    if (await copyText(text)) toast(tc('copy.copied', { value: text }));
-  };
+  const copy = () => void copyPrice(value);
   return (
     <div
       className={cn(

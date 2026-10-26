@@ -1,5 +1,104 @@
 {
   "title": "Conexiones",
   "description": "Lleva tus tickets a cTrader, MetaTrader 4/5, Alpaca o Interactive Brokers.",
-  "placeholder": "Aquí aparecerán las tarjetas de cada plataforma con copiar, exportar y guías paso a paso."
+  "noOrders": {
+    "title": "Levelset nunca se conecta con tu bróker ni envía órdenes",
+    "body": "Copias o exportas el ticket y colocas la orden tú mismo en tu plataforma. Cada operación es decisión tuya."
+  },
+  "card": {
+    "tickets": "Tickets",
+    "copyExport": "copiar / exportar",
+    "available": "Disponible",
+    "bridge": "Puente dentro de la plataforma",
+    "api": "API directa",
+    "comingV11": "Llega en v1.1",
+    "pro": "Pro",
+    "bridgeHint": "Un cBot / EA que muestra el ticket dentro de la plataforma para que lo confirmes.",
+    "apiHint": "Envía la orden por la API de la plataforma, con tu confirmación en cada orden.",
+    "showSteps": "Cómo ingresar una orden",
+    "hideSteps": "Ocultar pasos",
+    "exportFormat": "Formato de exportación: {{format}}",
+    "goToTickets": "Ir a tus tickets"
+  },
+  "howto": {
+    "yourValues": "Tus valores",
+    "symbol": "Símbolo",
+    "side": "Lado",
+    "quantity": "Cantidad"
+  },
+  "platforms": {
+    "ctrader": {
+      "name": "cTrader",
+      "kind": "Plataforma de CFD",
+      "steps": [
+        "Busca el símbolo en la Watchlist. Los brókers suelen nombrar distinto los CFD de acciones (por ejemplo TSLA.US o Tesla).",
+        "Abre el ticket de orden: haz clic en el símbolo y elige New Order (o presiona F9).",
+        "Elige Market Order y el lado: Buy (compra) o Sell (venta).",
+        "Ingresa la cantidad. Revisa si tu bróker opera este símbolo en acciones, unidades o lotes.",
+        "Activa Stop Loss, cámbialo a Price (no pips) y pega el stop loss.",
+        "Activa Take Profit, cámbialo a Price y pega el take profit.",
+        "Haz clic en Place Order y revisa que la pestaña Positions muestre el stop loss y el take profit.",
+        "Si no se toca ninguno de los niveles, cierra la posición tú mismo antes de la hora de cierre."
+      ],
+      "note": "Algunos brókers solo aceptan el stop loss y el take profit como distancia en pips. En ese caso usa la diferencia entre la entrada y cada nivel."
+    },
+    "mt4": {
+      "name": "MetaTrader 4",
+      "kind": "Plataforma de CFD",
+      "steps": [
+        "En Market Watch (Observación del mercado), haz clic derecho y elige Symbols para encontrar el CFD de la acción en tu bróker.",
+        "Haz clic derecho en el símbolo y abre Specification para revisar el tamaño del contrato (1 lote puede ser 1 acción o 100).",
+        "Haz doble clic en el símbolo (o presiona F9) para abrir la ventana de orden.",
+        "En Type elige Market Execution e ingresa el volumen en lotes.",
+        "Pega el stop loss en Stop Loss y el take profit en Take Profit.",
+        "Haz clic en Buy by Market (o Sell by Market).",
+        "Abre la Terminal (Ctrl+T), pestaña Trade, y revisa las columnas S/L y T/P.",
+        "Si no se toca ninguno de los niveles, cierra la posición tú mismo antes de la hora de cierre."
+      ],
+      "note": "Si tu cuenta usa ejecución instantánea y no acepta S/L y T/P en una orden a mercado, abre primero la posición y luego haz clic derecho y elige Modify order para agregarlos."
+    },
+    "mt5": {
+      "name": "MetaTrader 5",
+      "kind": "Plataforma de CFD",
+      "steps": [
+        "Abre Market Watch (Ctrl+M) y busca el símbolo del CFD de la acción en tu bróker.",
+        "Haz clic derecho en el símbolo, elige Specification y revisa el tamaño del contrato y el paso de volumen.",
+        "Presiona F9 (New Order) o haz doble clic en el símbolo.",
+        "Elige Market Execution (o Instant Execution) e ingresa el volumen en lotes.",
+        "Pega el stop loss en Stop Loss y el take profit en Take Profit.",
+        "Haz clic en Buy by Market (o Sell by Market).",
+        "Abre la Caja de herramientas (Ctrl+T), pestaña Trade, y revisa las columnas S/L y T/P.",
+        "Si no se toca ninguno de los niveles, cierra la posición tú mismo antes de la hora de cierre."
+      ],
+      "note": "Los volúmenes fraccionarios dependen del paso de volumen del bróker. Redondea la cantidad a un tamaño que tu bróker acepte y vuelve a revisar la pérdida máxima."
+    },
+    "alpaca": {
+      "name": "Alpaca",
+      "kind": "Bróker de acciones de EE. UU.",
+      "steps": [
+        "Inicia sesión en el panel de Alpaca y confirma que estás en la cuenta que quieres usar (Paper o Live).",
+        "Busca el ticker y abre el panel de operación.",
+        "Elige Buy (o Sell), tipo de orden Market, la cantidad en acciones y vigencia Day.",
+        "Si se ofrece la opción bracket (take profit + stop loss), elígela e ingresa el precio límite del take profit y el precio stop del stop loss.",
+        "Revisa la orden y envíala.",
+        "Revisa la lista de órdenes: deberían quedar pendientes el take profit y el stop loss.",
+        "Si no se toca ninguno de los niveles, cierra la posición tú mismo antes de la hora de cierre."
+      ],
+      "note": "Si no hay opción bracket, coloca el stop y el take profit como órdenes separadas después de la ejecución, y cancela la otra cuando una de las dos se ejecute."
+    },
+    "ibkr": {
+      "name": "Interactive Brokers",
+      "kind": "Bróker de acciones de EE. UU.",
+      "steps": [
+        "En Trader Workstation (TWS), escribe el ticker en Order Entry y elige la acción (ruteo SMART).",
+        "Elige Buy (o Sell), luego abre Attach y selecciona Bracket Order.",
+        "Orden principal: tipo MKT, cantidad en acciones, vigencia DAY.",
+        "Profit taker: LMT al take profit. Stop loss: STP al stop loss.",
+        "Haz clic en Submit y revisa la confirmación de la orden.",
+        "Revisa Orders / Activity: las dos órdenes adjuntas deberían estar activas.",
+        "Si no se toca ninguno de los niveles, cierra la posición tú mismo antes de la hora de cierre."
+      ],
+      "note": "En la app móvil de IBKR o en Client Portal, busca Attach Orders / Bracket al crear la orden."
+    }
+  }
 }

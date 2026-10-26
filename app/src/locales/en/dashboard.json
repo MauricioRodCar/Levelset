@@ -1,13 +1,117 @@
 {
   "title": "Dashboard",
   "description": "What you can trade now, and at what levels.",
-  "placeholder": "Ready tickets, watchlist, open trades and news will appear here.",
   "kpi": {
     "dayPnl": "Day P/L",
+    "dayPnlSub": "from recorded fills",
     "riskUsed": "Risk used",
     "ofLimit": "of {{limit}} daily limit",
     "tradesToday": "Trades today",
     "ofMax": "of {{max}} max",
-    "setupsFound": "Setups found"
+    "setupsFound": "Setups found",
+    "lastScan": "last scan {{time}}",
+    "noScan": "no scan yet"
+  },
+  "tickets": {
+    "title": "Ready tickets",
+    "hint": "Click a level to copy it. Focus a ticket and press 1, 2 or 3.",
+    "summary_one": "{{count}} ready",
+    "summary_other": "{{count}} ready",
+    "blocked_one": "{{count}} blocked",
+    "blocked_other": "{{count}} blocked",
+    "stale_one": "{{count}} stale",
+    "stale_other": "{{count}} stale",
+    "newTicket": "New ticket: {{title}}"
+  },
+  "empty": {
+    "title": "Run the scanner to find today's setups",
+    "description": "The scanner checks thousands of US stocks for opening-range breakouts. Then the pipeline turns the best one into a ticket.",
+    "run": "Run the scanner",
+    "scanning": "Scanning…",
+    "found_one": "Found {{count}} setup in {{scanned}} charts",
+    "found_other": "Found {{count}} setups in {{scanned}} charts",
+    "best": "Best hit",
+    "overTrigger": "{{pct}} over the trigger",
+    "underTrigger": "{{pct}} below the trigger",
+    "runPipeline": "Run pipeline for {{symbol}}",
+    "noHits": "No setups right now",
+    "noHitsHint": "Nothing matches yet. Opening-range breakouts usually show up after 09:45 ET.",
+    "scanAgain": "Scan again"
+  },
+  "setups": {
+    "orb": "Opening-range breakout",
+    "level": "Level breakout",
+    "breakout20": "20-day breakout",
+    "bull_flag": "Bull flag",
+    "reclaim20": "Reclaimed 20-day average",
+    "oversold": "Oversold",
+    "oversold_bounce": "Oversold bounce"
+  },
+  "setupsShort": {
+    "orb": "ORB",
+    "level": "Level",
+    "breakout20": "20-day high",
+    "bull_flag": "Bull flag",
+    "reclaim20": "20-day reclaim",
+    "oversold": "Oversold",
+    "oversold_bounce": "Bounce"
+  },
+  "run": {
+    "running": "Running the pipeline for {{symbol}}",
+    "step": "Step {{n}} of 8: {{step}}",
+    "finished": "Pipeline finished for {{symbol}}",
+    "failed": "The pipeline stopped for {{symbol}}",
+    "dismiss": "Dismiss"
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "empty": "The watchlist fills up when you run the scanner.",
+    "state": {
+      "waiting": "Waiting",
+      "triggered": "Triggered",
+      "expired": "Expired",
+      "not_open": "Not open yet"
+    },
+    "distance": "{{pct}} to trigger",
+    "change": "Change today"
+  },
+  "trades": {
+    "title": "Open trades",
+    "empty": "No open trades. Record a fill from a ticket to track it here.",
+    "qtyAt": "{{qty}} @ {{price}}",
+    "pnl": "Unrealized P/L",
+    "last": "Last {{price}}",
+    "progress": "Price {{price}} between stop loss {{stop}} and take profit {{target}}",
+    "flatBy": "Flat by {{time}}"
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "Last 12 hours, watchlist tickers",
+    "empty": "No news in the last 12 hours for your watchlist.",
+    "noWatchlist": "News shows up once you have a watchlist.",
+    "source": {
+      "yahoo": "Yahoo Finance",
+      "sec": "SEC 8-K"
+    },
+    "tags": {
+      "earnings": "Earnings",
+      "analyst": "Analyst",
+      "deal": "Deal",
+      "halt": "Halt",
+      "regulatory": "Regulatory",
+      "macro": "Macro",
+      "leadership": "Leadership",
+      "legal": "Legal",
+      "other": "Other"
+    }
+  },
+  "marketClosed": {
+    "title": "Market closed",
+    "body": "Showing the last session ({{date}}).",
+    "next": "Next open {{date}}, {{time}}."
+  },
+  "offline": {
+    "title": "The engine is offline",
+    "body": "Start the Levelset engine (or demo mode) to see your tickets, watchlist and trades."
   }
 }

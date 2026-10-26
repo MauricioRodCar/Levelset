@@ -32,13 +32,15 @@
     "daily_loss": "Las pérdidas de hoy ya llegaron a tu límite diario",
     "window": "Fuera de tu horario de entrada",
     "duplicate": "Duplica una orden ya colocada hoy",
-    "max_loss_per_trade": "La pérdida en el stop supera tu pérdida máxima por operación"
+    "max_loss_per_trade": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "unknown": "Bloqueado por una regla de riesgo ({{code}})"
   },
   "secondary": {
     "maxLoss": "Pérdida máx. {{value}}",
     "r": "{{value}}R",
     "odds": "Probabilidad: {{verdict}}",
-    "flatBy": "Cerrar antes de {{time}}"
+    "flatBy": "Cerrar antes de {{time}}",
+    "oddsDetail": "Time Machine: objetivo primero {{target}} · stop primero {{stop}} · ninguno al cierre {{open}}"
   },
   "verdict": {
     "favorable": "favorable",
@@ -51,5 +53,73 @@
   },
   "preview": {
     "label": "Ticket de ejemplo"
-  }
+  },
+  "card": {
+    "label": "Ticket {{side}} {{qty}} {{symbol}}",
+    "labelBlocked": "Ticket bloqueado {{side}} {{qty}} {{symbol}}"
+  },
+  "shortcuts": {
+    "label": "Atajos de teclado",
+    "title": "Con este ticket seleccionado:",
+    "entry": "copiar la entrada",
+    "stop": "copiar el stop loss",
+    "target": "copiar el take profit",
+    "all": "copiar el ticket completo",
+    "flow": "ver el flujo"
+  },
+  "copyText": {
+    "toast": "ticket de {{symbol}}",
+    "maxLoss": "Pérdida máx. {{value}}",
+    "flatBy": "cerrar antes de {{time}}"
+  },
+  "menu": {
+    "more": "Más acciones del ticket",
+    "export": "Exportar…",
+    "howto": "Cómo ingresarlo en cTrader / MT4 / MT5",
+    "recordFill": "Registrar ejecución…"
+  },
+  "stale": {
+    "badge": "Vencido",
+    "rerun": "Vencido — volver a ejecutar",
+    "reason": "Creado {{time}}. Ya pasó el horario de entrada o el precio se movió; vuelve a ejecutar el pipeline para obtener niveles nuevos.",
+    "started": "Volviendo a ejecutar el pipeline para {{symbol}}"
+  },
+  "blocked": {
+    "show": "Detalles",
+    "hide": "Ocultar",
+    "detail": "Detalle del control de riesgo",
+    "noReason": "Bloqueado por el control de riesgo"
+  },
+  "export": {
+    "title": "Exportar ticket de {{symbol}}",
+    "description": "Elige un formato y luego cópialo o guárdalo como archivo.",
+    "format": "Formato",
+    "formats": {
+      "text": "Texto",
+      "csv": "CSV",
+      "json": "JSON",
+      "ctrader": "cTrader",
+      "mt4": "MT4",
+      "mt5": "MT5"
+    },
+    "copy": "Copiar",
+    "save": "Guardar archivo",
+    "saved": "Se guardó {{name}}"
+  },
+  "howto": {
+    "title": "Cómo ingresar {{symbol}} en tu plataforma",
+    "description": "Levelset nunca envía órdenes. Ingresa la orden tú mismo con estos valores."
+  },
+  "fill": {
+    "title": "Registrar ejecución de {{symbol}}",
+    "description": "Anota lo que realmente obtuviste con tu bróker para que la G/P y el riesgo diario sean correctos.",
+    "side": "Lado",
+    "qty": "Cantidad",
+    "price": "Precio de ejecución",
+    "invalid": "Ingresa una cantidad entera de al menos 1 y un precio mayor que 0.",
+    "noBroker": "Esto solo registra la ejecución en Levelset. No se envía nada a ningún bróker.",
+    "submit": "Registrar ejecución",
+    "recorded": "Se registró {{side}} {{qty}} {{symbol}} a {{price}}"
+  },
+  "instrumentNote": "En tu bróker, el símbolo del CFD y el tamaño del contrato pueden ser distintos a los de la acción de EE. UU. analizada. Revísalos antes de entrar."
 }

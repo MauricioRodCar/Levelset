@@ -1,13 +1,121 @@
 {
   "title": "Panel",
   "description": "Qué puedes operar ahora y en qué niveles.",
-  "placeholder": "Aquí aparecerán los tickets listos, la watchlist, las operaciones abiertas y las noticias.",
   "kpi": {
     "dayPnl": "G/P del día",
+    "dayPnlSub": "según ejecuciones registradas",
     "riskUsed": "Riesgo usado",
     "ofLimit": "de {{limit}} de límite diario",
     "tradesToday": "Operaciones hoy",
     "ofMax": "de {{max}} máx.",
-    "setupsFound": "Setups encontrados"
+    "setupsFound": "Setups encontrados",
+    "lastScan": "último escaneo {{time}}",
+    "noScan": "sin escaneo todavía"
+  },
+  "tickets": {
+    "title": "Tickets listos",
+    "hint": "Haz clic en un nivel para copiarlo. Selecciona un ticket y presiona 1, 2 o 3.",
+    "summary_one": "{{count}} listo",
+    "summary_many": "{{count}} listos",
+    "summary_other": "{{count}} listos",
+    "blocked_one": "{{count}} bloqueado",
+    "blocked_many": "{{count}} bloqueados",
+    "blocked_other": "{{count}} bloqueados",
+    "stale_one": "{{count}} vencido",
+    "stale_many": "{{count}} vencidos",
+    "stale_other": "{{count}} vencidos",
+    "newTicket": "Ticket nuevo: {{title}}"
+  },
+  "empty": {
+    "title": "Ejecuta el escáner para encontrar los setups de hoy",
+    "description": "El escáner revisa miles de acciones de EE. UU. buscando rupturas del rango de apertura. Luego el pipeline convierte la mejor en un ticket.",
+    "run": "Ejecutar el escáner",
+    "scanning": "Escaneando…",
+    "found_one": "Se encontró {{count}} setup en {{scanned}} gráficos",
+    "found_many": "Se encontraron {{count}} setups en {{scanned}} gráficos",
+    "found_other": "Se encontraron {{count}} setups en {{scanned}} gráficos",
+    "best": "Mejor resultado",
+    "overTrigger": "{{pct}} sobre el disparador",
+    "underTrigger": "{{pct}} bajo el disparador",
+    "runPipeline": "Ejecutar el pipeline para {{symbol}}",
+    "noHits": "No hay setups por ahora",
+    "noHitsHint": "Todavía nada coincide. Las rupturas del rango de apertura suelen aparecer después de las 09:45 ET.",
+    "scanAgain": "Escanear de nuevo"
+  },
+  "setups": {
+    "orb": "Ruptura del rango de apertura",
+    "level": "Ruptura de nivel",
+    "breakout20": "Ruptura de 20 días",
+    "bull_flag": "Bandera alcista",
+    "reclaim20": "Recuperó la media de 20 días",
+    "oversold": "Sobrevendida",
+    "oversold_bounce": "Rebote desde sobreventa"
+  },
+  "setupsShort": {
+    "orb": "ORB",
+    "level": "Nivel",
+    "breakout20": "Máx. 20 días",
+    "bull_flag": "Bandera alcista",
+    "reclaim20": "Recupera MM20",
+    "oversold": "Sobreventa",
+    "oversold_bounce": "Rebote"
+  },
+  "run": {
+    "running": "Ejecutando el pipeline para {{symbol}}",
+    "step": "Paso {{n}} de 8: {{step}}",
+    "finished": "El pipeline terminó para {{symbol}}",
+    "failed": "El pipeline se detuvo para {{symbol}}",
+    "dismiss": "Descartar"
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "empty": "La watchlist se llena cuando ejecutas el escáner.",
+    "state": {
+      "waiting": "Esperando",
+      "triggered": "Disparada",
+      "expired": "Expirada",
+      "not_open": "Aún no abre"
+    },
+    "distance": "a {{pct}} del disparador",
+    "change": "Cambio de hoy"
+  },
+  "trades": {
+    "title": "Operaciones abiertas",
+    "empty": "No hay operaciones abiertas. Registra una ejecución desde un ticket para seguirla aquí.",
+    "qtyAt": "{{qty}} a {{price}}",
+    "pnl": "G/P no realizada",
+    "last": "Último {{price}}",
+    "progress": "Precio {{price}} entre el stop loss {{stop}} y el take profit {{target}}",
+    "flatBy": "Cerrar antes de {{time}}"
+  },
+  "news": {
+    "title": "Noticias",
+    "subtitle": "Últimas 12 horas, tickers de la watchlist",
+    "empty": "No hay noticias de tu watchlist en las últimas 12 horas.",
+    "noWatchlist": "Las noticias aparecen cuando tienes una watchlist.",
+    "source": {
+      "yahoo": "Yahoo Finance",
+      "sec": "8-K de la SEC"
+    },
+    "tags": {
+      "earnings": "Resultados",
+      "analyst": "Analistas",
+      "deal": "Acuerdo",
+      "halt": "Suspensión",
+      "regulatory": "Regulatorio",
+      "macro": "Macro",
+      "leadership": "Directivos",
+      "legal": "Legal",
+      "other": "Otros"
+    }
+  },
+  "marketClosed": {
+    "title": "Mercado cerrado",
+    "body": "Mostrando la última sesión ({{date}}).",
+    "next": "Próxima apertura: {{date}}, {{time}}."
+  },
+  "offline": {
+    "title": "El motor está desconectado",
+    "body": "Inicia el motor de Levelset (o el modo demo) para ver tus tickets, watchlist y operaciones."
   }
 }
