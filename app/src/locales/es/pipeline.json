@@ -1,8 +1,6 @@
 {
   "title": "Pipeline",
   "description": "Cada paso detrás de un ticket, del escáner a la revisión de riesgo.",
-  "placeholder": "La vista del pipeline de 8 pasos está en camino.",
-  "placeholderRun": "La ejecución {{runId}} se abrirá aquí.",
   "steps": {
     "scanner": "Escáner",
     "news": "Noticias",
@@ -14,15 +12,562 @@
     "ticket": "Ticket"
   },
   "checks": {
+    "unknown": "Revisar: {{code}}",
     "earnings_this_week": "Reporta resultados esta semana",
+    "halt": "Suspensión de cotización en las noticias",
+    "important_filing": "Reporte importante ante la SEC",
+    "moving": "Se mueve mucho desde el cierre de ayer",
+    "news_unavailable": "No se pudieron revisar las noticias",
+    "scan_failed": "El escaneo no pudo ejecutarse",
+    "not_in_scan": "No aparece en el escaneo de hoy",
+    "no_hits": "Ningún gráfico cumplió el setup",
     "coin_flip": "Las probabilidades son cara o cruz",
+    "unfavorable_odds": "Las probabilidades están en contra",
     "many_open_at_close": "Suele seguir abierta al cierre",
     "entry_waiting": "La entrada aún no se activó",
+    "entry_expired": "Ya pasó el horario de entrada",
+    "market_closed": "El mercado está cerrado",
+    "no_data": "Sin datos de precio",
+    "reward_risk_below_min": "El beneficio:riesgo está por debajo de tu mínimo",
+    "early_close": "Hoy el mercado cierra temprano",
+    "plan_not_today": "El plan no es de hoy",
+    "exit_note": "El plan de salida tiene una nota",
     "max_loss_per_trade": "La pérdida en el stop supera tu pérdida máxima por operación",
     "loss": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "max_loss": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "size": "La orden es demasiado grande para tus límites",
+    "reward_risk": "El beneficio:riesgo está por debajo de tu mínimo",
+    "min_rr": "El beneficio:riesgo está por debajo de tu mínimo",
+    "min_order": "La orden es menor que el tamaño mínimo",
+    "position_limit": "La posición superaría tu tope",
+    "budget_refused": "El presupuesto no pudo dimensionar esta operación",
+    "price_above_entry": "El precio ya está por encima de la entrada del plan",
+    "stale_price": "El último precio es demasiado viejo para usarlo",
     "daily_loss": "Las pérdidas de hoy ya llegaron a tu límite diario",
     "daily_limit": "Esta operación superaría tu límite de pérdida diaria",
+    "trades": "Ya hiciste todas tus operaciones de hoy",
+    "trades_per_day": "Ya hiciste todas tus operaciones de hoy",
     "window": "Fuera de tu horario de entrada",
-    "duplicate": "Duplica una orden ya colocada hoy"
+    "entry_window": "Fuera de tu horario de entrada",
+    "duplicate": "Duplica una orden ya colocada hoy",
+    "stop": "Falta el stop loss o no es válido",
+    "no_stop": "La orden no tiene stop loss",
+    "target": "El take profit no es válido",
+    "cash": "No alcanza el efectivo después de tu reserva",
+    "position": "La posición superaría tu tope",
+    "format": "La orden está mal formada",
+    "asset": "Este instrumento no está permitido",
+    "short": "Las ventas en corto están desactivadas",
+    "pdt": "Regla de pattern day trader",
+    "option_order": "Las opciones están desactivadas",
+    "blocked": "Este ticker está en tu lista de bloqueados",
+    "price": "No hay un precio útil para este ticker",
+    "live_account": "Es una cuenta real (no de práctica)",
+    "stale": "El ticket está desactualizado"
+  },
+  "grid": {
+    "label": "Pasos del pipeline"
+  },
+  "card": {
+    "in": "Entra:",
+    "out": "Sale:",
+    "pendingOut": "Aún no se ejecuta",
+    "runningOut": "En curso…"
+  },
+  "stepInfo": {
+    "scanner": {
+      "in": "Acciones de EE. UU., velas de 5 minutos",
+      "what": "Encuentra los gráficos que cumplen el setup ahora mismo."
+    },
+    "news": {
+      "in": "Titulares y 8-K del ticker",
+      "what": "Marca las noticias que pueden mover la acción."
+    },
+    "entry": {
+      "in": "Rango de apertura y las últimas velas",
+      "what": "Dice cuándo la ruptura ocurrió de verdad."
+    },
+    "exit": {
+      "in": "La entrada y el rango de apertura",
+      "what": "Fija el stop loss y el take profit antes de entrar."
+    },
+    "timemachine": {
+      "in": "El plan y 60 días de velas de 5 minutos",
+      "what": "Repite la operación miles de veces."
+    },
+    "budget": {
+      "in": "El plan y los límites de tu cuenta",
+      "what": "Calcula cuántas acciones caben en tus límites."
+    },
+    "risk": {
+      "in": "La orden dimensionada y las operaciones de hoy",
+      "what": "Revisa la orden contra cada regla que fijaste."
+    },
+    "ticket": {
+      "in": "La orden que pasó la revisión de riesgo",
+      "what": "El ticket que copias en tu plataforma."
+    }
+  },
+  "summary": {
+    "error": "Error: {{message}}",
+    "scanner": {
+      "found": {
+        "in": "Escaneo {{kind}} de {{universe}} gráficos, {{asOf}}",
+        "out": "{{hits}} de {{scanned}} coinciden · {{symbol}} rompió {{rangeHigh}} a las {{at}} (+{{pctOver}})",
+        "outNoPick": "{{hits}} de {{scanned}} coinciden · {{symbol}} no está entre ellos"
+      },
+      "none": {
+        "in": "Escaneo {{kind}}",
+        "out": "Ningún gráfico coincidió ({{scanned}} revisados)"
+      },
+      "failed": {
+        "in": "Escaneo de {{symbol}}",
+        "out": "El escaneo falló; {{symbol}} se revisa de todos modos"
+      }
+    },
+    "news": {
+      "items": {
+        "in": "Titulares y 8-K de {{symbol}}, últimas {{hours}} h",
+        "out_one": "{{count}} noticia de {{symbol}}",
+        "out_many": "{{count}} noticias de {{symbol}}",
+        "out_other": "{{count}} noticias de {{symbol}}"
+      },
+      "unavailable": {
+        "in": "Titulares de {{symbol}}",
+        "out": "No se pudieron cargar las noticias"
+      }
+    },
+    "entry": {
+      "triggered": {
+        "in": "Rango de apertura de {{symbol}}: {{rangeLow}} – {{rangeHigh}}",
+        "out": "Se activó en {{price}}, {{time}}: la vela de las {{barStart}} cerró por encima de {{level}}"
+      },
+      "waiting": {
+        "in": "Rango de apertura de {{symbol}}: {{rangeLow}} – {{rangeHigh}}",
+        "out": "Esperando: último cierre {{lastClose}}, {{distance}} por debajo de {{level}}"
+      },
+      "expired": {
+        "in": "Rango de apertura de {{symbol}}: {{rangeLow}} – {{rangeHigh}}",
+        "out": "Venció: no hubo ruptura dentro de tu horario de entrada"
+      },
+      "market_closed": {
+        "in": "Rango de apertura de {{symbol}}",
+        "out": "El mercado está cerrado"
+      },
+      "no_data": {
+        "in": "Rango de apertura de {{symbol}}",
+        "out": "No hay datos de precio para {{symbol}}"
+      },
+      "needs_level": {
+        "in": "Setup de nivel de precio",
+        "out": "Un setup de nivel necesita un precio"
+      }
+    },
+    "exit": {
+      "plan": {
+        "in": "Entrada {{entry}}, stop en el {{stopRule}}",
+        "out": "Stop {{stop}} · objetivo {{target}} ({{targetR}}R) · riesgo {{riskPerShare}} por acción"
+      }
+    },
+    "timemachine": {
+      "result": {
+        "in": "{{replays}} repeticiones desde la entrada, semilla {{seed}}",
+        "out": "Objetivo primero {{targetFirstPct}} · stop primero {{stopFirstPct}} · {{verdict}}"
+      }
+    },
+    "budget": {
+      "sized": {
+        "in": "Pérdida máx. {{maxLossPerTrade}} por operación · riesgo {{riskPerShare}} por acción",
+        "out": "{{qty}} acciones ({{cost}}) · pérdida máx. {{maxLoss}} · lo define {{boundBy}}"
+      },
+      "refused": {
+        "in": "Pérdida máx. {{maxLossPerTrade}} por operación · riesgo {{riskPerShare}} por acción",
+        "out": "Sin orden: el stop está demasiado lejos para tu pérdida máxima"
+      }
+    },
+    "risk": {
+      "pass": {
+        "in": "La orden dimensionada contra tus límites",
+        "out": "PASA · pérdida máx. {{maxLoss}} de {{maxLossLimit}} · beneficio:riesgo {{rewardRisk}}"
+      },
+      "block": {
+        "in": "La orden dimensionada contra tus límites",
+        "out": "BLOQUEADA · {{reasons}}"
+      }
+    },
+    "ticket": {
+      "ready": {
+        "in": "Riesgo PASA",
+        "out": "COMPRA {{qty}} {{symbol}} · {{entry}} / {{stop}} / {{target}}"
+      },
+      "blocked": {
+        "in": "Riesgo BLOQUEADA",
+        "out": "Bloqueado: COMPRA {{qty}} {{symbol}} no se puede operar"
+      },
+      "stale": {
+        "in": "Riesgo PASA",
+        "out": "Desactualizado: vuelve a ejecutarlo antes de operar"
+      }
+    }
+  },
+  "scanner": {
+    "universe": "Universo",
+    "scanned": "Revisados",
+    "hits": "Coincidencias",
+    "picked": "Elegido",
+    "pickedBadge": "elegido",
+    "asOf": "Al {{value}}",
+    "noHits": "Ningún gráfico cumplió el setup.",
+    "filter": "Filtrar por símbolo",
+    "col": {
+      "symbol": "Símbolo",
+      "setup": "Setup",
+      "price": "Precio",
+      "range": "Rango de apertura",
+      "over": "Sobre el máximo",
+      "at": "Hora"
+    },
+    "setups": {
+      "orb": "Ruptura del rango de apertura",
+      "breakout20": "Ruptura de 20 días",
+      "breakout_20d": "Ruptura de 20 días",
+      "bull_flag": "Bandera alcista",
+      "reclaim20": "Recuperó la media de 20 días",
+      "reclaim_ma20": "Recuperó la media de 20 días",
+      "oversold": "Sobrevendida",
+      "oversold_bounce": "Rebote desde sobreventa"
+    },
+    "kinds": {
+      "orb": "de rango de apertura",
+      "daily": "diario"
+    }
+  },
+  "news": {
+    "none": "No hay noticias de este ticker en el período.",
+    "filing": "Reporte 8-K",
+    "important": "Importante",
+    "tags": {
+      "earnings": "Resultados",
+      "analyst": "Analistas",
+      "deal": "Acuerdo",
+      "halt": "Suspensión",
+      "regulatory": "Regulatorio",
+      "macro": "Macro",
+      "leadership": "Directivos",
+      "legal": "Legal",
+      "other": "Otro"
+    }
+  },
+  "entry": {
+    "level": "Nivel de activación",
+    "sayTriggered": "La vela de las {{bar}} cerró en {{price}}, por encima del nivel {{level}}. Esa es la entrada.",
+    "sayWaiting": "Ninguna vela ha cerrado por encima de {{level}} todavía. El último cierre está a {{distance}}.",
+    "say": {
+      "expired": "Pasó el horario de entrada sin ruptura.",
+      "unknown": "No se pudo revisar la entrada."
+    },
+    "rangeHigh": "Máximo del rango",
+    "rangeLow": "Mínimo del rango",
+    "trigger": "Activación",
+    "distance": "Último cierre vs. activación",
+    "lastClose": "Último cierre {{value}}",
+    "chartLabel": "Gráfico de 5 minutos de {{symbol}} con el rango de apertura y la vela de activación",
+    "legendBand": "Rango de apertura (primeros {{minutes}} min)",
+    "legendTrigger": "Vela de activación"
+  },
+  "levels": {
+    "entry": "Entrada",
+    "stop": "Stop loss",
+    "target": "Take profit"
+  },
+  "exit": {
+    "secondary": "Riesgo {{risk}} por acción · beneficio:riesgo {{rr}} · cerrar antes de {{flatBy}}",
+    "stopRule": "Regla del stop",
+    "targetRule": "Objetivo",
+    "targetR": "{{r}}R (veces el riesgo)",
+    "stopRules": {
+      "or_mid": "punto medio del rango de apertura",
+      "or_low": "mínimo del rango de apertura",
+      "price": "precio que elegiste",
+      "pct": "porcentaje bajo la entrada",
+      "atr": "múltiplo del ATR"
+    },
+    "chartLabel": "Gráfico de 5 minutos de {{symbol}} con entrada, stop loss y take profit",
+    "flatBy": "Cerrar antes de {{time}}"
+  },
+  "chart": {
+    "noBars": "No hay datos de gráfico para este ticker ahora.",
+    "otherDay": "El gráfico solo está disponible el día de la ejecución.",
+    "otherDayHint": "La fuente de precios solo entrega las velas de hoy; los números de abajo son los de la ejecución guardada.",
+    "caption_one": "{{symbol}} · {{count}} vela de 5 minutos cerrada · horas en ET",
+    "caption_many": "{{symbol}} · {{count}} velas de 5 minutos cerradas · horas en ET",
+    "caption_other": "{{symbol}} · {{count}} velas de 5 minutos cerradas · horas en ET"
+  },
+  "detail": {
+    "label": "Detalle de {{step}}",
+    "times": "Se ejecutó {{start}} → {{end}}",
+    "checks": "Requiere atención",
+    "error": "Este paso falló.",
+    "skillSays": "Según el skill:",
+    "tabs": {
+      "inputs": "Entradas",
+      "outputs": "Resultados",
+      "params": "Parámetros"
+    },
+    "rawJson": "JSON sin procesar",
+    "noInputs": "Todavía no hay nada registrado.",
+    "running": "En curso…",
+    "notRun": "Este paso aún no se ejecuta."
+  },
+  "timemachine": {
+    "verdict": {
+      "favorable": "A tu favor: el objetivo llegó primero en {{target}} de las repeticiones y el stop en {{stop}}. {{open}} seguían abiertas a las {{time}}.",
+      "coin_flip": "Casi cara o cruz: objetivo primero {{target}}, stop primero {{stop}}. {{open}} seguían abiertas a las {{time}}, así que el cierre decide muchas.",
+      "unfavorable": "En tu contra: el stop llegó primero en {{stop}} de las repeticiones y el objetivo en {{target}}. {{open}} seguían abiertas a las {{time}}."
+    },
+    "verdictShort": {
+      "favorable": "a favor",
+      "coin_flip": "cara o cruz",
+      "unfavorable": "en contra"
+    },
+    "outcomes": "Resultado de {{replays}} repeticiones (semilla {{seed}})",
+    "barLabel": "Objetivo primero {{target}}, stop primero {{stop}}, abierta al cierre {{open}}",
+    "legend": {
+      "target": "Objetivo primero",
+      "stop": "Stop primero",
+      "open": "Abierta a las {{time}}"
+    },
+    "history": "Cada vez que el setup se activó (últimas {{sessions}} sesiones)",
+    "col": {
+      "fired": "Activaciones",
+      "won": "Objetivo primero",
+      "lost": "Stop primero",
+      "open": "Abierta al cierre",
+      "date": "Fecha",
+      "outcome": "Resultado"
+    },
+    "outcome": {
+      "target": "Objetivo",
+      "stop": "Stop",
+      "close": "Abierta al cierre"
+    },
+    "showAll_one": "Ver {{count}} operación",
+    "showAll_many": "Ver las {{count}} operaciones",
+    "showAll_other": "Ver las {{count}} operaciones",
+    "showLess": "Ver menos",
+    "distribution": "Dónde quedó el precio al cierre",
+    "distributionLabel": "Distribución del precio al cierre: percentil 5 {{p5}}, mediana {{median}}, percentil 95 {{p95}}",
+    "median": "mediana {{value}}",
+    "middle90": "90 % entre {{lo}} y {{hi}}"
+  },
+  "budget": {
+    "decided": "El límite de {{limit}} definió el tamaño: {{qty}} acciones.",
+    "refused": "Sin orden: {{reason}}.",
+    "qty": "Acciones",
+    "cost": "Costo",
+    "maxLoss": "Pérdida máx. en el stop",
+    "riskPerShare": "Riesgo por acción",
+    "limitsTitle": "Acciones que permite cada límite",
+    "col": {
+      "limit": "Límite",
+      "shares": "Acciones",
+      "how": "Cálculo"
+    },
+    "limits": {
+      "max_loss": "pérdida máxima por operación",
+      "position_cap": "tope de posición",
+      "max_order": "orden máxima",
+      "cash": "efectivo tras la reserva"
+    },
+    "decides": "define"
+  },
+  "risk": {
+    "pass": "PASA",
+    "block": "BLOQUEADA",
+    "passSay": "Todas las reglas pasaron. El ticket puede salir.",
+    "blockSay": "Al menos una regla falló, así que el ticket está bloqueado.",
+    "checklist": "Reglas de riesgo",
+    "ok": "pasa",
+    "fail": "falla",
+    "rules": {
+      "stop": "Tiene stop loss",
+      "max_loss": "Pérdida máxima por operación",
+      "reward_risk": "Beneficio:riesgo mínimo",
+      "daily": "Límite de pérdida diaria",
+      "trades": "Operaciones por día",
+      "window": "Horario de entrada y del mercado",
+      "cash": "Efectivo y tope de posición",
+      "order": "Formato de la orden, ticker y duplicados"
+    },
+    "detail": {
+      "stop": "Stop en {{stop}}",
+      "maxLoss": "{{value}} en el stop, límite {{limit}}",
+      "rewardRisk": "{{value}}, mínimo {{min}}",
+      "daily": "{{value}} en riesgo hoy con esta operación, límite {{limit}}",
+      "trades": "{{value}} de {{max}} operaciones antes de esta"
+    }
+  },
+  "ticket": {
+    "notStored": "El registro del ticket no está disponible; estos son los niveles de la ejecución.",
+    "none": "Esta ejecución no tiene ticket."
+  },
+  "params": {
+    "none": "Sin parámetros.",
+    "readOnlyHint": "Activa Paso a paso para cambiar parámetros y volver a ejecutar un paso.",
+    "usesSettings": "Este paso no tiene parámetros: usa tus límites de Configuración.",
+    "missingValue": "Escribe un valor para {{field}}.",
+    "fields": {
+      "kind": "Escaneo",
+      "at": "Hora del escaneo (ET)",
+      "orMinutes": "Rango de apertura (minutos)",
+      "minPrice": "Precio mínimo",
+      "minVolume": "Volumen mínimo",
+      "hours": "Revisar hacia atrás (horas)",
+      "noSec": "Omitir reportes de la SEC",
+      "interval": "Tamaño de vela",
+      "level": "Nivel de precio",
+      "minVolumeX": "Filtro de volumen (x promedio del rango)",
+      "stop": "Stop loss",
+      "target": "Take profit",
+      "flatBy": "Cerrar antes de (ET)",
+      "replays": "Repeticiones",
+      "seed": "Semilla",
+      "window": "Ventana de días similares",
+      "until": "Repetir hasta (ET)",
+      "limit": "Tipo de orden",
+      "limitPrice": "Precio límite",
+      "budget": "Presupuesto (USD)"
+    },
+    "hints": {
+      "orMinutes": "15 por defecto.",
+      "at": "Vacío = ahora.",
+      "hours": "12 por defecto.",
+      "minVolumeX": "Vacío = sin filtro de volumen.",
+      "replays": "10.000 por defecto.",
+      "seed": "Misma semilla, mismos números.",
+      "until": "Usa tu hora de cierre para terminar cada repetición ahí.",
+      "limit": "A mercado por defecto.",
+      "budget": "Vacío = el tamaño de tu cuenta.",
+      "stop": {
+        "or-mid": "A mitad de camino entre el máximo y el mínimo del rango, redondeado hacia abajo.",
+        "or-low": "El mínimo del rango de apertura.",
+        "price": "Un precio que eliges tú.",
+        "pct": "Un porcentaje por debajo de la entrada.",
+        "atr": "Un múltiplo del rango verdadero promedio por debajo de la entrada."
+      },
+      "target": {
+        "1R": "Tan arriba de la entrada como el stop está por debajo.",
+        "2R": "El doble del riesgo por encima de la entrada.",
+        "price": "Un precio que eliges tú."
+      }
+    },
+    "options": {
+      "kind": {
+        "orb": "Ruptura del rango de apertura",
+        "daily": "Setups diarios"
+      },
+      "interval": {
+        "5m": "5 minutos",
+        "1m": "1 minuto"
+      },
+      "stop": {
+        "or-mid": "Punto medio del rango",
+        "or-low": "Mínimo del rango",
+        "price": "Precio",
+        "pct": "Porcentaje",
+        "atr": "Múltiplo del ATR"
+      },
+      "target": {
+        "1R": "1R",
+        "2R": "2R",
+        "price": "Precio"
+      },
+      "limit": {
+        "market": "A mercado",
+        "plan": "Límite en la entrada del plan",
+        "price": "Límite a un precio"
+      }
+    },
+    "valueFor": {
+      "price": "Precio",
+      "pct": "Porcentaje",
+      "atr": "Múltiplo del ATR"
+    }
+  },
+  "start": {
+    "title": "Iniciar una ejecución",
+    "subtitle": "Escanea, revisa y dimensiona una operación, paso a paso o todo de una vez.",
+    "ticker": "Ticker (opcional)",
+    "tickerPlaceholder": "Mejor resultado del escáner",
+    "setup": "Setup",
+    "level": "Nivel de precio",
+    "stepByStep": "Paso a paso",
+    "runAll": "Ejecutar todo",
+    "newRun": "Nueva ejecución",
+    "hint": "Deja el ticker vacío para usar la mejor ruptura del rango de apertura del escáner.",
+    "badTicker": "Eso no parece un ticker de EE. UU.",
+    "needLevel": "Un setup de nivel necesita un precio."
+  },
+  "setups": {
+    "orb": "Ruptura del rango de apertura",
+    "level": "Ruptura de un nivel de precio"
+  },
+  "modes": {
+    "all": "Ejecutar todo",
+    "step": "Paso a paso"
+  },
+  "history": {
+    "button": "Historial",
+    "title": "Ejecuciones anteriores",
+    "loading": "Cargando…",
+    "empty": "Todavía no hay ejecuciones."
+  },
+  "readOnly": {
+    "text": "Estás viendo una ejecución anterior del {{when}}. Es de solo lectura.",
+    "latest": "Ir a la ejecución más reciente"
+  },
+  "stop": {
+    "title": "Se detuvo en {{step}}",
+    "entryWaiting": "{{symbol}} todavía no cierra por encima del nivel {{level}} (el último cierre está {{distance}} por debajo). Los siguientes pasos esperan a la entrada.",
+    "error": "El paso falló: {{message}}",
+    "remaining_one": "Queda {{count}} paso en espera.",
+    "remaining_many": "Quedan {{count}} pasos en espera.",
+    "remaining_other": "Quedan {{count}} pasos en espera.",
+    "waitingHint": "Vuelve a revisar cuando cierre la próxima vela de 5 minutos.",
+    "stepByStep": "Seguir paso a paso",
+    "checkAgain": "Revisar de nuevo",
+    "runAgain": "Ejecutar {{step}} de nuevo"
+  },
+  "errors": {
+    "previous": "Primero ejecuta {{step}} (está en {{status}}).",
+    "run_busy": "Esta ejecución sigue en curso. Espera a que termine.",
+    "no_ticker": "Todavía no hay ticker: ejecuta primero el escáner o empieza con un ticker.",
+    "run_not_found": "Esta ejecución ya no existe."
+  },
+  "wizard": {
+    "toggle": "Paso a paso",
+    "progress": "Paso {{n}} de {{total}}",
+    "explain": "Explicar este paso",
+    "run": "Ejecutar este paso",
+    "runAgain": "Ejecutar de nuevo",
+    "running": "En curso…",
+    "resetsLater": "Volver a ejecutar este paso reinicia los pasos siguientes."
+  },
+  "explain": {
+    "scanner": "El escáner revisa acciones de EE. UU. en velas de 5 minutos y lista los gráficos que cumplen el setup. En una ruptura del rango de apertura, eso significa que una vela cerró por encima del máximo de los primeros 15 minutos. Un escaneo es una lista de gráficos para mirar, no de acciones para comprar.",
+    "news": "Noticias revisa los últimos titulares y los reportes 8-K de la empresa en busca de lo que pueda mover la acción: resultados, acuerdos, suspensiones, cambios de directivos. Si reporta resultados esta semana, puede haber un gap grande.",
+    "entry": "Entrada vigila las velas y marca la entrada en la primera vela completa que cierra por encima del máximo del rango de apertura (o de tu nivel). Mientras tanto, dice qué tan lejos está el precio de la activación. Nunca coloca una orden.",
+    "exit": "Salida fija el stop loss y el take profit antes de entrar. Por defecto, el stop va en el punto medio del rango de apertura y el objetivo en 1R (tan arriba de la entrada como el stop está por debajo). Rechaza un stop demasiado ajustado para aguantar el spread.",
+    "timemachine": "La máquina del tiempo repite el resto del día miles de veces con los últimos 60 días de la propia acción, cuenta cuántas veces llegó primero el objetivo o el stop y repasa cada vez que el setup se activó en el pasado. Es una prueba de realidad, no una predicción.",
+    "budget": "Presupuesto busca el número entero de acciones que cabe en cuatro límites: tu pérdida máxima por operación, tu tope de posición, tu orden máxima y el efectivo que queda después de tu reserva. Te dice qué límite definió el tamaño.",
+    "risk": "Riesgo revisa la orden contra cada regla que fijaste: el stop es obligatorio, la pérdida en el stop debe caber en tu máximo, el beneficio:riesgo debe llegar a tu mínimo, el riesgo y las operaciones de hoy deben caber en tus límites diarios, y las entradas deben estar dentro de tu horario.",
+    "ticket": "El ticket es la orden final: entrada, stop loss y take profit, lista para copiar en tu plataforma. Levelset nunca la envía a un bróker. Tú decides y colocas cada operación."
+  },
+  "empty": {
+    "title": "Todavía no hay ejecuciones",
+    "text": "Inicia una ejecución para ver cada paso, del escáner al ticket."
+  },
+  "run": {
+    "noTicker": "Ticker pendiente"
   }
 }

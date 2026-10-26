@@ -9,6 +9,7 @@ export const qk = {
   watchlist: ['watchlist'] as const,
   news: (tickers: string, hours?: number) => ['news', tickers, hours ?? 12] as const,
   newsAll: ['news'] as const,
+  bars: (symbol: string, interval = '5m') => ['bars', symbol, interval] as const,
   runs: (limit?: number) => ['pipeline', 'runs', limit ?? 50] as const,
   runsAll: ['pipeline', 'runs'] as const,
   run: (runId: string) => ['pipeline', 'run', runId] as const,

@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .. import __version__
 from ..config import EngineConfig
 from ..context import EngineContext
-from . import errors, routes_alerts, routes_market, routes_pipeline, routes_system, routes_trading
+from . import errors, routes_alerts, routes_bars, routes_market, routes_pipeline, routes_system, routes_trading
 from .deps import build_services
 
 # The Tauri WebView and the Vite dev server call the engine from another origin.
@@ -49,6 +49,7 @@ def create_app(config: EngineConfig) -> FastAPI:
     app.include_router(routes_system.router)
     app.include_router(routes_system.events_router)
     app.include_router(routes_market.router)
+    app.include_router(routes_bars.router)
     app.include_router(routes_pipeline.router)
     app.include_router(routes_trading.router)
     app.include_router(routes_alerts.router)

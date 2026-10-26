@@ -11,6 +11,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist',
+      'dist-demo',
       'node_modules',
       'src-tauri/target',
       'src-tauri/gen',

@@ -1,2 +1,5 @@
 /target/
 /gen/schemas
+# staged by engine/packaging/build.ps1
+/binaries/
+/engine-runtime/

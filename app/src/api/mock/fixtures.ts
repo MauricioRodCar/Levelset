@@ -281,7 +281,41 @@ export const amdTicket: Ticket = {
   createdAt: et('10:12', '41'),
 };
 
-export const tickets: Ticket[] = [tslaTicket, amdTicket];
+/** Previous session's NVDA ticket: the entry window has passed, so it is stale (WP3 dashboard demo). */
+export const NVDA_STALE_TICKET_ID = 'tkt_20261016_1005_nvda';
+export const nvdaStaleTicket: Ticket = {
+  id: NVDA_STALE_TICKET_ID,
+  runId: NVDA_RUN_ID,
+  symbol: 'NVDA',
+  side: 'buy',
+  qty: 23,
+  orderType: 'market',
+  timeInForce: 'day',
+  entry: 181.9,
+  stop: 179.8,
+  target: 186.1,
+  riskPerShare: 2.1,
+  rewardPerShare: 4.2,
+  rMultiple: 2,
+  maxLoss: 48.3,
+  positionUsd: 4183.7,
+  flatBy: '15:55',
+  status: 'stale',
+  riskReasons: [],
+  riskDetail: [],
+  timeMachine: {
+    targetFirstPct: 35.0,
+    stopFirstPct: 33.1,
+    openAtClosePct: 31.9,
+    verdict: 'coin_flip',
+    historyFired: 27,
+    historyWon: 11,
+    historyLost: 12,
+  },
+  createdAt: '2026-10-16T10:05:40-04:00',
+};
+
+export const tickets: Ticket[] = [tslaTicket, amdTicket, nvdaStaleTicket];
 
 // ---------------------------------------------------------------- trades, fills, dashboard
 

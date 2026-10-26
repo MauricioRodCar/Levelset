@@ -53,6 +53,8 @@ export interface AccountLimitsFormProps {
   /** Extra buttons rendered next to submit (e.g. onboarding Back / Skip). */
   extraActions?: ReactNode;
   className?: string;
+  /** Settings tab: also show position cap, max order, require-stop and window hints. */
+  advanced?: boolean;
 }
 
 /**
@@ -64,6 +66,7 @@ export function AccountLimitsForm({
   submitLabel,
   extraActions,
   className,
+  advanced = false,
 }: AccountLimitsFormProps) {
   const { t } = useTranslation('settings');
   const uid = useId();
@@ -227,6 +230,45 @@ export function AccountLimitsForm({
             {...aria('cashBufferPct')}
           />
         </Field>
+        {advanced && (
+          <>
+            <Field
+              id={id('maxPositionPct')}
+              label={t('account.fields.maxPositionPct')}
+              hint={t('account.hints.maxPositionPct')}
+              error={err('maxPositionPct')}
+            >
+              <Input
+                id={id('maxPositionPct')}
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={100}
+                step={5}
+                value={draft.limits.maxPositionPct ?? ''}
+                onChange={(e) => setLimits({ maxPositionPct: num(e.target.value) })}
+                {...aria('maxPositionPct')}
+              />
+            </Field>
+            <Field
+              id={id('maxOrderUsd')}
+              label={t('account.fields.maxOrderUsd')}
+              hint={t('account.hints.maxOrderUsd')}
+              error={err('maxOrderUsd')}
+            >
+              <Input
+                id={id('maxOrderUsd')}
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step={100}
+                value={draft.limits.maxOrderUsd ?? ''}
+                onChange={(e) => setLimits({ maxOrderUsd: num(e.target.value) })}
+                {...aria('maxOrderUsd')}
+              />
+            </Field>
+          </>
+        )}
       </div>
 
       <fieldset className="grid gap-4 sm:grid-cols-3">
@@ -234,6 +276,7 @@ export function AccountLimitsForm({
         <Field
           id={id('noEntriesBefore')}
           label={t('account.fields.noEntriesBefore')}
+          hint={advanced ? t('account.hints.noEntriesBefore') : undefined}
           error={err('noEntriesBefore')}
         >
           <Input
@@ -247,6 +290,7 @@ export function AccountLimitsForm({
         <Field
           id={id('noEntriesAfter')}
           label={t('account.fields.noEntriesAfter')}
+          hint={advanced ? t('account.hints.noEntriesAfter') : undefined}
           error={err('noEntriesAfter')}
         >
           <Input
@@ -257,7 +301,12 @@ export function AccountLimitsForm({
             {...aria('noEntriesAfter')}
           />
         </Field>
-        <Field id={id('flatBy')} label={t('account.fields.flatBy')} error={err('flatBy')}>
+        <Field
+          id={id('flatBy')}
+          label={t('account.fields.flatBy')}
+          hint={advanced ? t('account.hints.flatBy') : undefined}
+          error={err('flatBy')}
+        >
           <Input
             id={id('flatBy')}
             type="time"
@@ -280,6 +329,20 @@ export function AccountLimitsForm({
           onCheckedChange={(v) => setLimits({ pdtGuard: v })}
         />
       </div>
+
+      {advanced && (
+        <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-surface2 px-3 py-2.5">
+          <div>
+            <Label htmlFor={id('requireStop')}>{t('account.fields.requireStop')}</Label>
+            <p className="text-xs text-text-muted">{t('account.hints.requireStop')}</p>
+          </div>
+          <Switch
+            id={id('requireStop')}
+            checked={draft.limits.requireStop !== false}
+            onCheckedChange={(v) => setLimits({ requireStop: v })}
+          />
+        </div>
+      )}
 
       {save.isError && <ErrorState compact title={t('account.saveFailed')} error={save.error} />}
 

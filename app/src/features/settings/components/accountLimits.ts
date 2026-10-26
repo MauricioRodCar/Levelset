@@ -29,6 +29,8 @@ export type LimitsErrors = Partial<
     | 'maxTradesPerDay'
     | 'minRewardRisk'
     | 'cashBufferPct'
+    | 'maxPositionPct'
+    | 'maxOrderUsd'
     | 'noEntriesBefore'
     | 'noEntriesAfter'
     | 'flatBy',
@@ -69,6 +71,17 @@ export function validateLimits(s: Settings): LimitsErrors {
     (Number.isNaN(a.cashBufferPct) || a.cashBufferPct < 0 || a.cashBufferPct > 100)
   ) {
     e.cashBufferPct = 'percent';
+  }
+
+  if (
+    l.maxPositionPct !== undefined &&
+    (Number.isNaN(l.maxPositionPct) || l.maxPositionPct <= 0 || l.maxPositionPct > 100)
+  ) {
+    e.maxPositionPct = 'percent';
+  }
+  if (l.maxOrderUsd !== undefined) {
+    if (Number.isNaN(l.maxOrderUsd)) e.maxOrderUsd = 'required';
+    else if (l.maxOrderUsd <= 0) e.maxOrderUsd = 'positive';
   }
 
   const hhmm = /^\d{2}:\d{2}$/;

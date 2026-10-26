@@ -1,8 +1,6 @@
 {
   "title": "Pipeline",
   "description": "Every step behind a ticket, from scanner to risk check.",
-  "placeholder": "The 8-step pipeline view is on its way.",
-  "placeholderRun": "Run {{runId}} will open here.",
   "steps": {
     "scanner": "Scanner",
     "news": "News",
@@ -14,15 +12,558 @@
     "ticket": "Ticket"
   },
   "checks": {
+    "unknown": "Needs a look: {{code}}",
     "earnings_this_week": "Earnings this week",
+    "halt": "Trading halt in the news",
+    "important_filing": "Important SEC filing",
+    "moving": "Moving a lot since yesterday's close",
+    "news_unavailable": "News couldn't be checked",
+    "scan_failed": "The scan couldn't run",
+    "not_in_scan": "Not in today's scan results",
+    "no_hits": "No chart matched the setup",
     "coin_flip": "Odds are a coin flip",
+    "unfavorable_odds": "Odds lean against this trade",
     "many_open_at_close": "Often still open at the close",
     "entry_waiting": "Entry not triggered yet",
+    "entry_expired": "Entry window has passed",
+    "market_closed": "The market is closed",
+    "no_data": "No price data",
+    "reward_risk_below_min": "Reward:risk is below your minimum",
+    "early_close": "Early close today",
+    "plan_not_today": "The plan is not from today",
+    "exit_note": "The exit plan has a note",
     "max_loss_per_trade": "Loss at the stop is above your max loss per trade",
     "loss": "Loss at the stop is above your max loss per trade",
+    "max_loss": "Loss at the stop is above your max loss per trade",
+    "size": "The order is too large for your limits",
+    "reward_risk": "Reward:risk is below your minimum",
+    "min_rr": "Reward:risk is below your minimum",
+    "min_order": "The order is below the minimum size",
+    "position_limit": "The position would be above your cap",
+    "budget_refused": "The budget couldn't size this trade",
+    "price_above_entry": "The price is already above the plan's entry",
+    "stale_price": "The latest price is too old to use",
     "daily_loss": "Today's losses have reached your daily limit",
     "daily_limit": "This trade would go over your daily loss limit",
+    "trades": "You've reached your trades for today",
+    "trades_per_day": "You've reached your trades for today",
     "window": "Outside your entry window",
-    "duplicate": "Duplicate of an order already placed today"
+    "entry_window": "Outside your entry window",
+    "duplicate": "Duplicate of an order already placed today",
+    "stop": "The stop loss is missing or invalid",
+    "no_stop": "The order has no stop loss",
+    "target": "The take profit is invalid",
+    "cash": "Not enough cash after your buffer",
+    "position": "The position would be above your cap",
+    "format": "The order is malformed",
+    "asset": "This instrument isn't allowed",
+    "short": "Short selling is off",
+    "pdt": "Pattern day trader rule",
+    "option_order": "Options are off",
+    "blocked": "This ticker is on your blocked list",
+    "price": "No usable price for this ticker",
+    "live_account": "This is a live (not paper) account",
+    "stale": "The ticket is stale"
+  },
+  "grid": {
+    "label": "Pipeline steps"
+  },
+  "card": {
+    "in": "In:",
+    "out": "Out:",
+    "pendingOut": "Not run yet",
+    "runningOut": "Running…"
+  },
+  "stepInfo": {
+    "scanner": {
+      "in": "US stocks, 5-minute bars",
+      "what": "Finds charts that match the setup right now."
+    },
+    "news": {
+      "in": "Headlines and 8-Ks for the ticker",
+      "what": "Flags news that can move the stock."
+    },
+    "entry": {
+      "in": "Opening range and the latest bars",
+      "what": "Says when the breakout has really happened."
+    },
+    "exit": {
+      "in": "The entry and the opening range",
+      "what": "Sets the stop loss and the take profit before you enter."
+    },
+    "timemachine": {
+      "in": "The plan and 60 days of 5-minute bars",
+      "what": "Replays the trade thousands of times."
+    },
+    "budget": {
+      "in": "The plan and your account limits",
+      "what": "Works out how many shares fit your limits."
+    },
+    "risk": {
+      "in": "The sized order and today's trades",
+      "what": "Checks the order against every rule you set."
+    },
+    "ticket": {
+      "in": "The order that passed the risk check",
+      "what": "The ticket you copy into your platform."
+    }
+  },
+  "summary": {
+    "error": "Error: {{message}}",
+    "scanner": {
+      "found": {
+        "in": "{{kind}} scan of {{universe}} charts, {{asOf}}",
+        "out": "{{hits}} of {{scanned}} matched · {{symbol}} broke {{rangeHigh}} at {{at}} (+{{pctOver}})",
+        "outNoPick": "{{hits}} of {{scanned}} matched · {{symbol}} isn't among them"
+      },
+      "none": {
+        "in": "{{kind}} scan",
+        "out": "No chart matched ({{scanned}} scanned)"
+      },
+      "failed": {
+        "in": "Scan for {{symbol}}",
+        "out": "The scan failed; {{symbol}} is checked anyway"
+      }
+    },
+    "news": {
+      "items": {
+        "in": "Headlines and 8-Ks for {{symbol}}, last {{hours}} h",
+        "out_one": "{{count}} item for {{symbol}}",
+        "out_other": "{{count}} items for {{symbol}}"
+      },
+      "unavailable": {
+        "in": "Headlines for {{symbol}}",
+        "out": "News couldn't be loaded"
+      }
+    },
+    "entry": {
+      "triggered": {
+        "in": "{{symbol}} opening range {{rangeLow}} – {{rangeHigh}}",
+        "out": "Triggered at {{price}}, {{time}}: the {{barStart}} bar closed above {{level}}"
+      },
+      "waiting": {
+        "in": "{{symbol}} opening range {{rangeLow}} – {{rangeHigh}}",
+        "out": "Waiting: last close {{lastClose}}, {{distance}} below {{level}}"
+      },
+      "expired": {
+        "in": "{{symbol}} opening range {{rangeLow}} – {{rangeHigh}}",
+        "out": "Expired: no breakout inside your entry window"
+      },
+      "market_closed": {
+        "in": "{{symbol}} opening range",
+        "out": "The market is closed"
+      },
+      "no_data": {
+        "in": "{{symbol}} opening range",
+        "out": "No price data for {{symbol}}"
+      },
+      "needs_level": {
+        "in": "Price level setup",
+        "out": "A level setup needs a price level"
+      }
+    },
+    "exit": {
+      "plan": {
+        "in": "Entry {{entry}}, stop at the {{stopRule}}",
+        "out": "Stop {{stop}} · target {{target}} ({{targetR}}R) · risk {{riskPerShare}} a share"
+      }
+    },
+    "timemachine": {
+      "result": {
+        "in": "{{replays}} replays from the entry, seed {{seed}}",
+        "out": "Target first {{targetFirstPct}} · stop first {{stopFirstPct}} · {{verdict}}"
+      }
+    },
+    "budget": {
+      "sized": {
+        "in": "Max loss {{maxLossPerTrade}} a trade · risk {{riskPerShare}} a share",
+        "out": "{{qty}} shares ({{cost}}) · max loss {{maxLoss}} · set by {{boundBy}}"
+      },
+      "refused": {
+        "in": "Max loss {{maxLossPerTrade}} a trade · risk {{riskPerShare}} a share",
+        "out": "No order: the stop is too far for your max loss"
+      }
+    },
+    "risk": {
+      "pass": {
+        "in": "The sized order against your limits",
+        "out": "PASS · max loss {{maxLoss}} of {{maxLossLimit}} · reward:risk {{rewardRisk}}"
+      },
+      "block": {
+        "in": "The sized order against your limits",
+        "out": "BLOCK · {{reasons}}"
+      }
+    },
+    "ticket": {
+      "ready": {
+        "in": "Risk PASS",
+        "out": "BUY {{qty}} {{symbol}} · {{entry}} / {{stop}} / {{target}}"
+      },
+      "blocked": {
+        "in": "Risk BLOCK",
+        "out": "Blocked: BUY {{qty}} {{symbol}} can't be traded"
+      },
+      "stale": {
+        "in": "Risk PASS",
+        "out": "Stale: run it again before you trade"
+      }
+    }
+  },
+  "scanner": {
+    "universe": "Universe",
+    "scanned": "Scanned",
+    "hits": "Matches",
+    "picked": "Picked",
+    "pickedBadge": "picked",
+    "asOf": "As of {{value}}",
+    "noHits": "No chart matched the setup.",
+    "filter": "Filter by symbol",
+    "col": {
+      "symbol": "Symbol",
+      "setup": "Setup",
+      "price": "Price",
+      "range": "Opening range",
+      "over": "Over the high",
+      "at": "Time"
+    },
+    "setups": {
+      "orb": "Opening-range breakout",
+      "breakout20": "20-day breakout",
+      "breakout_20d": "20-day breakout",
+      "bull_flag": "Bull flag",
+      "reclaim20": "Reclaimed the 20-day average",
+      "reclaim_ma20": "Reclaimed the 20-day average",
+      "oversold": "Oversold",
+      "oversold_bounce": "Oversold bounce"
+    },
+    "kinds": {
+      "orb": "Opening-range",
+      "daily": "Daily"
+    }
+  },
+  "news": {
+    "none": "No news for this ticker in the window.",
+    "filing": "8-K filing",
+    "important": "Important",
+    "tags": {
+      "earnings": "Earnings",
+      "analyst": "Analyst",
+      "deal": "Deal",
+      "halt": "Halt",
+      "regulatory": "Regulatory",
+      "macro": "Macro",
+      "leadership": "Leadership",
+      "legal": "Legal",
+      "other": "Other"
+    }
+  },
+  "entry": {
+    "level": "Trigger level",
+    "sayTriggered": "The {{bar}} bar closed at {{price}}, above the trigger {{level}}. That's the entry.",
+    "sayWaiting": "No bar has closed above {{level}} yet. The last close is {{distance}} away.",
+    "say": {
+      "expired": "The entry window passed without a breakout.",
+      "unknown": "The entry couldn't be checked."
+    },
+    "rangeHigh": "Range high",
+    "rangeLow": "Range low",
+    "trigger": "Trigger",
+    "distance": "Last close vs trigger",
+    "lastClose": "Last close {{value}}",
+    "chartLabel": "{{symbol}} 5-minute chart with the opening range and the trigger bar",
+    "legendBand": "Opening range (first {{minutes}} min)",
+    "legendTrigger": "Trigger bar"
+  },
+  "levels": {
+    "entry": "Entry",
+    "stop": "Stop loss",
+    "target": "Take profit"
+  },
+  "exit": {
+    "secondary": "Risk {{risk}} a share · reward:risk {{rr}} · flat by {{flatBy}}",
+    "stopRule": "Stop rule",
+    "targetRule": "Target",
+    "targetR": "{{r}}R (times the risk)",
+    "stopRules": {
+      "or_mid": "opening-range midpoint",
+      "or_low": "opening-range low",
+      "price": "your price",
+      "pct": "percent below the entry",
+      "atr": "ATR multiple"
+    },
+    "chartLabel": "{{symbol}} 5-minute chart with entry, stop loss and take profit",
+    "flatBy": "Flat by {{time}}"
+  },
+  "chart": {
+    "noBars": "No chart data for this ticker right now.",
+    "otherDay": "The chart is only available on the day of the run.",
+    "otherDayHint": "The price source serves today's bars only; the numbers below are the stored run.",
+    "caption_one": "{{symbol}} · {{count}} closed 5-minute bar · times in ET",
+    "caption_other": "{{symbol}} · {{count}} closed 5-minute bars · times in ET"
+  },
+  "detail": {
+    "label": "{{step}} details",
+    "times": "Ran {{start}} → {{end}}",
+    "checks": "Needs attention",
+    "error": "This step failed.",
+    "skillSays": "From the skill:",
+    "tabs": {
+      "inputs": "Inputs",
+      "outputs": "Outputs",
+      "params": "Parameters"
+    },
+    "rawJson": "Raw JSON",
+    "noInputs": "Nothing recorded yet.",
+    "running": "Running…",
+    "notRun": "This step hasn't run yet."
+  },
+  "timemachine": {
+    "verdict": {
+      "favorable": "Leans your way: the target came first in {{target}} of replays and the stop in {{stop}}. {{open}} were still open at {{time}}.",
+      "coin_flip": "Close to a coin flip: target first {{target}}, stop first {{stop}}. {{open}} were still open at {{time}}, so the close decides many of them.",
+      "unfavorable": "Leans against you: the stop came first in {{stop}} of replays, the target in {{target}}. {{open}} were still open at {{time}}."
+    },
+    "verdictShort": {
+      "favorable": "favorable",
+      "coin_flip": "coin flip",
+      "unfavorable": "unfavorable"
+    },
+    "outcomes": "Outcome of {{replays}} replays (seed {{seed}})",
+    "barLabel": "Target first {{target}}, stop first {{stop}}, open at the close {{open}}",
+    "legend": {
+      "target": "Target first",
+      "stop": "Stop first",
+      "open": "Open at {{time}}"
+    },
+    "history": "Every past time the setup fired (last {{sessions}} sessions)",
+    "col": {
+      "fired": "Fired",
+      "won": "Target first",
+      "lost": "Stop first",
+      "open": "Open at close",
+      "date": "Date",
+      "outcome": "Outcome"
+    },
+    "outcome": {
+      "target": "Target",
+      "stop": "Stop",
+      "close": "Open at close"
+    },
+    "showAll_one": "Show {{count}} trade",
+    "showAll_other": "Show all {{count}} trades",
+    "showLess": "Show fewer",
+    "distribution": "Where the price sat at the close",
+    "distributionLabel": "Close price distribution: 5th percentile {{p5}}, median {{median}}, 95th percentile {{p95}}",
+    "median": "median {{value}}",
+    "middle90": "90% between {{lo}} and {{hi}}"
+  },
+  "budget": {
+    "decided": "The {{limit}} limit decided the size: {{qty}} shares.",
+    "refused": "No order: {{reason}}.",
+    "qty": "Shares",
+    "cost": "Cost",
+    "maxLoss": "Max loss at the stop",
+    "riskPerShare": "Risk a share",
+    "limitsTitle": "Shares each limit allows",
+    "col": {
+      "limit": "Limit",
+      "shares": "Shares",
+      "how": "How"
+    },
+    "limits": {
+      "max_loss": "max loss per trade",
+      "position_cap": "position cap",
+      "max_order": "max order",
+      "cash": "cash after buffer"
+    },
+    "decides": "decides"
+  },
+  "risk": {
+    "pass": "PASS",
+    "block": "BLOCK",
+    "passSay": "Every rule passed. The ticket can go out.",
+    "blockSay": "At least one rule failed, so the ticket is blocked.",
+    "checklist": "Risk rules",
+    "ok": "pass",
+    "fail": "fail",
+    "rules": {
+      "stop": "Stop loss present",
+      "max_loss": "Max loss per trade",
+      "reward_risk": "Minimum reward:risk",
+      "daily": "Daily loss limit",
+      "trades": "Trades per day",
+      "window": "Entry window and market hours",
+      "cash": "Cash and position cap",
+      "order": "Order format, ticker and duplicates"
+    },
+    "detail": {
+      "stop": "Stop at {{stop}}",
+      "maxLoss": "{{value}} at the stop, limit {{limit}}",
+      "rewardRisk": "{{value}}, minimum {{min}}",
+      "daily": "{{value}} at risk today with this trade, limit {{limit}}",
+      "trades": "{{value}} of {{max}} trades before this one"
+    }
+  },
+  "ticket": {
+    "notStored": "The ticket record isn't available; these are the levels from the run.",
+    "none": "No ticket for this run."
+  },
+  "params": {
+    "none": "No parameters.",
+    "readOnlyHint": "Turn on Step by step to change parameters and re-run a step.",
+    "usesSettings": "This step has no parameters: it uses your limits from Settings.",
+    "missingValue": "Enter a value for {{field}}.",
+    "fields": {
+      "kind": "Scan",
+      "at": "Scan time (ET)",
+      "orMinutes": "Opening range (minutes)",
+      "minPrice": "Minimum price",
+      "minVolume": "Minimum volume",
+      "hours": "Look back (hours)",
+      "noSec": "Skip SEC filings",
+      "interval": "Bar size",
+      "level": "Price level",
+      "minVolumeX": "Volume check (x range average)",
+      "stop": "Stop loss",
+      "target": "Take profit",
+      "flatBy": "Flat by (ET)",
+      "replays": "Replays",
+      "seed": "Seed",
+      "window": "Similar-days window",
+      "until": "Replay until (ET)",
+      "limit": "Order type",
+      "limitPrice": "Limit price",
+      "budget": "Budget (USD)"
+    },
+    "hints": {
+      "orMinutes": "15 by default.",
+      "at": "Empty = now.",
+      "hours": "12 by default.",
+      "minVolumeX": "Empty = no volume check.",
+      "replays": "10,000 by default.",
+      "seed": "Same seed, same numbers.",
+      "until": "Use your flat-by time to stop each replay there.",
+      "limit": "Market by default.",
+      "budget": "Empty = your account size.",
+      "stop": {
+        "or-mid": "Halfway between the range high and low, rounded down.",
+        "or-low": "The bottom of the opening range.",
+        "price": "A price you choose.",
+        "pct": "A percent below the entry.",
+        "atr": "A multiple of the average true range below the entry."
+      },
+      "target": {
+        "1R": "As far above the entry as the stop is below it.",
+        "2R": "Twice the risk above the entry.",
+        "price": "A price you choose."
+      }
+    },
+    "options": {
+      "kind": {
+        "orb": "Opening-range breakout",
+        "daily": "Daily setups"
+      },
+      "interval": {
+        "5m": "5 minutes",
+        "1m": "1 minute"
+      },
+      "stop": {
+        "or-mid": "Range midpoint",
+        "or-low": "Range low",
+        "price": "Price",
+        "pct": "Percent",
+        "atr": "ATR multiple"
+      },
+      "target": {
+        "1R": "1R",
+        "2R": "2R",
+        "price": "Price"
+      },
+      "limit": {
+        "market": "Market",
+        "plan": "Limit at the plan's entry",
+        "price": "Limit at a price"
+      }
+    },
+    "valueFor": {
+      "price": "Price",
+      "pct": "Percent",
+      "atr": "ATR multiple"
+    }
+  },
+  "start": {
+    "title": "Start a run",
+    "subtitle": "Scan, check and size one trade, step by step or all at once.",
+    "ticker": "Ticker (optional)",
+    "tickerPlaceholder": "Best scan hit",
+    "setup": "Setup",
+    "level": "Price level",
+    "stepByStep": "Step by step",
+    "runAll": "Run all",
+    "newRun": "New run",
+    "hint": "Leave the ticker empty to use the scanner's best opening-range breakout.",
+    "badTicker": "That doesn't look like a US ticker.",
+    "needLevel": "A level setup needs a price level."
+  },
+  "setups": {
+    "orb": "Opening-range breakout",
+    "level": "Price level breakout"
+  },
+  "modes": {
+    "all": "Run all",
+    "step": "Step by step"
+  },
+  "history": {
+    "button": "History",
+    "title": "Past runs",
+    "loading": "Loading…",
+    "empty": "No runs yet."
+  },
+  "readOnly": {
+    "text": "You're viewing a past run from {{when}}. It's read-only.",
+    "latest": "Go to the latest run"
+  },
+  "stop": {
+    "title": "Stopped at {{step}}",
+    "entryWaiting": "{{symbol}} hasn't closed above the trigger {{level}} yet (last close {{distance}} below). The next steps wait for the entry.",
+    "error": "The step failed: {{message}}",
+    "remaining_one": "{{count}} step is waiting.",
+    "remaining_other": "{{count}} steps are waiting.",
+    "waitingHint": "Check again after the next 5-minute bar closes.",
+    "stepByStep": "Continue step by step",
+    "checkAgain": "Check again",
+    "runAgain": "Run {{step}} again"
+  },
+  "errors": {
+    "previous": "Run {{step}} first (it's {{status}}).",
+    "run_busy": "This run is still running. Wait for it to finish.",
+    "no_ticker": "There's no ticker yet: run the scanner first or start with a ticker.",
+    "run_not_found": "This run doesn't exist anymore."
+  },
+  "wizard": {
+    "toggle": "Step by step",
+    "progress": "Step {{n}} of {{total}}",
+    "explain": "Explain this step",
+    "run": "Run this step",
+    "runAgain": "Run again",
+    "running": "Running…",
+    "resetsLater": "Running this step again resets the steps after it."
+  },
+  "explain": {
+    "scanner": "The scanner looks at US stocks on 5-minute bars and lists the charts that match the setup. For an opening-range breakout that means a bar closed above the high of the first 15 minutes. A scan is a list of charts to look at, not stocks to buy.",
+    "news": "News checks the latest headlines and the company's 8-K filings for anything that can move the stock: earnings, deals, halts, leadership changes. Earnings this week means a big gap is possible.",
+    "entry": "Entry watches the bars and calls the entry on the first completed bar that closes above the opening-range high (or your level). Until then it says how far the price is from the trigger. It never places an order.",
+    "exit": "Exit sets the stop loss and the take profit before you enter. By default the stop goes at the opening-range midpoint and the target at 1R (as far above the entry as the stop is below). It refuses a stop too tight to survive the spread.",
+    "timemachine": "The time machine replays the rest of the day thousands of times from the stock's own last 60 days, then counts how often the target or the stop came first, and replays every past time the setup fired. It's a reality check, not a prediction.",
+    "budget": "Budget finds the whole number of shares that fits inside four limits: your max loss per trade, your position cap, your max order and the cash left after your buffer. It tells you which limit decided the size.",
+    "risk": "Risk checks the order against every rule you set: a stop is required, the loss at the stop must fit your max loss, reward:risk must meet your minimum, today's total risk and trades must fit your daily limits, and entries must be inside your window.",
+    "ticket": "The ticket is the final order: entry, stop loss and take profit, ready to copy into your platform. Levelset never sends it to a broker. You decide and place every trade yourself."
+  },
+  "empty": {
+    "title": "No runs yet",
+    "text": "Start a run to see every step from the scanner to the ticket."
+  },
+  "run": {
+    "noTicker": "Ticker pending"
   }
 }

@@ -17,7 +17,10 @@
     "i18n:check": "node scripts/i18n-check.mjs",
     "api:types": "openapi-typescript ../docs/api/openapi.yaml -o src/api/schema.d.ts --default-non-nullable=false",
     "tauri": "tauri",
-    "api:check": "openapi-typescript ../docs/api/openapi.yaml -o src/api/schema.d.ts --default-non-nullable=false --check"
+    "api:check": "openapi-typescript ../docs/api/openapi.yaml -o src/api/schema.d.ts --default-non-nullable=false --check",
+    "build:demo": "tsc --noEmit && node scripts/build-demo.mjs",
+    "build:engine": "powershell -NoProfile -ExecutionPolicy Bypass -File ../engine/packaging/build.ps1",
+    "tauri:build": "tauri build --config src-tauri/tauri.release.conf.json"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
@@ -35,6 +38,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "i18next": "^26.5.11",
+    "lightweight-charts": "^5.2.1",
     "lucide-react": "^1.61.0",
     "openapi-fetch": "^0.17.0",
     "react": "^18.3.1",

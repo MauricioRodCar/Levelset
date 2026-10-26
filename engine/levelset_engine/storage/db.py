@@ -177,6 +177,15 @@ class Database:
     def list_fills(self, newest_first: bool = True) -> list[dict[str, Any]]:
         return self._list("fills", newest_first)
 
+    def get_fill(self, fill_id: str) -> dict[str, Any] | None:
+        return self._get("fills", fill_id)
+
+    def delete_fill(self, fill_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute("DELETE FROM fills WHERE id = ?", (fill_id,))
+            self._conn.commit()
+            return cur.rowcount > 0
+
     def put_alert(self, a: dict[str, Any]) -> None:
         with self._lock:
             rows = self._conn.execute("SELECT seq FROM alerts WHERE id = ?", (a["id"],)).fetchall()

@@ -13,7 +13,7 @@ beforeEach(async () => {
 });
 
 describe('settings shell', () => {
-  it('has all six tabs and placeholder tabs for other packages', async () => {
+  it('has all six tabs', async () => {
     const user = userEvent.setup();
     renderApp('/settings/data');
     for (const name of [
@@ -26,7 +26,7 @@ describe('settings shell', () => {
     ]) {
       expect(screen.getByRole('tab', { name })).toBeInTheDocument();
     }
-    expect(screen.getByText('This section is being built.')).toBeInTheDocument();
+    expect(await screen.findByText('SEC EDGAR identity')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'About' }));
     expect(await screen.findByText(/Copyright \(c\) 2026 Jake Schincariol/)).toBeInTheDocument();
   });

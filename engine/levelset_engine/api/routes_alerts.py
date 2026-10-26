@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from typing import Literal, Optional
+
 from fastapi import APIRouter, Depends, Response
+from pydantic import Field
 
 from ..services.alerts import AlertRejected
 from ..storage import workspace as wsf
 from .deps import Services, require_token, services
 from .errors import ApiError
-from .models import Alert, AlertCreate, AlertsFromPlan, dump
+from .models import Alert, AlertCreate, AlertsFromPlan, AlertType, ApiModel, dump
 
 router = APIRouter(dependencies=[Depends(require_token)])
 
@@ -43,6 +46,53 @@ def alerts_from_plan(body: AlertsFromPlan, s: Services = Depends(services)) -> l
         return s.alerts.from_plan(plan)
     except AlertRejected as e:
         raise ApiError(e.status, e.code, "Alerts not created", e.detail)
+
+
+class AlertUpdate(ApiModel):
+    """PATCH body: any AlertCreate field (null clears it) and/or status "armed" to re-arm."""
+    type: Optional[AlertType] = None
+    symbol: Optional[str] = Field(default=None, pattern=r"^[A-Za-z]{1,5}([.\-][A-Za-z]{1,2})?$")
+    level: Optional[float] = Field(default=None, gt=0)
+    pct: Optional[float] = Field(default=None, gt=0)
+    time: Optional[str] = Field(default=None, pattern=r"^([01]?\d|2[0-3]):[0-5]\d$")
+    note: Optional[str] = None
+    status: Optional[Literal["armed"]] = None
+
+
+_DEFINITION = ("type", "symbol", "level", "pct", "time", "note")
+
+
+@router.patch("/alerts/{alertId}", response_model=Alert)
+def update_alert(alertId: str, body: AlertUpdate, s: Services = Depends(services)) -> dict:
+    a = s.ctx.db.get_alert(alertId)
+    if a is None:
+        raise ApiError(404, "alert_not_found", "Alert not found", alertId)
+    changes = {k: getattr(body, k) for k in body.model_fields_set if k in _DEFINITION}
+    merged = {k: a.get(k) for k in _DEFINITION}
+    merged.update(changes)
+    if merged.get("type") is None:
+        raise ApiError(422, "invalid_alert", "Alert not updated", "type cannot be cleared")
+    try:
+        s.alerts.validate(merged)
+    except AlertRejected as e:
+        raise ApiError(e.status, e.code, "Alert not updated", e.detail)
+    for k in _DEFINITION:
+        if merged.get(k) is None:
+            a.pop(k, None)
+        else:
+            a[k] = merged[k]
+    if a.get("symbol"):
+        a["symbol"] = a["symbol"].upper()
+    if a["type"] == "flat_by" and not a.get("time"):
+        a["time"] = s.ctx.config_doc().get("flat_by") or "15:55"
+    if body.status == "armed":
+        a.update(status="armed", rungAt=None)
+        a.pop("_message", None)
+        # a plan alert is pinned to its plan's day; re-armed on a later day it would never ring
+        if a.get("_date") and a["_date"] != s.ctx.clock.today_ny():
+            a.pop("_date")
+    s.ctx.db.put_alert(a)
+    return {k: v for k, v in a.items() if not k.startswith("_")}
 
 
 @router.delete("/alerts/{alertId}", status_code=204)

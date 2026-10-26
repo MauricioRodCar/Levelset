@@ -15,5 +15,127 @@
   "status": {
     "armed": "Activa",
     "rung": "Sonó"
+  },
+  "actions": {
+    "fromPlan": "Agregar desde el plan",
+    "custom": "Alerta personalizada",
+    "edit": "Editar",
+    "editLabel": "Editar alerta {{name}}",
+    "rearm": "Reactivar",
+    "rearmLabel": "Reactivar alerta {{name}}",
+    "delete": "Eliminar",
+    "deleteLabel": "Eliminar alerta {{name}}"
+  },
+  "table": {
+    "title": "Tus alertas",
+    "summary_one": "{{count}} alerta · {{armed}} activas",
+    "summary_many": "{{count}} alertas · {{armed}} activas",
+    "summary_other": "{{count}} alertas · {{armed}} activas",
+    "type": "Tipo",
+    "ticker": "Ticker",
+    "trigger": "Nivel / hora",
+    "status": "Estado",
+    "created": "Creada",
+    "rungAt": "Sonó a las",
+    "actions": "Acciones",
+    "ringsOnce": "Las alertas se revisan con cotizaciones gratuitas con retraso mientras el motor está en marcha. Cada una suena una sola vez; reactívala para volver a usarla. Los horarios son de Nueva York (ET)."
+  },
+  "empty": {
+    "title": "Todavía no tienes alertas",
+    "description": "Agrega con un clic las alertas de stop, objetivo y cierre de un plan de operación, o crea una personalizada."
+  },
+  "toast": {
+    "created": "Alerta creada",
+    "updated": "Alerta actualizada",
+    "rearmed": "Alerta reactivada",
+    "deleted": "Alerta eliminada",
+    "fromPlan_one": "Se agregó {{count}} alerta desde el plan",
+    "fromPlan_many": "Se agregaron {{count}} alertas desde el plan",
+    "fromPlan_other": "Se agregaron {{count}} alertas desde el plan"
+  },
+  "delete": {
+    "title": "¿Eliminar esta alerta?",
+    "description": "Se eliminará {{name}} {{symbol}} {{value}} y ya no sonará."
+  },
+  "fromPlan": {
+    "title": "Agregar alertas desde un plan",
+    "description": "Crea tres alertas con el plan de salida de la corrida: el stop, el objetivo y el aviso de cierre a tu hora límite.",
+    "pick": "Corridas recientes",
+    "runLine": "{{setup}} · {{time}}",
+    "empty": "Todavía no hay corridas",
+    "emptyHint": "Primero ejecuta el pipeline. Su plan de salida tiene el stop y el objetivo.",
+    "submit": "Agregar 3 alertas"
+  },
+  "form": {
+    "createTitle": "Alerta personalizada",
+    "editTitle": "Editar alerta",
+    "description": "Elige qué debe sonar. Los precios están en USD y los horarios en hora de Nueva York (ET).",
+    "type": "Tipo de alerta",
+    "typeHints": {
+      "above": "Suena cuando el precio llega al nivel o lo supera.",
+      "below": "Suena cuando el precio baja al nivel o por debajo.",
+      "stop": "Suena cuando el precio cae hasta tu stop loss.",
+      "target": "Suena cuando el precio llega a tu take profit.",
+      "pct_move": "Suena cuando el precio se mueve este porcentaje, al alza o a la baja, desde el cierre anterior.",
+      "time": "Suena a una hora del día, por ejemplo para recordarte revisar una operación.",
+      "open_bell": "Suena cuando abre la NYSE a las 09:30 ET (no suena fines de semana ni feriados).",
+      "flat_by": "Te recuerda cerrar tus operaciones intradía antes del cierre del mercado."
+    },
+    "symbol": "Ticker",
+    "symbolOptional": "Ticker (opcional)",
+    "symbolHint": "Símbolo de una acción de EE. UU., por ejemplo TSLA o BRK.B.",
+    "level": "Nivel de precio (USD)",
+    "levelHint": "Se compara con cotizaciones con retraso, así que puede sonar un poco tarde.",
+    "pct": "Movimiento desde el cierre anterior (%)",
+    "pctHint": "3 significa un movimiento del 3 % en cualquier dirección.",
+    "time": "Hora (ET)",
+    "timeOptional": "Hora (ET, opcional)",
+    "timeHint": "Hora de Nueva York en formato de 24 horas, por ejemplo 15:30.",
+    "flatByHint": "Déjala vacía para usar la hora de cierre de Ajustes.",
+    "note": "Nota (opcional)",
+    "rearmOnSave": "Reactivar esta alerta al guardar",
+    "create": "Crear alerta",
+    "errors": {
+      "required": "Obligatorio",
+      "symbol": "Ingresa un ticker como TSLA o BRK.B",
+      "positive": "Debe ser mayor que cero",
+      "time": "Usa una hora como 15:30",
+      "noteLength": "La nota debe tener menos de 120 caracteres"
+    }
+  },
+  "errors": {
+    "alert_not_found": "Esa alerta ya no existe. Se actualizó la lista.",
+    "run_not_found": "Esa corrida ya no existe.",
+    "no_plan": "Esta corrida todavía no tiene plan de salida. Primero termina el paso de salida.",
+    "fill_not_found": "Esa ejecución ya no existe.",
+    "fill_in_use": "Una venta posterior usa las acciones de esta compra. Primero elimina esa venta."
+  },
+  "notify": {
+    "title": "Alerta: {{type}}",
+    "titleSymbol": "Alerta de {{symbol}}: {{type}}"
+  },
+  "sentence": {
+    "above": "{{symbol}} cotizó por encima de {{value}}",
+    "below": "{{symbol}} cotizó por debajo de {{value}}",
+    "stop": "{{symbol}} tocó tu stop en {{value}}",
+    "target": "{{symbol}} llegó a tu objetivo en {{value}}",
+    "pct_move": "{{symbol}} se movió {{value}} desde el cierre anterior",
+    "time": "Son las {{value}}",
+    "time_symbol": "Son las {{value}} · {{symbol}}",
+    "open_bell": "La NYSE ya abrió ({{value}})",
+    "flat_by": "{{value}}: cierra tu operación intradía de {{symbol}} antes del cierre"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "subtitle": "Cómo te avisa Levelset cuando suena una alerta. Se guarda en esta computadora.",
+    "desktop": "Notificaciones de Windows",
+    "desktopHint": "Muestra una notificación de Windows aunque Levelset esté en segundo plano.",
+    "browserHint": "Disponible en la app de escritorio. En la demo del navegador solo verás avisos dentro de la app.",
+    "denied": "Las notificaciones de Windows están bloqueadas. Permítelas para Levelset en Configuración de Windows > Notificaciones.",
+    "sound": "Sonido",
+    "soundHint": "Reproduce un tono corto junto con el aviso en la app.",
+    "test": "Enviar una prueba",
+    "testTitle": "Alerta de prueba",
+    "testBody": "Así se verá una alerta."
   }
 }

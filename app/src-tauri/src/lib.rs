@@ -1,62 +1,76 @@
-//! Levelset desktop shell (thin): window, notifications and engine connection info.
-//! The engine sidecar (start/stop, random port + token) is wired in a later work package;
-//! until then `get_engine_info` reads env vars or falls back to the dev defaults.
+//! Levelset desktop shell (thin): window, notifications and the engine sidecar.
+//! Engine lifecycle (spawn, ready line, random port + token, kill on exit) lives in `engine.rs`.
 
-use serde::Serialize;
+mod engine;
+mod secrets;
 
-const DEFAULT_ENGINE_URL: &str = "http://127.0.0.1:8765";
-const DEFAULT_ENGINE_TOKEN: &str = "dev";
+use std::time::Duration;
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct EngineInfo {
-    pub url: String,
-    pub token: String,
-}
+use tauri::Manager;
 
-/// Resolve engine URL/token from LEVELSET_ENGINE_URL / LEVELSET_ENGINE_TOKEN or the dev defaults.
-pub fn engine_info_from(url: Option<String>, token: Option<String>) -> EngineInfo {
-    let clean = |v: Option<String>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
-    EngineInfo {
-        url: clean(url)
-            .map(|u| u.trim_end_matches('/').to_string())
-            .unwrap_or_else(|| DEFAULT_ENGINE_URL.to_string()),
-        token: clean(token).unwrap_or_else(|| DEFAULT_ENGINE_TOKEN.to_string()),
-    }
-}
+pub use engine::{EngineInfo, EngineStatus};
 
-/// Called by the UI at startup (src/api/engine.ts).
+/// Called by the UI at startup (src/api/engine.ts). Waits for the engine's ready line
+/// (at most the 20 s start timeout) and returns its url + per-launch token.
 #[tauri::command]
-fn get_engine_info() -> EngineInfo {
-    engine_info_from(
-        std::env::var("LEVELSET_ENGINE_URL").ok(),
-        std::env::var("LEVELSET_ENGINE_TOKEN").ok(),
-    )
+async fn get_engine_info(engine: tauri::State<'_, engine::Engine>) -> Result<EngineInfo, String> {
+    let engine = engine.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        engine.wait(engine::READY_TIMEOUT + Duration::from_secs(1))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Non-blocking engine state for the UI: starting | ready | failed (+ error, source, demo).
+#[tauri::command]
+fn get_engine_status(engine: tauri::State<'_, engine::Engine>) -> EngineStatus {
+    engine.status()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
-        .invoke_handler(tauri::generate_handler![get_engine_info])
-        .run(tauri::generate_context!())
-        .expect("error while running Levelset");
+        .manage(engine::Engine::default())
+        .setup(|app| {
+            let data_dir = app.path().app_data_dir()?;
+            std::fs::create_dir_all(&data_dir)?;
+            let handle = app.handle().clone();
+            app.state::<engine::Engine>().start(data_dir, move |err| {
+                let _ = handle.emit_engine_failed(&err);
+                engine::show_error_box(
+                    "Levelset",
+                    &format!("Levelset could not start its local engine.\n\n{err}\n\nRestart Levelset to try again."),
+                );
+            });
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            get_engine_info,
+            get_engine_status,
+            secrets::set_secret,
+            secrets::has_secret,
+            secrets::delete_secret
+        ])
+        .build(tauri::generate_context!())
+        .expect("error while building Levelset");
+
+    app.run(|handle, event| {
+        if let tauri::RunEvent::Exit = event {
+            handle.state::<engine::Engine>().shutdown();
+        }
+    });
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// `engine://failed` event so a mounted UI can switch to its error state immediately.
+trait EmitEngineFailed {
+    fn emit_engine_failed(&self, err: &str) -> tauri::Result<()>;
+}
 
-    #[test]
-    fn defaults_when_unset_or_blank() {
-        let info = engine_info_from(None, Some("  ".into()));
-        assert_eq!(info.url, DEFAULT_ENGINE_URL);
-        assert_eq!(info.token, DEFAULT_ENGINE_TOKEN);
-    }
-
-    #[test]
-    fn env_values_win_and_trailing_slash_is_trimmed() {
-        let info = engine_info_from(Some("http://127.0.0.1:9001/".into()), Some("abc".into()));
-        assert_eq!(info.url, "http://127.0.0.1:9001");
-        assert_eq!(info.token, "abc");
+impl EmitEngineFailed for tauri::AppHandle {
+    fn emit_engine_failed(&self, err: &str) -> tauri::Result<()> {
+        use tauri::Emitter;
+        self.emit("engine://failed", err)
     }
 }

@@ -10,7 +10,8 @@ info:
     This file is the contract between engine (WP1) and UI (WP2-5). Change it only through the lead.
     Error codes (Problem.code) the UI must translate: unauthorized, not_found, validation_error,
     previous_step_not_done, scan_failed (502), news_failed (502), insufficient_position (422),
-    invalid_alert (422). A run-all that stops early (e.g. entry still waiting) ends with status
+    invalid_alert (422), alert_not_found (404), fill_not_found (404), fill_in_use (409).
+    A run-all that stops early (e.g. entry still waiting) ends with status
     "check" and the remaining steps "pending". News tags map the skill's people->leadership,
     capital/risk->other.
 servers:
@@ -65,6 +66,22 @@ paths:
         - { name: hours, in: query, schema: { type: integer, default: 12 } }
       responses:
         "200": { description: ok, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/NewsItem" } } } } }
+  /bars:
+    get:
+      summary: |
+        Today's intraday price bars for one symbol (charts in the Pipeline view). Demo mode reads the vendored
+        fixtures and returns only the bars completed by the pinned clock. rangeHigh/rangeLow are the first
+        15 minutes' high/low (the opening range) once those bars exist. 404 not_found when there is no data
+        for the symbol, 502 bars_failed when the price source cannot be reached.
+      parameters:
+        - { name: symbol, in: query, required: true, schema: { type: string } }
+        - { name: interval, in: query, schema: { type: string, enum: [1m, 5m], default: 5m } }
+        - { name: range, in: query, schema: { type: string, enum: [1d], default: 1d } }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Bars" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+        "502": { $ref: "#/components/responses/Problem" }
   /pipeline/runs:
     get:
       summary: Run history, newest first
@@ -125,6 +142,17 @@ paths:
       requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FillCreate" } } } }
       responses:
         "201": { description: created, content: { application/json: { schema: { $ref: "#/components/schemas/Fill" } } } }
+  /fills/{fillId}:
+    delete:
+      summary: |
+        Remove a wrongly recorded manual fill. The engine reverses it in trader/portfolio.json and voids its
+        records in trader/state/broker.json so trader-risk stops counting it. 409 fill_in_use when a later
+        sell depends on this buy (delete the sell first).
+      parameters: [ { name: fillId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        "204": { description: deleted }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
   /alerts:
     get:
       responses:
@@ -140,6 +168,14 @@ paths:
       responses:
         "201": { description: created, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Alert" } } } } }
   /alerts/{alertId}:
+    patch:
+      summary: Edit an alert (any AlertCreate field) and/or re-arm a rung alert with { status armed }
+      parameters: [ { name: alertId, in: path, required: true, schema: { type: string } } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AlertUpdate" } } } }
+      responses:
+        "200": { description: updated, content: { application/json: { schema: { $ref: "#/components/schemas/Alert" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
     delete:
       parameters: [ { name: alertId, in: path, required: true, schema: { type: string } } ]
       responses:
@@ -272,6 +308,25 @@ components:
         source: { type: string, enum: [yahoo, sec] }
         publishedAt: { type: string, format: date-time }
         tags: { type: array, items: { type: string, description: "earnings | analyst | deal | halt | regulatory | macro | leadership | legal | other" } }
+    Bar:
+      type: object
+      required: [t, o, h, l, c, v]
+      properties:
+        t: { type: integer, description: "bar start, Unix seconds (UTC)" }
+        o: { type: number }
+        h: { type: number }
+        l: { type: number }
+        c: { type: number }
+        v: { type: number }
+    Bars:
+      type: object
+      required: [symbol, interval, bars]
+      properties:
+        symbol: { type: string }
+        interval: { type: string, enum: [1m, 5m] }
+        bars: { type: array, items: { $ref: "#/components/schemas/Bar" } }
+        rangeHigh: { type: [number, "null"], description: "opening range (first 15 minutes) high" }
+        rangeLow: { type: [number, "null"] }
     StepKey:
       type: string
       enum: [scanner, news, entry, exit, timemachine, budget, risk, ticket]
@@ -399,6 +454,17 @@ components:
         pct: { type: number }
         time: { type: string, example: "15:55" }
         note: { type: string }
+    AlertUpdate:
+      type: object
+      description: Partial AlertCreate. The merged alert is validated like a new one. status armed re-arms a rung alert.
+      properties:
+        type: { type: string, enum: [above, below, stop, target, pct_move, time, open_bell, flat_by] }
+        symbol: { type: string }
+        level: { type: number }
+        pct: { type: number }
+        time: { type: string, example: "15:55" }
+        note: { type: string }
+        status: { type: string, enum: [armed] }
     Alert:
       allOf:
         - $ref: "#/components/schemas/AlertCreate"

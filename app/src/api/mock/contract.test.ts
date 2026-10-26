@@ -99,8 +99,21 @@ describe('mock engine matches openapi.yaml', () => {
     const fromPlan = await send('POST', '/alerts/from-plan', { runId: fx.TSLA_RUN_ID });
     expect(check('Alert', fromPlan.body, true)).toEqual([]);
 
+    const patched = await send('PATCH', `/alerts/${alert.body.id}`, {
+      level: 188,
+      status: 'armed',
+    });
+    expect(patched.status).toBe(200);
+    expect(check('Alert', patched.body)).toEqual([]);
+
     const del = await send('DELETE', `/alerts/${alert.body.id}`);
     expect(del.status).toBe(204);
+
+    const delFill = await send('DELETE', `/fills/${fill.body.id}`);
+    expect(delFill.status).toBe(204);
+    const noFill = await send('DELETE', `/fills/${fill.body.id}`);
+    expect(check('Problem', noFill.body)).toEqual([]);
+    expect(noFill.body.code).toBe('fill_not_found');
   });
 
   it('errors use the Problem shape', async () => {

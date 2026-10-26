@@ -27,16 +27,25 @@
       "noEntriesBefore": "Sin entradas antes de",
       "noEntriesAfter": "Sin entradas después de",
       "flatBy": "Cerrar todo antes de",
-      "pdtGuard": "Protección pattern day trader"
+      "pdtGuard": "Protección pattern day trader",
+      "maxPositionPct": "Tope por posición (% de la cuenta)",
+      "maxOrderUsd": "Tamaño máximo de orden (USD)",
+      "requireStop": "Exigir stop loss"
     },
     "hints": {
-      "accountSize": "El efectivo con el que operas. Solo USD en la v1.",
-      "maxLossPerTrade": "Lo máximo que perderás si se toca el stop. El tamaño de la posición se calcula a partir de este valor.",
-      "maxDailyLoss": "Se bloquean nuevas entradas cuando el riesgo total del día superaría este monto.",
-      "maxTradesPerDay": "Se bloquean nuevas entradas después de esta cantidad de operaciones.",
-      "minRewardRisk": "Distancia al objetivo dividida entre la distancia al stop. 1.5 significa que el objetivo está a 1.5 veces el stop.",
-      "cashBuffer": "Parte de la cuenta que nunca se usa para posiciones.",
-      "pdtGuard": "Te avisa antes de una cuarta operación intradía en cinco días en cuentas de menos de USD 25,000."
+      "accountSize": "El efectivo con el que operas, en USD. El tamaño de las posiciones y los límites se calculan a partir de este valor.",
+      "maxLossPerTrade": "Lo máximo que estás dispuesto a perder en una operación si se toca el stop loss. La cantidad de acciones se calcula así: riesgo ÷ distancia al stop.",
+      "maxDailyLoss": "Tu freno del día. Se bloquean nuevas entradas cuando las pérdidas de hoy más el riesgo de las operaciones abiertas superarían este monto.",
+      "maxTradesPerDay": "Se bloquean nuevas entradas después de esta cantidad de operaciones en el día, para que una mala mañana no se convierta en diez operaciones.",
+      "minRewardRisk": "Qué tan lejos está el objetivo comparado con el stop. 1.5 significa que la ganancia posible es al menos 1.5 veces la pérdida posible; los tickets por debajo se bloquean.",
+      "cashBuffer": "Parte de la cuenta que nunca se usa para posiciones y queda como colchón.",
+      "pdtGuard": "Regla de EE. UU. para cuentas de margen de menos de USD 25,000: 4 o más operaciones intradía en 5 días hábiles te marcan como pattern day trader y pueden restringir la cuenta. La protección te avisa antes de la operación que cruzaría ese límite.",
+      "maxPositionPct": "Lo máximo de tu cuenta que puede usar una sola posición, aunque el stop esté muy cerca.",
+      "maxOrderUsd": "Límite superior para el valor en dólares de una sola orden.",
+      "requireStop": "Bloquea cualquier ticket sin stop loss. Muy recomendable para day trading.",
+      "noEntriesBefore": "Evita los primeros minutos más agitados después de la apertura de las 09:30.",
+      "noEntriesAfter": "No se abren operaciones nuevas después de esta hora, para tener margen de gestionarlas antes del cierre.",
+      "flatBy": "Toda operación intradía debería estar cerrada a esta hora. Las alertas de cierre la usan."
     },
     "window": {
       "title": "Horario de entrada (hora de Nueva York)",
@@ -54,11 +63,72 @@
   },
   "data": {
     "title": "Datos y SEC",
-    "description": "Fuentes de datos, retraso y tu identificación ante SEC EDGAR."
+    "description": "Fuentes de datos, retraso y tu identificación ante SEC EDGAR.",
+    "save": "Guardar",
+    "saved": "Identificación ante la SEC guardada",
+    "saveFailed": "No se pudo guardar tu identificación ante la SEC",
+    "sec": {
+      "title": "Identificación ante SEC EDGAR",
+      "subtitle": "La usan el monitor de noticias (reportes 8-K) y el analista de resultados.",
+      "field": "Nombre y correo (User-Agent)",
+      "placeholder": "Ana Pérez ana@ejemplo.com",
+      "hint": "Tu nombre o el de tu empresa seguido de un correo de contacto.",
+      "whyTitle": "¿Por qué la SEC pide esto?",
+      "why": "SEC EDGAR es gratuito, pero sus reglas de acceso justo exigen que cada consulta automática diga quién la hace, con un correo de contacto, para poder avisarte si algo sale mal. Las consultas sin esta información pueden ser bloqueadas.",
+      "privacy": "Solo se envía a sec.gov, en el encabezado de la consulta. Si lo dejas vacío, las funciones de la SEC quedan desactivadas.",
+      "errors": {
+        "email": "Incluye un correo de contacto, por ejemplo Ana Pérez ana@ejemplo.com",
+        "tooLong": "Debe tener menos de 200 caracteres"
+      }
+    },
+    "demo": {
+      "title": "Modo demo",
+      "on": "Activado: usa el ejemplo incluido de TSLA",
+      "off": "Desactivado: usa datos reales (con retraso)",
+      "explain": "El modo demo se elige al iniciar el motor y funciona solo con los datos de ejemplo de los skills (TSLA, 19 de octubre de 2026), así puedes probar todo sin conexión. No se puede cambiar aquí."
+    },
+    "delay": {
+      "title": "Retraso de los datos de mercado",
+      "value_one": "Hasta {{count}} minuto de retraso",
+      "value_many": "Hasta {{count}} minutos de retraso",
+      "value_other": "Hasta {{count}} minutos de retraso",
+      "explain": "Levelset usa datos de mercado gratuitos, que pueden tener retraso, estar incompletos o ser incorrectos. Revisa los precios en tu plataforma antes de actuar.",
+      "sources": "Fuentes: Yahoo Finance (cotizaciones y velas), SEC EDGAR (reportes), Nasdaq Trader (listas de símbolos).",
+      "pro": "Los datos en tiempo real están previstos como una función Pro futura."
+    }
   },
   "ai": {
     "title": "IA (opcional)",
-    "description": "Resúmenes en lenguaje sencillo con tu propia clave de API de Claude. Desactivada por defecto; todas las herramientas funcionan sin ella."
+    "description": "Resúmenes en lenguaje sencillo con tu propia clave de API de Claude. Desactivada por defecto; todas las herramientas funcionan sin ella.",
+    "enable": "Usar resúmenes con IA",
+    "enableHint": "Desactivado por defecto. Mientras esté apagado no se envía nada a ningún servicio de IA.",
+    "whatTitle": "Qué hará (v1.1)",
+    "what": {
+      "earnings": "Resúmenes en lenguaje sencillo de reportes y llamadas de resultados.",
+      "news": "Una nota breve de \"por qué se mueve\" a partir de los titulares del día.",
+      "filings": "Los puntos clave de los nuevos reportes 8-K."
+    },
+    "notNeeded": "Todas las herramientas funcionan sin IA: el escáner, los planes, la Máquina del Tiempo, la revisión de riesgo y los tickets no la usan.",
+    "cost": "Usa tu propia clave de API de Claude, así que el uso se cobra en tu cuenta de Anthropic.",
+    "key": {
+      "title": "Clave de API de Claude",
+      "subtitle": "Se guarda en el Administrador de credenciales de Windows, nunca en archivos de texto. Levelset no puede volver a mostrarla.",
+      "field": "Clave de API",
+      "hint": "Crea una clave en la consola de Anthropic. Empieza con sk-ant-.",
+      "save": "Guardar clave",
+      "saved": "Clave guardada",
+      "savedHint": "La clave está guardada de forma segura en esta computadora. Para cambiarla, elimínala y guarda una nueva.",
+      "remove": "Eliminar clave",
+      "savedToast": "Clave de API guardada",
+      "removedToast": "Clave de API eliminada",
+      "saveFailed": "No se pudo guardar la clave en el Administrador de credenciales de Windows",
+      "removeFailed": "No se pudo eliminar la clave",
+      "desktopOnly": "Las claves de API solo se pueden guardar en la app de escritorio de Levelset, donde van al Administrador de credenciales de Windows. La demo del navegador nunca guarda claves.",
+      "errors": {
+        "required": "Pega tu clave de API",
+        "format": "No parece una clave de API de Claude (sk-ant-…)"
+      }
+    }
   },
   "appearance": {
     "presets": "Temas",
@@ -102,19 +172,58 @@
       "signals": "Señales"
     },
     "tokens": {
-      "bg": { "label": "Fondo", "use": "Fondo de la app" },
-      "surface": { "label": "Superficie", "use": "Tarjetas y paneles" },
-      "surface2": { "label": "Superficie 2", "use": "Zonas elevadas, cajas de niveles" },
-      "border": { "label": "Borde", "use": "Líneas finas y separadores" },
-      "text": { "label": "Texto", "use": "Texto principal y niveles del ticket" },
-      "textMuted": { "label": "Texto atenuado", "use": "Etiquetas y texto secundario" },
-      "primary": { "label": "Principal", "use": "Acción principal, estado activo" },
-      "onPrimary": { "label": "Sobre principal", "use": "Texto en botones principales" },
-      "accent": { "label": "Acento", "use": "Enlaces, anillo de foco" },
-      "profit": { "label": "Ganancia", "use": "Marcadores de take profit, ganancias" },
-      "loss": { "label": "Pérdida", "use": "Marcadores de stop loss, pérdidas" },
-      "warning": { "label": "Advertencia", "use": "Estados a revisar" },
-      "info": { "label": "Información", "use": "En curso, modo simulado" }
+      "bg": {
+        "label": "Fondo",
+        "use": "Fondo de la app"
+      },
+      "surface": {
+        "label": "Superficie",
+        "use": "Tarjetas y paneles"
+      },
+      "surface2": {
+        "label": "Superficie 2",
+        "use": "Zonas elevadas, cajas de niveles"
+      },
+      "border": {
+        "label": "Borde",
+        "use": "Líneas finas y separadores"
+      },
+      "text": {
+        "label": "Texto",
+        "use": "Texto principal y niveles del ticket"
+      },
+      "textMuted": {
+        "label": "Texto atenuado",
+        "use": "Etiquetas y texto secundario"
+      },
+      "primary": {
+        "label": "Principal",
+        "use": "Acción principal, estado activo"
+      },
+      "onPrimary": {
+        "label": "Sobre principal",
+        "use": "Texto en botones principales"
+      },
+      "accent": {
+        "label": "Acento",
+        "use": "Enlaces, anillo de foco"
+      },
+      "profit": {
+        "label": "Ganancia",
+        "use": "Marcadores de take profit, ganancias"
+      },
+      "loss": {
+        "label": "Pérdida",
+        "use": "Marcadores de stop loss, pérdidas"
+      },
+      "warning": {
+        "label": "Advertencia",
+        "use": "Estados a revisar"
+      },
+      "info": {
+        "label": "Información",
+        "use": "En curso, modo simulado"
+      }
     },
     "contrast": {
       "title": "Revisión de contraste (WCAG AA)",
@@ -164,5 +273,26 @@
     "rerunSetup": "Repetir la configuración inicial",
     "thirdParty": "Software de terceros",
     "thirdPartyHint": "Levelset ejecuta el paquete day-trader-skill, usado bajo la licencia MIT."
+  },
+  "fills": {
+    "title": "Ejecuciones de hoy",
+    "subtitle": "Las ejecuciones que registraste a mano hoy (fecha de Nueva York). Elimina una si la ingresaste por error; se actualizan las posiciones, la ganancia/pérdida y el conteo de riesgo del día.",
+    "empty": "No hay ejecuciones registradas hoy",
+    "emptyHint": "Registra una ejecución desde un ticket después de enviar la orden en tu plataforma.",
+    "time": "Hora",
+    "ticker": "Ticker",
+    "sideLabel": "Lado",
+    "qty": "Acciones",
+    "price": "Precio",
+    "actions": "Acciones",
+    "side": {
+      "buy": "Compra",
+      "sell": "Venta"
+    },
+    "deleteLabel": "Eliminar ejecución {{side}} {{qty}} {{symbol}}",
+    "confirmTitle": "¿Eliminar esta ejecución?",
+    "confirmBody": "Se eliminará {{side}} de {{qty}} {{symbol}} a {{price}}. Se recalculan tus posiciones, la ganancia/pérdida de hoy y el conteo de riesgo del día. No se puede deshacer.",
+    "delete": "Eliminar ejecución",
+    "deleted": "Ejecución eliminada"
   }
 }

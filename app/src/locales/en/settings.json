@@ -27,16 +27,25 @@
       "noEntriesBefore": "No entries before",
       "noEntriesAfter": "No entries after",
       "flatBy": "Flat by",
-      "pdtGuard": "Pattern day trader guard"
+      "pdtGuard": "Pattern day trader guard",
+      "maxPositionPct": "Position cap (% of account)",
+      "maxOrderUsd": "Max order size (USD)",
+      "requireStop": "Require a stop loss"
     },
     "hints": {
-      "accountSize": "Cash you trade with. USD only in v1.",
-      "maxLossPerTrade": "The most you'll lose if the stop is hit. Position size is worked out from this.",
-      "maxDailyLoss": "New entries are blocked once today's total risk would go over this.",
-      "maxTradesPerDay": "New entries are blocked after this many trades.",
-      "minRewardRisk": "Target distance divided by stop distance. 1.5 means the target is 1.5× the stop.",
-      "cashBuffer": "Share of the account that is never used for positions.",
-      "pdtGuard": "Warns before a fourth day trade in five days on accounts under $25,000."
+      "accountSize": "The cash you trade with, in USD. Position sizes and limits are worked out from it.",
+      "maxLossPerTrade": "The most you're willing to lose on one trade if the stop loss is hit. The number of shares is worked out from this: risk ÷ distance to the stop.",
+      "maxDailyLoss": "Your stop for the day. New entries are blocked once today's losses plus the risk of open trades would go over this amount.",
+      "maxTradesPerDay": "New entries are blocked after this many trades today, so one bad morning can't turn into ten trades.",
+      "minRewardRisk": "How far the target is compared with the stop. 1.5 means the possible gain is at least 1.5× the possible loss; tickets below it are blocked.",
+      "cashBuffer": "Share of the account that is never used for positions, kept aside as a cushion.",
+      "pdtGuard": "US rule for margin accounts under $25,000: 4 or more day trades within 5 business days marks you as a pattern day trader and can restrict the account. The guard warns before the trade that would cross that line.",
+      "maxPositionPct": "The most of your account one position may use, even when the stop is tight.",
+      "maxOrderUsd": "Upper limit for the dollar value of a single order.",
+      "requireStop": "Blocks any ticket without a stop loss. Strongly recommended for day trading.",
+      "noEntriesBefore": "Skips the noisy first minutes after the 09:30 open.",
+      "noEntriesAfter": "No new trades after this time, so there is room to manage them before the close.",
+      "flatBy": "Every day trade should be closed by this time. Flat-by alerts use it."
     },
     "window": {
       "title": "Entry window (New York time)",
@@ -54,11 +63,71 @@
   },
   "data": {
     "title": "Data & SEC",
-    "description": "Data sources, delay and your SEC EDGAR identity."
+    "description": "Data sources, delay and your SEC EDGAR identity.",
+    "save": "Save",
+    "saved": "SEC identity saved",
+    "saveFailed": "Couldn't save your SEC identity",
+    "sec": {
+      "title": "SEC EDGAR identity",
+      "subtitle": "Used by the news monitor (8-K filings) and the earnings analyst.",
+      "field": "Name and email (User-Agent)",
+      "placeholder": "Jane Doe jane@example.com",
+      "hint": "Your name or company followed by a contact email.",
+      "whyTitle": "Why does the SEC ask for this?",
+      "why": "SEC EDGAR is free, but its fair-access rules require every automated request to say who is asking, with a contact email, so they can reach you if something goes wrong. Requests without it can be blocked.",
+      "privacy": "It is only sent to sec.gov, in the request header. Leave it empty and SEC features stay off.",
+      "errors": {
+        "email": "Include a contact email, e.g. Jane Doe jane@example.com",
+        "tooLong": "Keep it under 200 characters"
+      }
+    },
+    "demo": {
+      "title": "Demo mode",
+      "on": "On: using the bundled TSLA example",
+      "off": "Off: using live (delayed) data",
+      "explain": "Demo mode is chosen when the engine starts and runs entirely on the skills' fixtures (TSLA, Oct 19 2026), so you can try everything offline. It can't be changed here."
+    },
+    "delay": {
+      "title": "Market data delay",
+      "value_one": "Up to {{count}} minute behind",
+      "value_other": "Up to {{count}} minutes behind",
+      "explain": "Levelset uses free market data, which can be delayed, incomplete or wrong. Check prices on your trading platform before you act.",
+      "sources": "Sources: Yahoo Finance (quotes and bars), SEC EDGAR (filings), Nasdaq Trader (symbol lists).",
+      "pro": "Real-time data is planned as a future Pro feature."
+    }
   },
   "ai": {
     "title": "AI (optional)",
-    "description": "Plain-language summaries with your own Claude API key. Off by default; every tool works without it."
+    "description": "Plain-language summaries with your own Claude API key. Off by default; every tool works without it.",
+    "enable": "Use AI summaries",
+    "enableHint": "Off by default. Nothing is sent to an AI service while this is off.",
+    "whatTitle": "What it will do (v1.1)",
+    "what": {
+      "earnings": "Plain-language summaries of earnings reports and calls.",
+      "news": "A short \"why is it moving\" note from the day's headlines.",
+      "filings": "Key points of new 8-K filings."
+    },
+    "notNeeded": "Every tool works without AI: the scanner, plans, the Time Machine, risk checks and tickets don't use it.",
+    "cost": "It uses your own Claude API key, so any usage is billed to your Anthropic account.",
+    "key": {
+      "title": "Claude API key",
+      "subtitle": "Stored in Windows Credential Manager, never in plain files. Levelset can't show it again.",
+      "field": "API key",
+      "hint": "Create a key in the Anthropic Console. It starts with sk-ant-.",
+      "save": "Save key",
+      "saved": "Key saved",
+      "savedHint": "The key is stored securely on this computer. To change it, remove it and save a new one.",
+      "remove": "Remove key",
+      "savedToast": "API key saved",
+      "removedToast": "API key removed",
+      "saveFailed": "Couldn't save the key in Windows Credential Manager",
+      "removeFailed": "Couldn't remove the key",
+      "desktopOnly": "API keys can only be saved in the Levelset desktop app, where they go to Windows Credential Manager. The browser demo never stores keys.",
+      "errors": {
+        "required": "Paste your API key",
+        "format": "That doesn't look like a Claude API key (sk-ant-…)"
+      }
+    }
   },
   "appearance": {
     "presets": "Themes",
@@ -102,19 +171,58 @@
       "signals": "Signals"
     },
     "tokens": {
-      "bg": { "label": "Background", "use": "App background" },
-      "surface": { "label": "Surface", "use": "Cards and panels" },
-      "surface2": { "label": "Surface 2", "use": "Raised areas, level boxes" },
-      "border": { "label": "Border", "use": "Hairlines and dividers" },
-      "text": { "label": "Text", "use": "Main text and ticket levels" },
-      "textMuted": { "label": "Muted text", "use": "Labels and secondary text" },
-      "primary": { "label": "Primary", "use": "Main action, active state" },
-      "onPrimary": { "label": "On primary", "use": "Text on primary buttons" },
-      "accent": { "label": "Accent", "use": "Links, focus ring" },
-      "profit": { "label": "Profit", "use": "Target markers, gains" },
-      "loss": { "label": "Loss", "use": "Stop markers, losses" },
-      "warning": { "label": "Warning", "use": "Check states" },
-      "info": { "label": "Info", "use": "Running, paper mode" }
+      "bg": {
+        "label": "Background",
+        "use": "App background"
+      },
+      "surface": {
+        "label": "Surface",
+        "use": "Cards and panels"
+      },
+      "surface2": {
+        "label": "Surface 2",
+        "use": "Raised areas, level boxes"
+      },
+      "border": {
+        "label": "Border",
+        "use": "Hairlines and dividers"
+      },
+      "text": {
+        "label": "Text",
+        "use": "Main text and ticket levels"
+      },
+      "textMuted": {
+        "label": "Muted text",
+        "use": "Labels and secondary text"
+      },
+      "primary": {
+        "label": "Primary",
+        "use": "Main action, active state"
+      },
+      "onPrimary": {
+        "label": "On primary",
+        "use": "Text on primary buttons"
+      },
+      "accent": {
+        "label": "Accent",
+        "use": "Links, focus ring"
+      },
+      "profit": {
+        "label": "Profit",
+        "use": "Target markers, gains"
+      },
+      "loss": {
+        "label": "Loss",
+        "use": "Stop markers, losses"
+      },
+      "warning": {
+        "label": "Warning",
+        "use": "Check states"
+      },
+      "info": {
+        "label": "Info",
+        "use": "Running, paper mode"
+      }
     },
     "contrast": {
       "title": "Contrast check (WCAG AA)",
@@ -162,5 +270,26 @@
     "rerunSetup": "Run setup again",
     "thirdParty": "Third-party software",
     "thirdPartyHint": "Levelset runs the day-trader-skill pack, used under the MIT License."
+  },
+  "fills": {
+    "title": "Today's fills",
+    "subtitle": "Fills you recorded by hand today (New York date). Delete one if it was entered by mistake; positions, P/L and the daily risk count update.",
+    "empty": "No fills recorded today",
+    "emptyHint": "Record a fill from a ticket after you place the order on your platform.",
+    "time": "Time",
+    "ticker": "Ticker",
+    "sideLabel": "Side",
+    "qty": "Shares",
+    "price": "Price",
+    "actions": "Actions",
+    "side": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "deleteLabel": "Delete fill {{side}} {{qty}} {{symbol}}",
+    "confirmTitle": "Delete this fill?",
+    "confirmBody": "{{side}} {{qty}} {{symbol}} at {{price}} will be removed. Your positions, today's P/L and the daily risk count are recalculated. This can't be undone.",
+    "delete": "Delete fill",
+    "deleted": "Fill deleted"
   }
 }

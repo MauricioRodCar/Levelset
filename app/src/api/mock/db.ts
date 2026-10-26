@@ -1,4 +1,5 @@
 import * as fx from './fixtures';
+import { historyRuns } from './pipelineScenarios';
 import type {
   Alert,
   Fill,
@@ -31,7 +32,7 @@ function fresh(): MockDb {
     settings: clone(fx.settings),
     watchlist: clone(fx.watchlist),
     news: clone(fx.news),
-    runs: clone(fx.runs),
+    runs: historyRuns(),
     tickets: clone(fx.tickets),
     trades: clone(fx.trades),
     fills: clone(fx.fills),

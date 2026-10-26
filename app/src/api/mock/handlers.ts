@@ -6,22 +6,21 @@ import { delay, http, HttpResponse, type JsonBodyType } from 'msw';
 import type {
   Alert,
   AlertCreate,
+  AlertUpdate,
   FillCreate,
   PipelineRun,
   PipelineRunRequest,
   ScanRequest,
   Settings,
   Status,
-  Step,
   StepKey,
   Ticket,
   TicketExportFormat,
 } from '../types';
-import { STEP_KEYS } from '../types';
 import { getEngineInfo } from '../engine';
 import { db, demoNow, mockConfig, nextId, toEtIso } from './db';
-import { mockEmit } from './eventBus';
 import * as fx from './fixtures';
+import { createMockRun, mockBarsResponse, runMockStep } from './pipelineSim';
 
 /** Engine base URL (static in mock mode). Not a bare wildcard, so SPA routes like /settings are never intercepted. */
 const P = getEngineInfo().url;
@@ -50,93 +49,9 @@ export function currentStatus(): Status {
 
 // ---------------------------------------------------------------- pipeline simulation
 
-/** Template steps for a new demo run: the TSLA reference example. */
-function templateSteps(): Step[] {
-  return structuredClone(fx.tslaRun.steps);
-}
-
 function summaryOf(run: PipelineRun) {
   const { steps: _s, ...rest } = run;
   return rest;
-}
-
-function emitRun(run: PipelineRun) {
-  mockEmit('run.updated', summaryOf(run));
-}
-
-function finishTicket(run: PipelineRun): Ticket {
-  const id = nextId('tkt');
-  const ticket: Ticket = {
-    ...structuredClone(fx.tslaTicket),
-    id,
-    runId: run.id,
-    createdAt: toEtIso(demoNow()),
-  };
-  // Keep one TSLA ticket on the dashboard: the newest run replaces the previous one.
-  db.tickets = [ticket, ...db.tickets.filter((t) => t.symbol !== ticket.symbol)];
-  run.ticketId = id;
-  const ticketStep = run.steps.find((s) => s.key === 'ticket');
-  if (ticketStep) {
-    ticketStep.outputs = { ...(ticketStep.outputs ?? {}), ticketId: id };
-    ticketStep.summary = {
-      ...(ticketStep.summary ?? {}),
-      values: { ...(ticketStep.summary?.values ?? {}), ticketId: id },
-    };
-  }
-  return ticket;
-}
-
-function completeStep(run: PipelineRun, key: StepKey): Step {
-  const tpl = templateSteps().find((s) => s.key === key)!;
-  const now = toEtIso(demoNow());
-  const step: Step = { ...tpl, startedAt: now, endedAt: now };
-  run.steps = run.steps.map((s) => (s.key === key ? step : s));
-  if (key === 'ticket') finishTicket(run);
-  return run.steps.find((s) => s.key === key)!;
-}
-
-function simulateRunAll(run: PipelineRun) {
-  let i = 0;
-  const tick = () => {
-    const live = db.runs.find((r) => r.id === run.id);
-    if (!live) return;
-    if (i >= STEP_KEYS.length) {
-      live.status = fx.runStatus(live.steps);
-      live.endedAt = toEtIso(demoNow());
-      emitRun(live);
-      const t = db.tickets.find((x) => x.id === live.ticketId);
-      if (t) mockEmit('ticket.created', t);
-      return;
-    }
-    const key = STEP_KEYS[i];
-    // running
-    live.steps = live.steps.map((s) =>
-      s.key === key ? { ...s, status: 'running', startedAt: toEtIso(demoNow()) } : s,
-    );
-    mockEmit('step.updated', { runId: live.id, step: live.steps.find((s) => s.key === key)! });
-    setTimeout(() => {
-      const step = completeStep(live, key);
-      mockEmit('step.updated', { runId: live.id, step });
-      emitRun(live);
-      i += 1;
-      setTimeout(tick, mockConfig.stepDelayMs / 3);
-    }, mockConfig.stepDelayMs);
-  };
-  setTimeout(tick, mockConfig.stepDelayMs / 3);
-}
-
-function pendingSteps(): Step[] {
-  return STEP_KEYS.map((key) => ({
-    key,
-    status: 'pending',
-    params: {},
-    inputs: {},
-    outputs: {},
-    checks: [],
-    error: null,
-    startedAt: null,
-    endedAt: null,
-  }));
 }
 
 // ---------------------------------------------------------------- exports
@@ -200,6 +115,31 @@ function exportTicket(t: Ticket, format: TicketExportFormat): string {
         `Max loss $${f(t.maxLoss)} · ${f(t.rMultiple)}R · flat by ${t.flatBy ?? '15:55'} ET`,
       ].join('\n');
   }
+}
+
+// ---------------------------------------------------------------- alerts validation (engine rules)
+
+const ALERT_TYPES: AlertCreate['type'][] = [
+  'above',
+  'below',
+  'stop',
+  'target',
+  'pct_move',
+  'time',
+  'open_bell',
+  'flat_by',
+];
+
+/** Same checks as the engine's AlertService.validate; returns the detail of an invalid_alert or null. */
+function alertInvalid(a: Partial<AlertCreate>): string | null {
+  if (!a.type || !ALERT_TYPES.includes(a.type)) return 'unknown alert type';
+  if (['above', 'below', 'stop', 'target'].includes(a.type) && (!a.symbol || !(a.level! > 0)))
+    return `an alert of type ${a.type} needs a symbol and a level`;
+  if (a.type === 'pct_move' && (!a.symbol || !(a.pct! > 0)))
+    return 'a pct_move alert needs a symbol and a pct';
+  if (a.type === 'time' && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(a.time ?? ''))
+    return 'a time alert needs a time (HH:MM, New York)';
+  return null;
 }
 
 // ---------------------------------------------------------------- handlers
@@ -313,20 +253,7 @@ export const handlers = [
     if (body?.mode !== 'all' && body?.mode !== 'step') {
       return problem(422, 'validation_error', 'mode must be all or step');
     }
-    const run: PipelineRun = {
-      id: nextId('run'),
-      ticker: body.ticker?.toUpperCase() ?? 'TSLA',
-      setup: body.setup ?? 'orb',
-      mode: body.mode,
-      status: body.mode === 'all' ? 'running' : 'pending',
-      startedAt: toEtIso(demoNow()),
-      endedAt: null,
-      ticketId: null,
-      steps: pendingSteps(),
-    };
-    db.runs.unshift(run);
-    emitRun(run);
-    if (body.mode === 'all') simulateRunAll(run);
+    const run = createMockRun(body);
     return json(structuredClone(run), 202);
   }),
 
@@ -337,28 +264,33 @@ export const handlers = [
     return json(structuredClone(run));
   }),
 
-  http.post(`${P}/pipeline/runs/:runId/steps/:stepKey/run`, async ({ params }) => {
+  http.post(`${P}/pipeline/runs/:runId/steps/:stepKey/run`, async ({ params, request }) => {
     await latency();
-    const run = db.runs.find((r) => r.id === params.runId);
-    if (!run) return problem(404, 'not_found', 'Run not found');
-    const key = params.stepKey as StepKey;
-    const idx = STEP_KEYS.indexOf(key);
-    if (idx === -1) return problem(404, 'not_found', 'Unknown step');
-    const prevOk = run.steps
-      .slice(0, idx)
-      .every((s) => s.status === 'done' || s.status === 'check');
-    if (!prevOk) return problem(409, 'previous_step_not_done', 'Previous steps must be done first');
-    await delay(mockConfig.stepDelayMs);
-    const step = completeStep(run, key);
-    run.status = fx.runStatus(run.steps);
-    if (idx === STEP_KEYS.length - 1) run.endedAt = toEtIso(demoNow());
-    mockEmit('step.updated', { runId: run.id, step });
-    emitRun(run);
-    if (key === 'ticket') {
-      const t = db.tickets.find((x) => x.id === run.ticketId);
-      if (t) mockEmit('ticket.created', t);
+    let body: { params?: Record<string, unknown> } = {};
+    try {
+      body = ((await request.json()) as typeof body) ?? {};
+    } catch {
+      /* empty body allowed */
     }
-    return json(structuredClone(step));
+    const r = await runMockStep(
+      String(params.runId),
+      params.stepKey as StepKey,
+      body.params,
+      delay,
+    );
+    if (!r.ok) return problem(r.status, r.code, r.title, r.detail);
+    return json(r.step);
+  }),
+
+  http.get(`${P}/bars`, async ({ request }) => {
+    await latency();
+    const symbol = (new URL(request.url).searchParams.get('symbol') ?? '').trim();
+    if (!/^[A-Za-z]{1,5}([.-][A-Za-z]{1,2})?$/.test(symbol))
+      return problem(422, 'invalid_ticker', 'Invalid ticker', symbol);
+    const bars = mockBarsResponse(symbol);
+    if (!bars || !bars.bars.length)
+      return problem(404, 'not_found', 'No demo bars for this symbol');
+    return json(bars);
   }),
 
   http.get(`${P}/tickets`, async ({ request }) => {
@@ -433,6 +365,37 @@ export const handlers = [
     return json(fill, 201);
   }),
 
+  http.delete(`${P}/fills/:fillId`, async ({ params }) => {
+    await latency();
+    const i = db.fills.findIndex((f) => f.id === params.fillId);
+    if (i === -1) return problem(404, 'fill_not_found', 'Fill not found');
+    const fill = db.fills[i];
+    if (
+      fill.side === 'buy' &&
+      db.fills.slice(i + 1).some((f) => f.side === 'sell' && f.symbol === fill.symbol)
+    ) {
+      return problem(409, 'fill_in_use', 'Fill not deleted', 'a later sell needs these shares');
+    }
+    db.fills.splice(i, 1);
+    if (fill.side === 'buy') {
+      const j = db.trades.findIndex(
+        (x) =>
+          x.symbol === fill.symbol &&
+          x.qty === fill.qty &&
+          (x.ticketId ?? null) === (fill.ticketId ?? null),
+      );
+      if (j !== -1) db.trades.splice(j, 1);
+      db.dashboard.tradesToday = Math.max(0, db.dashboard.tradesToday - 1);
+      const t = db.tickets.find((x) => x.id === fill.ticketId);
+      if (t)
+        db.dashboard.riskUsed = Math.max(
+          0,
+          Math.round((db.dashboard.riskUsed - t.maxLoss) * 100) / 100,
+        );
+    }
+    return new HttpResponse(null, { status: 204 });
+  }),
+
   http.get(`${P}/alerts`, async () => {
     await latency();
     return json(db.alerts);
@@ -496,6 +459,8 @@ export const handlers = [
     ];
     if (!body || !types.includes(body.type))
       return problem(422, 'invalid_alert', 'Invalid alert type');
+    const invalid = alertInvalid(body);
+    if (invalid) return problem(422, 'invalid_alert', 'Alert not created', invalid);
     const alert: Alert = {
       ...body,
       id: nextId('alr'),
@@ -505,6 +470,30 @@ export const handlers = [
     };
     db.alerts.push(alert);
     return json(alert, 201);
+  }),
+
+  http.patch(`${P}/alerts/:alertId`, async ({ params, request }) => {
+    await latency();
+    const i = db.alerts.findIndex((a) => a.id === params.alertId);
+    if (i === -1) return problem(404, 'alert_not_found', 'Alert not found');
+    const patch = (await request.json()) as AlertUpdate;
+    const { status, ...fields } = patch ?? {};
+    const merged: Alert = { ...db.alerts[i] };
+    for (const [k, v] of Object.entries(fields)) {
+      if (v === null || v === undefined) delete (merged as Record<string, unknown>)[k];
+      else (merged as Record<string, unknown>)[k] = v;
+    }
+    if (merged.symbol) merged.symbol = merged.symbol.toUpperCase();
+    if (merged.type === 'flat_by' && !merged.time)
+      merged.time = db.settings.limits.flatBy ?? '15:55';
+    const invalid = alertInvalid(merged);
+    if (invalid) return problem(422, 'invalid_alert', 'Alert not updated', invalid);
+    if (status === 'armed') {
+      merged.status = 'armed';
+      merged.rungAt = null;
+    }
+    db.alerts[i] = merged;
+    return json(merged);
   }),
 
   http.delete(`${P}/alerts/:alertId`, async ({ params }) => {

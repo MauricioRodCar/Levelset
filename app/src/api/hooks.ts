@@ -8,6 +8,7 @@ import { qk } from './queryKeys';
 import type {
   Alert,
   AlertCreate,
+  AlertUpdate,
   FillCreate,
   PipelineRun,
   PipelineRunRequest,
@@ -79,6 +80,24 @@ export function useNews(
     queryKey: qk.news(joined, hours),
     queryFn: () => unwrap(getApi().GET('/news', { params: { query: { tickers: joined, hours } } })),
     enabled: joined.length > 0,
+    ...opts,
+  });
+}
+
+/** Today's intraday bars for a symbol (Pipeline charts). Disabled while `symbol` is empty. */
+export function useBars(
+  symbol: string | null | undefined,
+  interval: '1m' | '5m' = '5m',
+  opts?: QueryOpts<import('./types').Bars>,
+) {
+  return useQuery({
+    queryKey: qk.bars(symbol ?? '', interval),
+    queryFn: () =>
+      unwrap(
+        getApi().GET('/bars', { params: { query: { symbol: symbol!, interval, range: '1d' } } }),
+      ),
+    enabled: !!symbol,
+    staleTime: 60_000,
     ...opts,
   });
 }
@@ -270,5 +289,33 @@ export function useDeleteAlert() {
     },
     onSuccess: (id) =>
       qc.setQueryData<Alert[]>(qk.alerts, (old) => old?.filter((a) => a.id !== id)),
+  });
+}
+
+/** PATCH /alerts/{id}: edit any field and/or re-arm with `{ status: 'armed' }`. */
+export function useUpdateAlert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ alertId, patch }: { alertId: string; patch: AlertUpdate }) =>
+      unwrap(getApi().PATCH('/alerts/{alertId}', { params: { path: { alertId } }, body: patch })),
+    onSuccess: (a) =>
+      qc.setQueryData<Alert[]>(qk.alerts, (old) => old?.map((x) => (x.id === a.id ? a : x))),
+  });
+}
+
+/** DELETE /fills/{id}: remove a wrongly recorded fill (the engine fixes portfolio and risk state). */
+export function useDeleteFill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (fillId: string) => {
+      // default parsing keeps the Problem body (e.g. fill_in_use); 204 resolves with no data
+      await unwrap(getApi().DELETE('/fills/{fillId}', { params: { path: { fillId } } }));
+      return fillId;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.fills });
+      void qc.invalidateQueries({ queryKey: qk.trades });
+      void qc.invalidateQueries({ queryKey: qk.dashboard });
+    },
   });
 }

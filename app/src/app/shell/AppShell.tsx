@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getEngineInfo, useEngineEvents, useStatus } from '@/api';
 import { DisclaimerBanner } from '@/components/Disclaimer';
 import { ErrorState } from '@/components/ErrorState';
+import { useAlertNotifications } from '@/features/alerts/notifications';
 import { useUiStore } from '../uiStore';
 import { Sidebar } from './Sidebar';
 import { StatusBar } from './StatusBar';
@@ -14,6 +15,7 @@ export function AppShell() {
   const location = useLocation();
   const status = useStatus();
   useEngineEvents();
+  useAlertNotifications();
 
   if (!onboardingDone)
     return <Navigate to="/onboarding" replace state={{ from: location.pathname }} />;

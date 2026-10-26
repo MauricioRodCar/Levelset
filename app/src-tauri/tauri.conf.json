@@ -35,6 +35,19 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "Levelset Contributors (placeholder)",
+    "copyright": "MIT License. Includes day-trader-skill (MIT) by Jake Schincariol.",
+    "category": "Finance",
+    "shortDescription": "Desktop cockpit for the day-trader-skill pack",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false,
+        "languages": ["English", "Spanish"],
+        "startMenuFolder": "Levelset",
+        "installerIcon": "icons/icon.ico"
+      }
+    }
   }
 }

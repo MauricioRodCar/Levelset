@@ -1,4 +1,7 @@
 dist
+dist-demo
+src-tauri/engine-runtime
+src-tauri/binaries
 node_modules
 src-tauri/target
 src-tauri/gen

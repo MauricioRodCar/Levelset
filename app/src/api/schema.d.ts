@@ -292,6 +292,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bars": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Today's intraday price bars for one symbol (charts in the Pipeline view). Demo mode reads the vendored
+         *     fixtures and returns only the bars completed by the pinned clock. rangeHigh/rangeLow are the first
+         *     15 minutes' high/low (the opening range) once those bars exist. 404 not_found when there is no data
+         *     for the symbol, 502 bars_failed when the price source cannot be reached.
+         */
+        get: {
+            parameters: {
+                query: {
+                    symbol: string;
+                    interval?: "1m" | "5m";
+                    range?: "1d";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Bars"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+                502: components["responses"]["Problem"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/pipeline/runs": {
         parameters: {
             query?: never;
@@ -649,6 +697,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fills/{fillId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a wrongly recorded manual fill. The engine reverses it in trader/portfolio.json and voids its
+         *     records in trader/state/broker.json so trader-risk stops counting it. 409 fill_in_use when a later
+         *     sell depends on this buy (delete the sell first).
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fillId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                404: components["responses"]["Problem"];
+                409: components["responses"]["Problem"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/alerts": {
         parameters: {
             query?: never;
@@ -781,7 +871,35 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
+        /** Edit an alert (any AlertCreate field) and/or re-arm a rung alert with { status armed } */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    alertId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AlertUpdate"];
+                };
+            };
+            responses: {
+                /** @description updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Alert"];
+                    };
+                };
+                404: components["responses"]["Problem"];
+                422: components["responses"]["Problem"];
+            };
+        };
         trace?: never;
     };
     "/events": {
@@ -950,6 +1068,24 @@ export interface components {
             publishedAt: string;
             tags?: string[];
         };
+        Bar: {
+            /** @description bar start, Unix seconds (UTC) */
+            t: number;
+            o: number;
+            h: number;
+            l: number;
+            c: number;
+            v: number;
+        };
+        Bars: {
+            symbol: string;
+            /** @enum {string} */
+            interval: "1m" | "5m";
+            bars: components["schemas"]["Bar"][];
+            /** @description opening range (first 15 minutes) high */
+            rangeHigh?: number | null;
+            rangeLow?: number | null;
+        };
         /** @enum {string} */
         StepKey: "scanner" | "news" | "entry" | "exit" | "timemachine" | "budget" | "risk" | "ticket";
         /** @enum {string} */
@@ -1095,6 +1231,19 @@ export interface components {
             /** @example 15:55 */
             time?: string;
             note?: string;
+        };
+        /** @description Partial AlertCreate. The merged alert is validated like a new one. status armed re-arms a rung alert. */
+        AlertUpdate: {
+            /** @enum {string} */
+            type?: "above" | "below" | "stop" | "target" | "pct_move" | "time" | "open_bell" | "flat_by";
+            symbol?: string;
+            level?: number;
+            pct?: number;
+            /** @example 15:55 */
+            time?: string;
+            note?: string;
+            /** @enum {string} */
+            status?: "armed";
         };
         Alert: components["schemas"]["AlertCreate"] & {
             id: string;

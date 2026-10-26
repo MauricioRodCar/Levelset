@@ -12,6 +12,8 @@ export type ScanResult = S['ScanResult'];
 export type ScanHit = S['ScanHit'];
 export type WatchItem = S['WatchItem'];
 export type NewsItem = S['NewsItem'];
+export type Bar = S['Bar'];
+export type Bars = S['Bars'];
 export type StepKey = S['StepKey'];
 export type StepStatus = S['StepStatus'];
 export type Step = S['Step'];
@@ -27,6 +29,7 @@ export type Fill = S['Fill'];
 export type AlertCreate = S['AlertCreate'];
 export type Alert = S['Alert'];
 export type AlertType = AlertCreate['type'];
+export type AlertUpdate = S['AlertUpdate'];
 
 export type TicketExportFormat = 'text' | 'csv' | 'json' | 'ctrader' | 'mt4' | 'mt5';
 export type TicketListFilter = 'ready' | 'blocked' | 'stale' | 'all';

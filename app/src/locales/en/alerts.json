@@ -15,5 +15,125 @@
   "status": {
     "armed": "Armed",
     "rung": "Rung"
+  },
+  "actions": {
+    "fromPlan": "Add from plan",
+    "custom": "Custom alert",
+    "edit": "Edit",
+    "editLabel": "Edit {{name}} alert",
+    "rearm": "Re-arm",
+    "rearmLabel": "Re-arm {{name}} alert",
+    "delete": "Delete",
+    "deleteLabel": "Delete {{name}} alert"
+  },
+  "table": {
+    "title": "Your alerts",
+    "summary_one": "{{count}} alert · {{armed}} armed",
+    "summary_other": "{{count}} alerts · {{armed}} armed",
+    "type": "Type",
+    "ticker": "Ticker",
+    "trigger": "Level / time",
+    "status": "Status",
+    "created": "Created",
+    "rungAt": "Rang at",
+    "actions": "Actions",
+    "ringsOnce": "Alerts are checked against free delayed quotes while the engine runs. Each one rings once; re-arm it to use it again. Times are New York (ET)."
+  },
+  "empty": {
+    "title": "No alerts yet",
+    "description": "Add the stop, target and flat-by alerts from a trade plan in one click, or create a custom one."
+  },
+  "toast": {
+    "created": "Alert created",
+    "updated": "Alert updated",
+    "rearmed": "Alert re-armed",
+    "deleted": "Alert deleted",
+    "fromPlan_one": "{{count}} alert added from the plan",
+    "fromPlan_other": "{{count}} alerts added from the plan"
+  },
+  "delete": {
+    "title": "Delete this alert?",
+    "description": "{{name}} {{symbol}} {{value}} will be removed and won't ring."
+  },
+  "fromPlan": {
+    "title": "Add alerts from a plan",
+    "description": "Creates three alerts from the run's exit plan: the stop, the target and \"flat by close\" at your flat-by time.",
+    "pick": "Recent runs",
+    "runLine": "{{setup}} · {{time}}",
+    "empty": "No runs yet",
+    "emptyHint": "Run the pipeline first. Its exit plan holds the stop and the target.",
+    "submit": "Add 3 alerts"
+  },
+  "form": {
+    "createTitle": "Custom alert",
+    "editTitle": "Edit alert",
+    "description": "Pick what should ring. Prices are in USD; times are New York (ET).",
+    "type": "Alert type",
+    "typeHints": {
+      "above": "Rings when the price trades at or above the level.",
+      "below": "Rings when the price trades at or below the level.",
+      "stop": "Rings when the price falls to your stop loss.",
+      "target": "Rings when the price reaches your take profit.",
+      "pct_move": "Rings when the price moves this much, up or down, from the previous close.",
+      "time": "Rings at a time of day, for example a reminder to check a trade.",
+      "open_bell": "Rings when the NYSE opens at 09:30 ET (skips weekends and holidays).",
+      "flat_by": "Reminds you to close your day trades before the market closes."
+    },
+    "symbol": "Ticker",
+    "symbolOptional": "Ticker (optional)",
+    "symbolHint": "US stock symbol, e.g. TSLA or BRK.B.",
+    "level": "Price level (USD)",
+    "levelHint": "Checked against delayed quotes, so it can ring a little late.",
+    "pct": "Move from previous close (%)",
+    "pctHint": "3 means a move of 3 % either way.",
+    "time": "Time (ET)",
+    "timeOptional": "Time (ET, optional)",
+    "timeHint": "24-hour New York time, e.g. 15:30.",
+    "flatByHint": "Leave empty to use the flat-by time from Settings.",
+    "note": "Note (optional)",
+    "rearmOnSave": "Re-arm this alert when saving",
+    "create": "Create alert",
+    "errors": {
+      "required": "Required",
+      "symbol": "Enter a ticker like TSLA or BRK.B",
+      "positive": "Must be more than zero",
+      "time": "Use a time like 15:30",
+      "noteLength": "Keep the note under 120 characters"
+    }
+  },
+  "errors": {
+    "alert_not_found": "That alert doesn't exist anymore. The list has been refreshed.",
+    "run_not_found": "That run doesn't exist anymore.",
+    "no_plan": "This run has no exit plan yet. Finish the exit step first.",
+    "fill_not_found": "That fill doesn't exist anymore.",
+    "fill_in_use": "A later sell uses the shares from this buy. Delete that sell first."
+  },
+  "notify": {
+    "title": "Alert: {{type}}",
+    "titleSymbol": "{{symbol}} alert: {{type}}"
+  },
+  "sentence": {
+    "above": "{{symbol}} traded above {{value}}",
+    "below": "{{symbol}} traded below {{value}}",
+    "stop": "{{symbol}} hit your stop at {{value}}",
+    "target": "{{symbol}} reached your target at {{value}}",
+    "pct_move": "{{symbol}} moved {{value}} from the previous close",
+    "time": "It's {{value}}",
+    "time_symbol": "It's {{value}} · {{symbol}}",
+    "open_bell": "The NYSE is open ({{value}})",
+    "flat_by": "{{value}}: close your {{symbol}} day trade before the bell"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "How Levelset tells you an alert rang. Saved on this computer.",
+    "desktop": "Windows notifications",
+    "desktopHint": "Shows a Windows notification even when Levelset is in the background.",
+    "browserHint": "Available in the desktop app. In the browser demo you get in-app messages only.",
+    "denied": "Windows notifications are blocked. Allow them for Levelset in Windows Settings > Notifications.",
+    "sound": "Sound",
+    "soundHint": "Plays a short chime with the in-app message.",
+    "test": "Send a test",
+    "testTitle": "Test alert",
+    "testBody": "This is how an alert will look."
   }
 }
