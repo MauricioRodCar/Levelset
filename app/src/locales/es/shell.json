@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "pipeline": "Pipeline",
+    "alerts": "Alertas",
+    "analyst": "Analista",
+    "pelosi": "Pelosi",
+    "connections": "Conexiones",
+    "settings": "Ajustes"
+  },
+  "sidebar": {
+    "label": "Barra lateral",
+    "nav": "Navegación principal",
+    "expand": "Expandir barra lateral",
+    "collapse": "Contraer"
+  },
+  "footer": {
+    "paper": "Simulada",
+    "live": "Real",
+    "tier": "Plan {{tier}}"
+  },
+  "tiers": {
+    "free": "Gratis",
+    "pro": "Pro",
+    "tester": "Tester"
+  },
+  "statusBar": {
+    "label": "Estado del mercado y del motor"
+  },
+  "market": {
+    "open": "Mercado abierto",
+    "closed": "Mercado cerrado",
+    "closesAt": "cierra a las {{time}}",
+    "closesEarly": "cierre anticipado a las {{time}}",
+    "opensAt": "abre el {{date}}, {{time}}",
+    "unknown": "Estado del mercado no disponible"
+  },
+  "clock": {
+    "newYork": "Nueva York",
+    "tooltip": "Los horarios de mercado siempre se muestran en hora de Nueva York (ET)"
+  },
+  "data": {
+    "delayed": "Datos con {{minutes}} min de retraso",
+    "realtime": "Datos en tiempo real"
+  },
+  "demo": {
+    "badge": "Demo",
+    "tooltip": "Modo demo: datos incluidos con el reloj fijado en el 19 oct 2026, 10:15 ET"
+  },
+  "engine": {
+    "connected": "Motor conectado",
+    "noEvents": "Motor activo, actualizaciones en pausa",
+    "connecting": "Conectando con el motor…",
+    "offline": "Motor desconectado",
+    "offlineTitle": "No se puede conectar con el motor de Levelset",
+    "offlineHint": "Se esperaba en {{url}}. Inicia el motor (o abre la app en modo demo) y vuelve a intentar.",
+    "retry": "Reintentar",
+    "tooltip": "Versión del motor {{version}}"
+  },
+  "skipToContent": "Ir al contenido",
+  "comingSoon": {
+    "title": "Disponible en {{version}}"
+  },
+  "analyst": {
+    "description": "Resultados trimestrales directo de los reportes ante la SEC: ingresos, márgenes y UPA, trimestre a trimestre.",
+    "bullets": [
+      "Ingresos y márgenes bruto, operativo y neto frente al mismo trimestre del año anterior",
+      "UPA diluida y últimos doce meses",
+      "Resumen en lenguaje sencillo opcional con tu propia clave de API de Claude"
+    ]
+  },
+  "pelosi": {
+    "description": "Operaciones con acciones que los miembros del Congreso de EE. UU. declaran según la Ley STOCK.",
+    "bullets": [
+      "Nuevas declaraciones de la Cámara de Representantes apenas se publican",
+      "Quién, ticker, compra o venta, rango de monto y días que tardó en declararse",
+      "Marca las operaciones en acciones de tu watchlist"
+    ]
+  }
+}

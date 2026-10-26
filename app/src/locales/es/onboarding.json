@@ -1,0 +1,40 @@
+{
+  "progress": "Paso {{current}} de {{total}}",
+  "back": "Atrás",
+  "next": "Siguiente",
+  "skip": "Omitir por ahora",
+  "saveAndContinue": "Guardar y continuar",
+  "steps": {
+    "language": {
+      "short": "Idioma",
+      "title": "Te damos la bienvenida a Levelset",
+      "description": "Elige tu idioma. Puedes cambiarlo cuando quieras desde la barra de estado."
+    },
+    "theme": {
+      "short": "Tema",
+      "title": "Elige un estilo",
+      "description": "Más adelante puedes personalizar cada color en Ajustes › Apariencia."
+    },
+    "account": {
+      "short": "Límites",
+      "title": "Tu cuenta y tus límites",
+      "description": "Levelset calcula el tamaño de cada operación y bloquea todo lo que supere estos límites. La pérdida máxima por operación es lo máximo que estás dispuesto a perder si se toca el stop."
+    },
+    "disclaimer": {
+      "short": "Aviso",
+      "title": "Antes de empezar",
+      "description": "Léelo con atención.",
+      "accept": "Entiendo que Levelset no es asesoría financiera y que soy responsable de mis propias operaciones.",
+      "continue": "Aceptar y continuar"
+    },
+    "finish": {
+      "short": "Empezar",
+      "title": "Todo listo",
+      "description": "Mira el pipeline completo con un ejemplo real o ve directo a tu panel.",
+      "demo": "Probar la operación demo",
+      "demoHint": "Reproduce paso a paso la ruptura del rango de apertura de TSLA del 19 oct 2026.",
+      "dashboard": "Ir al panel",
+      "dashboardHint": "Mira los tickets listos, tu watchlist y las noticias del día."
+    }
+  }
+}

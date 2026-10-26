@@ -28,7 +28,7 @@ class MarketService:
         cfg = self.ctx.config_doc()
         return {"marketOpen": cal["marketOpen"], "nowEt": iso(self.ctx.clock.now()), "nextOpen": cal["nextOpen"],
                 "nextClose": cal["nextClose"], "earlyClose": cal["earlyClose"],
-                "dataDelaySeconds": 0 if self.ctx.demo else LIVE_DATA_DELAY_SECONDS,
+                "dataDelaySeconds": LIVE_DATA_DELAY_SECONDS,
                 "mode": "demo" if self.ctx.demo else "live", "paper": bool(cfg.get("paper", True)),
                 "tier": "free", "engineVersion": self.ctx.version}
 

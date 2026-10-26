@@ -1,0 +1,19 @@
+{
+  "title": "Alerts",
+  "description": "Stops, targets, price levels and the opening bell. Each alert rings once.",
+  "placeholder": "Your alerts and the alert log will appear here.",
+  "types": {
+    "above": "Price above",
+    "below": "Price below",
+    "stop": "Stop",
+    "target": "Target",
+    "pct_move": "% move",
+    "time": "Time",
+    "open_bell": "Opening bell",
+    "flat_by": "Flat by"
+  },
+  "status": {
+    "armed": "Armed",
+    "rung": "Rung"
+  }
+}

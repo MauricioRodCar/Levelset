@@ -1,0 +1,13 @@
+{
+  "title": "Panel",
+  "description": "Qué puedes operar ahora y en qué niveles.",
+  "placeholder": "Aquí aparecerán los tickets listos, la watchlist, las operaciones abiertas y las noticias.",
+  "kpi": {
+    "dayPnl": "G/P del día",
+    "riskUsed": "Riesgo usado",
+    "ofLimit": "de {{limit}} de límite diario",
+    "tradesToday": "Operaciones hoy",
+    "ofMax": "de {{max}} máx.",
+    "setupsFound": "Setups encontrados"
+  }
+}

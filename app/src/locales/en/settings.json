@@ -1,0 +1,166 @@
+{
+  "title": "Settings",
+  "description": "Limits, look and language. Changes save on this computer.",
+  "placeholder": "This section is being built.",
+  "tabs": {
+    "account": "Account & limits",
+    "appearance": "Appearance",
+    "language": "Language",
+    "data": "Data & SEC",
+    "ai": "AI (optional)",
+    "about": "About"
+  },
+  "account": {
+    "title": "Account & limits",
+    "subtitle": "Written to the skills' config. Every ticket is sized and risk-checked against these.",
+    "save": "Save limits",
+    "saved": "Limits saved",
+    "loadFailed": "Couldn't load your current settings. Showing defaults.",
+    "saveFailed": "Couldn't save your limits",
+    "fields": {
+      "accountSize": "Account size (USD)",
+      "maxLossPerTrade": "Max loss per trade (USD)",
+      "maxDailyLoss": "Daily loss limit (USD)",
+      "maxTradesPerDay": "Trades per day",
+      "minRewardRisk": "Minimum reward:risk",
+      "cashBuffer": "Cash buffer (%)",
+      "noEntriesBefore": "No entries before",
+      "noEntriesAfter": "No entries after",
+      "flatBy": "Flat by",
+      "pdtGuard": "Pattern day trader guard"
+    },
+    "hints": {
+      "accountSize": "Cash you trade with. USD only in v1.",
+      "maxLossPerTrade": "The most you'll lose if the stop is hit. Position size is worked out from this.",
+      "maxDailyLoss": "New entries are blocked once today's total risk would go over this.",
+      "maxTradesPerDay": "New entries are blocked after this many trades.",
+      "minRewardRisk": "Target distance divided by stop distance. 1.5 means the target is 1.5× the stop.",
+      "cashBuffer": "Share of the account that is never used for positions.",
+      "pdtGuard": "Warns before a fourth day trade in five days on accounts under $25,000."
+    },
+    "window": {
+      "title": "Entry window (New York time)",
+      "hint": "Entries are only allowed inside the window. Every open trade should be closed by the flat-by time."
+    },
+    "errors": {
+      "required": "Required",
+      "positive": "Must be more than zero",
+      "aboveDaily": "Can't be higher than the daily loss limit",
+      "aboveAccount": "Can't be higher than the account size",
+      "percent": "Enter a value from 0 to 100",
+      "integer": "Enter a whole number, 1 or more",
+      "window": "Must be later than the previous time"
+    }
+  },
+  "data": {
+    "title": "Data & SEC",
+    "description": "Data sources, delay and your SEC EDGAR identity."
+  },
+  "ai": {
+    "title": "AI (optional)",
+    "description": "Plain-language summaries with your own Claude API key. Off by default; every tool works without it."
+  },
+  "appearance": {
+    "presets": "Themes",
+    "presetsHint": "Seven built-in presets, including a light theme. Select one to apply it.",
+    "yourThemes": "Your themes",
+    "light": "Light",
+    "active": "Active",
+    "colours": "Colours: {{name}}",
+    "presetHint": "Built-in themes are read-only. Changing a colour creates your own copy.",
+    "customHint": "Your theme. Changes apply instantly and are saved on this computer.",
+    "preview": "Live preview",
+    "previewHint": "Ticket levels always use the Text colour. Profit and Loss only colour the small markers.",
+    "manage": "Manage",
+    "copyName": "{{name}} (custom)",
+    "forked": "Created an editable copy of {{name}}",
+    "imported": "Imported {{name}}",
+    "saved": "Saved {{name}}",
+    "resetDone": "Colours reset to the original preset",
+    "name": "Name",
+    "nameHint": "Give your theme a short name.",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteHint": "This theme will be removed from this computer. Export it first if you want to keep a copy.",
+    "pickColor": "Pick colour for {{token}}",
+    "importErrors": {
+      "invalid_json": "That file isn't valid JSON.",
+      "missing_tokens": "The theme is missing colours {{token}}.",
+      "invalid_color": "Invalid colour for {{token}}. Use #RRGGBB."
+    },
+    "actions": {
+      "saveAs": "Save as…",
+      "import": "Import",
+      "export": "Export",
+      "rename": "Rename",
+      "reset": "Reset",
+      "delete": "Delete"
+    },
+    "groups": {
+      "surfaces": "Surfaces",
+      "text": "Text",
+      "actions": "Actions",
+      "signals": "Signals"
+    },
+    "tokens": {
+      "bg": { "label": "Background", "use": "App background" },
+      "surface": { "label": "Surface", "use": "Cards and panels" },
+      "surface2": { "label": "Surface 2", "use": "Raised areas, level boxes" },
+      "border": { "label": "Border", "use": "Hairlines and dividers" },
+      "text": { "label": "Text", "use": "Main text and ticket levels" },
+      "textMuted": { "label": "Muted text", "use": "Labels and secondary text" },
+      "primary": { "label": "Primary", "use": "Main action, active state" },
+      "onPrimary": { "label": "On primary", "use": "Text on primary buttons" },
+      "accent": { "label": "Accent", "use": "Links, focus ring" },
+      "profit": { "label": "Profit", "use": "Target markers, gains" },
+      "loss": { "label": "Loss", "use": "Stop markers, losses" },
+      "warning": { "label": "Warning", "use": "Check states" },
+      "info": { "label": "Info", "use": "Running, paper mode" }
+    },
+    "contrast": {
+      "title": "Contrast check (WCAG AA)",
+      "ok": "All colour pairs meet WCAG AA contrast.",
+      "count_one": "{{count}} contrast problem",
+      "count_other": "{{count}} contrast problems",
+      "short_one": "{{count}} issue",
+      "short_other": "{{count}} issues",
+      "issue": "{{fg}} on {{bg}}: contrast {{ratio}}:1 (needs {{required}}:1)",
+      "kindText": "text",
+      "kindMarker": "marker"
+    }
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "The whole interface switches instantly.",
+    "native": {
+      "en": "English",
+      "es": "Español"
+    },
+    "formats": "Formats",
+    "formatsHint": "Numbers and dates follow the language you choose.",
+    "sample": {
+      "money": "Money",
+      "number": "Number",
+      "percent": "Percent",
+      "date": "Date",
+      "marketTime": "Market time"
+    },
+    "marketTimeNote": "Market times are always shown in New York time (ET), wherever you are."
+  },
+  "about": {
+    "title": "About Levelset",
+    "appVersion": "App version",
+    "engineVersion": "Engine version",
+    "mode": "Mode",
+    "modes": {
+      "demo": "Demo",
+      "live": "Live data"
+    },
+    "tier": "Licence tier",
+    "license": "Licence",
+    "licenseValue": "MIT",
+    "notAdvice": "Not financial advice. Most day traders lose money.",
+    "rerunSetup": "Run setup again",
+    "thirdParty": "Third-party software",
+    "thirdPartyHint": "Levelset runs the day-trader-skill pack, used under the MIT License."
+  }
+}

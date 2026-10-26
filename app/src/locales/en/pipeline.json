@@ -1,0 +1,28 @@
+{
+  "title": "Pipeline",
+  "description": "Every step behind a ticket, from scanner to risk check.",
+  "placeholder": "The 8-step pipeline view is on its way.",
+  "placeholderRun": "Run {{runId}} will open here.",
+  "steps": {
+    "scanner": "Scanner",
+    "news": "News",
+    "entry": "Entry",
+    "exit": "Exit",
+    "timemachine": "Time Machine",
+    "budget": "Budget",
+    "risk": "Risk",
+    "ticket": "Ticket"
+  },
+  "checks": {
+    "earnings_this_week": "Earnings this week",
+    "coin_flip": "Odds are a coin flip",
+    "many_open_at_close": "Often still open at the close",
+    "entry_waiting": "Entry not triggered yet",
+    "max_loss_per_trade": "Loss at the stop is above your max loss per trade",
+    "loss": "Loss at the stop is above your max loss per trade",
+    "daily_loss": "Today's losses have reached your daily limit",
+    "daily_limit": "This trade would go over your daily loss limit",
+    "window": "Outside your entry window",
+    "duplicate": "Duplicate of an order already placed today"
+  }
+}

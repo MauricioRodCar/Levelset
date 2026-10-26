@@ -1,0 +1,28 @@
+{
+  "title": "Pipeline",
+  "description": "Cada paso detrás de un ticket, del escáner a la revisión de riesgo.",
+  "placeholder": "La vista del pipeline de 8 pasos está en camino.",
+  "placeholderRun": "La ejecución {{runId}} se abrirá aquí.",
+  "steps": {
+    "scanner": "Escáner",
+    "news": "Noticias",
+    "entry": "Entrada",
+    "exit": "Salida",
+    "timemachine": "Máquina del tiempo",
+    "budget": "Presupuesto",
+    "risk": "Riesgo",
+    "ticket": "Ticket"
+  },
+  "checks": {
+    "earnings_this_week": "Reporta resultados esta semana",
+    "coin_flip": "Las probabilidades son cara o cruz",
+    "many_open_at_close": "Suele seguir abierta al cierre",
+    "entry_waiting": "La entrada aún no se activó",
+    "max_loss_per_trade": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "loss": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "daily_loss": "Las pérdidas de hoy ya llegaron a tu límite diario",
+    "daily_limit": "Esta operación superaría tu límite de pérdida diaria",
+    "window": "Fuera de tu horario de entrada",
+    "duplicate": "Duplica una orden ya colocada hoy"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "levels": {
+    "entry": "Entry",
+    "stop": "Stop loss",
+    "target": "Take profit"
+  },
+  "side": {
+    "buy": "BUY",
+    "sell": "SELL"
+  },
+  "orderType": {
+    "market": "market",
+    "limit": "limit"
+  },
+  "timeInForce": {
+    "day": "day",
+    "gtc": "GTC"
+  },
+  "risk": {
+    "pass": "Risk PASS",
+    "block": "Risk BLOCK"
+  },
+  "riskReasons": {
+    "daily_limit": "This trade would go over your daily loss limit",
+    "max_loss": "Loss at the stop is above your max loss per trade",
+    "min_rr": "Reward:risk is below your minimum",
+    "trades_per_day": "You've reached your trades for today",
+    "entry_window": "Outside your entry window",
+    "market_closed": "The market is closed",
+    "no_stop": "The order has no stop loss",
+    "loss": "Loss at the stop is above your max loss per trade",
+    "daily_loss": "Today's losses have reached your daily limit",
+    "window": "Outside your entry window",
+    "duplicate": "Duplicate of an order already placed today",
+    "max_loss_per_trade": "Loss at the stop is above your max loss per trade"
+  },
+  "secondary": {
+    "maxLoss": "Max loss {{value}}",
+    "r": "{{value}}R",
+    "odds": "Odds: {{verdict}}",
+    "flatBy": "Flat by {{time}}"
+  },
+  "verdict": {
+    "favorable": "favourable",
+    "coin_flip": "coin flip",
+    "unfavorable": "unfavourable"
+  },
+  "actions": {
+    "copyAll": "Copy full ticket",
+    "viewFlow": "View flow"
+  },
+  "preview": {
+    "label": "Sample ticket"
+  }
+}

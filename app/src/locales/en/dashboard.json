@@ -1,0 +1,13 @@
+{
+  "title": "Dashboard",
+  "description": "What you can trade now, and at what levels.",
+  "placeholder": "Ready tickets, watchlist, open trades and news will appear here.",
+  "kpi": {
+    "dayPnl": "Day P/L",
+    "riskUsed": "Risk used",
+    "ofLimit": "of {{limit}} daily limit",
+    "tradesToday": "Trades today",
+    "ofMax": "of {{max}} max",
+    "setupsFound": "Setups found"
+  }
+}

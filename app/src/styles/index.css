@@ -1,0 +1,49 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Theme tokens are written to :root as --ls-<token> / --ls-<token>-rgb by src/theme/apply.ts.
+ * Never hard-code colours here or in components.
+ */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg font-sans text-base text-text antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::selection {
+    background: rgb(var(--ls-primary-rgb) / 0.35);
+  }
+  * {
+    scrollbar-color: rgb(var(--ls-border-rgb)) transparent;
+  }
+  /* Visible keyboard focus everywhere, including elements without the focus-ring class. */
+  :focus-visible {
+    outline: 2px solid var(--ls-accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /** Keyboard focus ring (use on every interactive element). */
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+  }
+  /** Tabular numerals for every number (prices, P/L, counts). */
+  .tabular {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+}

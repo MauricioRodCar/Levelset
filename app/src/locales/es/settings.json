@@ -1,0 +1,168 @@
+{
+  "title": "Ajustes",
+  "description": "Límites, apariencia e idioma. Los cambios se guardan en esta computadora.",
+  "placeholder": "Esta sección está en construcción.",
+  "tabs": {
+    "account": "Cuenta y límites",
+    "appearance": "Apariencia",
+    "language": "Idioma",
+    "data": "Datos y SEC",
+    "ai": "IA (opcional)",
+    "about": "Acerca de"
+  },
+  "account": {
+    "title": "Cuenta y límites",
+    "subtitle": "Se guardan en la configuración de los skills. Cada ticket se dimensiona y se revisa contra estos valores.",
+    "save": "Guardar límites",
+    "saved": "Límites guardados",
+    "loadFailed": "No se pudo cargar tu configuración actual. Se muestran valores predeterminados.",
+    "saveFailed": "No se pudieron guardar tus límites",
+    "fields": {
+      "accountSize": "Tamaño de la cuenta (USD)",
+      "maxLossPerTrade": "Pérdida máxima por operación (USD)",
+      "maxDailyLoss": "Límite de pérdida diaria (USD)",
+      "maxTradesPerDay": "Operaciones por día",
+      "minRewardRisk": "Beneficio:riesgo mínimo",
+      "cashBuffer": "Reserva de efectivo (%)",
+      "noEntriesBefore": "Sin entradas antes de",
+      "noEntriesAfter": "Sin entradas después de",
+      "flatBy": "Cerrar todo antes de",
+      "pdtGuard": "Protección pattern day trader"
+    },
+    "hints": {
+      "accountSize": "El efectivo con el que operas. Solo USD en la v1.",
+      "maxLossPerTrade": "Lo máximo que perderás si se toca el stop. El tamaño de la posición se calcula a partir de este valor.",
+      "maxDailyLoss": "Se bloquean nuevas entradas cuando el riesgo total del día superaría este monto.",
+      "maxTradesPerDay": "Se bloquean nuevas entradas después de esta cantidad de operaciones.",
+      "minRewardRisk": "Distancia al objetivo dividida entre la distancia al stop. 1.5 significa que el objetivo está a 1.5 veces el stop.",
+      "cashBuffer": "Parte de la cuenta que nunca se usa para posiciones.",
+      "pdtGuard": "Te avisa antes de una cuarta operación intradía en cinco días en cuentas de menos de USD 25,000."
+    },
+    "window": {
+      "title": "Horario de entrada (hora de Nueva York)",
+      "hint": "Solo se permiten entradas dentro de este horario. Toda operación abierta debería cerrarse antes de la hora límite."
+    },
+    "errors": {
+      "required": "Obligatorio",
+      "positive": "Debe ser mayor que cero",
+      "aboveDaily": "No puede ser mayor que el límite de pérdida diaria",
+      "aboveAccount": "No puede ser mayor que el tamaño de la cuenta",
+      "percent": "Ingresa un valor entre 0 y 100",
+      "integer": "Ingresa un número entero, 1 o más",
+      "window": "Debe ser posterior a la hora anterior"
+    }
+  },
+  "data": {
+    "title": "Datos y SEC",
+    "description": "Fuentes de datos, retraso y tu identificación ante SEC EDGAR."
+  },
+  "ai": {
+    "title": "IA (opcional)",
+    "description": "Resúmenes en lenguaje sencillo con tu propia clave de API de Claude. Desactivada por defecto; todas las herramientas funcionan sin ella."
+  },
+  "appearance": {
+    "presets": "Temas",
+    "presetsHint": "Siete temas incluidos, entre ellos uno claro. Selecciona uno para aplicarlo.",
+    "yourThemes": "Tus temas",
+    "light": "Claro",
+    "active": "Activo",
+    "colours": "Colores: {{name}}",
+    "presetHint": "Los temas incluidos son de solo lectura. Al cambiar un color se crea tu propia copia.",
+    "customHint": "Tu tema. Los cambios se aplican al instante y se guardan en esta computadora.",
+    "preview": "Vista previa",
+    "previewHint": "Los niveles del ticket siempre usan el color Texto. Ganancia y Pérdida solo colorean los marcadores pequeños.",
+    "manage": "Administrar",
+    "copyName": "{{name}} (personalizado)",
+    "forked": "Se creó una copia editable de {{name}}",
+    "imported": "{{name}} importado",
+    "saved": "{{name}} guardado",
+    "resetDone": "Colores restablecidos al tema original",
+    "name": "Nombre",
+    "nameHint": "Ponle un nombre corto a tu tema.",
+    "deleteTitle": "¿Eliminar {{name}}?",
+    "deleteHint": "Este tema se eliminará de esta computadora. Si quieres conservar una copia, expórtalo primero.",
+    "pickColor": "Elegir color para {{token}}",
+    "importErrors": {
+      "invalid_json": "Ese archivo no es un JSON válido.",
+      "missing_tokens": "Al tema le faltan colores {{token}}.",
+      "invalid_color": "Color no válido para {{token}}. Usa #RRGGBB."
+    },
+    "actions": {
+      "saveAs": "Guardar como…",
+      "import": "Importar",
+      "export": "Exportar",
+      "rename": "Renombrar",
+      "reset": "Restablecer",
+      "delete": "Eliminar"
+    },
+    "groups": {
+      "surfaces": "Superficies",
+      "text": "Texto",
+      "actions": "Acciones",
+      "signals": "Señales"
+    },
+    "tokens": {
+      "bg": { "label": "Fondo", "use": "Fondo de la app" },
+      "surface": { "label": "Superficie", "use": "Tarjetas y paneles" },
+      "surface2": { "label": "Superficie 2", "use": "Zonas elevadas, cajas de niveles" },
+      "border": { "label": "Borde", "use": "Líneas finas y separadores" },
+      "text": { "label": "Texto", "use": "Texto principal y niveles del ticket" },
+      "textMuted": { "label": "Texto atenuado", "use": "Etiquetas y texto secundario" },
+      "primary": { "label": "Principal", "use": "Acción principal, estado activo" },
+      "onPrimary": { "label": "Sobre principal", "use": "Texto en botones principales" },
+      "accent": { "label": "Acento", "use": "Enlaces, anillo de foco" },
+      "profit": { "label": "Ganancia", "use": "Marcadores de take profit, ganancias" },
+      "loss": { "label": "Pérdida", "use": "Marcadores de stop loss, pérdidas" },
+      "warning": { "label": "Advertencia", "use": "Estados a revisar" },
+      "info": { "label": "Información", "use": "En curso, modo simulado" }
+    },
+    "contrast": {
+      "title": "Revisión de contraste (WCAG AA)",
+      "ok": "Todos los pares de colores cumplen el contraste WCAG AA.",
+      "count_one": "{{count}} problema de contraste",
+      "count_many": "{{count}} problemas de contraste",
+      "count_other": "{{count}} problemas de contraste",
+      "short_one": "{{count}} problema",
+      "short_many": "{{count}} problemas",
+      "short_other": "{{count}} problemas",
+      "issue": "{{fg}} sobre {{bg}}: contraste {{ratio}}:1 (requiere {{required}}:1)",
+      "kindText": "texto",
+      "kindMarker": "marcador"
+    }
+  },
+  "language": {
+    "title": "Idioma",
+    "subtitle": "Toda la interfaz cambia al instante.",
+    "native": {
+      "en": "English",
+      "es": "Español"
+    },
+    "formats": "Formatos",
+    "formatsHint": "Los números y las fechas siguen el idioma que elijas.",
+    "sample": {
+      "money": "Dinero",
+      "number": "Número",
+      "percent": "Porcentaje",
+      "date": "Fecha",
+      "marketTime": "Hora de mercado"
+    },
+    "marketTimeNote": "Los horarios de mercado siempre se muestran en hora de Nueva York (ET), estés donde estés."
+  },
+  "about": {
+    "title": "Acerca de Levelset",
+    "appVersion": "Versión de la app",
+    "engineVersion": "Versión del motor",
+    "mode": "Modo",
+    "modes": {
+      "demo": "Demo",
+      "live": "Datos reales"
+    },
+    "tier": "Plan de licencia",
+    "license": "Licencia",
+    "licenseValue": "MIT",
+    "notAdvice": "No es asesoría financiera. La mayoría de los day traders pierde dinero.",
+    "rerunSetup": "Repetir la configuración inicial",
+    "thirdParty": "Software de terceros",
+    "thirdPartyHint": "Levelset ejecuta el paquete day-trader-skill, usado bajo la licencia MIT."
+  }
+}

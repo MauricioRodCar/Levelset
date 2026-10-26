@@ -1,0 +1,53 @@
+{
+  "actions": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "next": "Next",
+    "back": "Back",
+    "retry": "Retry"
+  },
+  "copy": {
+    "copied": "Copied {{value}}",
+    "failed": "Couldn't copy to the clipboard",
+    "copyValue": "Copy {{value}}",
+    "copyLabeled": "Copy {{label}} {{value}}"
+  },
+  "status": {
+    "done": "Done",
+    "check": "Check",
+    "ready": "Ready",
+    "blocked": "Blocked",
+    "error": "Error",
+    "running": "Running",
+    "pending": "Pending",
+    "pass": "Pass",
+    "block": "Block",
+    "stale": "Stale"
+  },
+  "disclaimer": {
+    "title": "Disclaimer",
+    "short": "Not financial advice.",
+    "read": "Read the disclaimer",
+    "delayed": "Prices may be delayed up to {{minutes}} min",
+    "intro": "Levelset is a tool you run yourself. It is not a broker, an adviser or a signal service, and nothing it shows is a recommendation to buy or sell.",
+    "points": [
+      "Trading involves substantial risk. Most day traders lose money.",
+      "Free market data (Yahoo, SEC, Nasdaq Trader) can be delayed, incomplete or wrong.",
+      "Simulations and historical results do not guarantee future outcomes.",
+      "Levelset never sends orders to a broker. You decide and place every trade yourself.",
+      "CFD symbols and contract sizes on your platform may differ from the US stock analysed."
+    ]
+  },
+  "language": {
+    "label": "Language",
+    "names": {
+      "en": "English",
+      "es": "Spanish"
+    },
+    "short": {
+      "en": "EN",
+      "es": "ES"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "actions": {
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "retry": "Reintentar"
+  },
+  "copy": {
+    "copied": "{{value}} copiado",
+    "failed": "No se pudo copiar al portapapeles",
+    "copyValue": "Copiar {{value}}",
+    "copyLabeled": "Copiar {{label}} {{value}}"
+  },
+  "status": {
+    "done": "Listo",
+    "check": "Revisar",
+    "ready": "Preparado",
+    "blocked": "Bloqueado",
+    "error": "Error",
+    "running": "En curso",
+    "pending": "Pendiente",
+    "pass": "Aprobado",
+    "block": "Bloqueado",
+    "stale": "Desactualizado"
+  },
+  "disclaimer": {
+    "title": "Aviso legal",
+    "short": "No es asesoría financiera.",
+    "read": "Leer el aviso",
+    "delayed": "Los precios pueden tener hasta {{minutes}} min de retraso",
+    "intro": "Levelset es una herramienta que tú mismo usas. No es un bróker, un asesor ni un servicio de señales, y nada de lo que muestra es una recomendación de compra o venta.",
+    "points": [
+      "Operar en bolsa implica un riesgo considerable. La mayoría de los day traders pierde dinero.",
+      "Los datos de mercado gratuitos (Yahoo, SEC, Nasdaq Trader) pueden llegar con retraso, incompletos o con errores.",
+      "Las simulaciones y los resultados históricos no garantizan resultados futuros.",
+      "Levelset nunca envía órdenes a un bróker. Tú decides y colocas cada operación.",
+      "Los símbolos CFD y el tamaño de contrato en tu plataforma pueden ser distintos a los de la acción estadounidense analizada."
+    ]
+  },
+  "language": {
+    "label": "Idioma",
+    "names": {
+      "en": "Inglés",
+      "es": "Español"
+    },
+    "short": {
+      "en": "EN",
+      "es": "ES"
+    }
+  }
+}

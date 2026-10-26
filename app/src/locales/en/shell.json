@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "pipeline": "Pipeline",
+    "alerts": "Alerts",
+    "analyst": "Analyst",
+    "pelosi": "Pelosi",
+    "connections": "Connections",
+    "settings": "Settings"
+  },
+  "sidebar": {
+    "label": "Sidebar",
+    "nav": "Main navigation",
+    "expand": "Expand sidebar",
+    "collapse": "Collapse"
+  },
+  "footer": {
+    "paper": "Paper",
+    "live": "Live",
+    "tier": "{{tier}} tier"
+  },
+  "tiers": {
+    "free": "Free",
+    "pro": "Pro",
+    "tester": "Tester"
+  },
+  "statusBar": {
+    "label": "Market and engine status"
+  },
+  "market": {
+    "open": "Market open",
+    "closed": "Market closed",
+    "closesAt": "closes {{time}}",
+    "closesEarly": "early close {{time}}",
+    "opensAt": "opens {{date}}, {{time}}",
+    "unknown": "Market status unavailable"
+  },
+  "clock": {
+    "newYork": "New York",
+    "tooltip": "Market times are always shown in New York time (ET)"
+  },
+  "data": {
+    "delayed": "Data delayed {{minutes}} min",
+    "realtime": "Real-time data"
+  },
+  "demo": {
+    "badge": "Demo",
+    "tooltip": "Demo mode: bundled data with the clock pinned to Oct 19, 2026, 10:15 ET"
+  },
+  "engine": {
+    "connected": "Engine connected",
+    "noEvents": "Engine up, live updates paused",
+    "connecting": "Connecting to engine…",
+    "offline": "Engine offline",
+    "offlineTitle": "Can't reach the Levelset engine",
+    "offlineHint": "Expected at {{url}}. Start the engine (or run the app in demo mode) and retry.",
+    "retry": "Retry",
+    "tooltip": "Engine version {{version}}"
+  },
+  "skipToContent": "Skip to content",
+  "comingSoon": {
+    "title": "Coming in {{version}}"
+  },
+  "analyst": {
+    "description": "Earnings straight from SEC filings: revenue, margins and EPS, quarter by quarter.",
+    "bullets": [
+      "Revenue, gross, operating and net margins against the same quarter a year earlier",
+      "Diluted EPS and trailing twelve months",
+      "Optional plain-language summary with your own Claude API key"
+    ]
+  },
+  "pelosi": {
+    "description": "Stock trades that members of Congress disclose under the STOCK Act.",
+    "bullets": [
+      "New House filings as soon as they are posted",
+      "Who, ticker, buy or sell, amount range and days to disclose",
+      "Flags trades in stocks on your watchlist"
+    ]
+  }
+}

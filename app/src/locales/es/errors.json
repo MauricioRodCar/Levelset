@@ -1,0 +1,17 @@
+{
+  "title": "Algo salió mal",
+  "retry": "Reintentar",
+  "generic": "Ocurrió un error inesperado. Vuelve a intentarlo.",
+  "notFound": "No encontrado.",
+  "engineOffline": "El motor local no responde.",
+  "codes": {
+    "unauthorized": "El motor rechazó el token de acceso. Reinicia Levelset.",
+    "not_found": "Ese elemento ya no existe.",
+    "validation_error": "Algunos valores no son válidos. Revísalos y vuelve a intentarlo.",
+    "previous_step_not_done": "Primero completa los pasos anteriores.",
+    "scan_failed": "El escáner no pudo obtener datos de mercado. Vuelve a intentarlo en un momento.",
+    "news_failed": "No se pudieron cargar las noticias. Vuelve a intentarlo en un momento.",
+    "insufficient_position": "No tienes suficientes acciones para vender esa cantidad.",
+    "invalid_alert": "Esta alerta no es válida. Revisa el tipo y el nivel u hora."
+  }
+}

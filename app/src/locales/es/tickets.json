@@ -1,0 +1,55 @@
+{
+  "levels": {
+    "entry": "Entrada",
+    "stop": "Stop loss",
+    "target": "Take profit"
+  },
+  "side": {
+    "buy": "COMPRA",
+    "sell": "VENTA"
+  },
+  "orderType": {
+    "market": "a mercado",
+    "limit": "limitada"
+  },
+  "timeInForce": {
+    "day": "día",
+    "gtc": "GTC"
+  },
+  "risk": {
+    "pass": "Riesgo APROBADO",
+    "block": "Riesgo BLOQUEADO"
+  },
+  "riskReasons": {
+    "daily_limit": "Esta operación superaría tu límite de pérdida diaria",
+    "max_loss": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "min_rr": "La relación beneficio:riesgo está por debajo de tu mínimo",
+    "trades_per_day": "Ya llegaste a tus operaciones de hoy",
+    "entry_window": "Fuera de tu horario de entrada",
+    "market_closed": "El mercado está cerrado",
+    "no_stop": "La orden no tiene stop loss",
+    "loss": "La pérdida en el stop supera tu pérdida máxima por operación",
+    "daily_loss": "Las pérdidas de hoy ya llegaron a tu límite diario",
+    "window": "Fuera de tu horario de entrada",
+    "duplicate": "Duplica una orden ya colocada hoy",
+    "max_loss_per_trade": "La pérdida en el stop supera tu pérdida máxima por operación"
+  },
+  "secondary": {
+    "maxLoss": "Pérdida máx. {{value}}",
+    "r": "{{value}}R",
+    "odds": "Probabilidad: {{verdict}}",
+    "flatBy": "Cerrar antes de {{time}}"
+  },
+  "verdict": {
+    "favorable": "favorable",
+    "coin_flip": "cara o cruz",
+    "unfavorable": "desfavorable"
+  },
+  "actions": {
+    "copyAll": "Copiar ticket completo",
+    "viewFlow": "Ver flujo"
+  },
+  "preview": {
+    "label": "Ticket de ejemplo"
+  }
+}

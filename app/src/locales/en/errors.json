@@ -1,0 +1,17 @@
+{
+  "title": "Something went wrong",
+  "retry": "Retry",
+  "generic": "An unexpected error occurred. Please try again.",
+  "notFound": "Not found.",
+  "engineOffline": "The local engine isn't responding.",
+  "codes": {
+    "unauthorized": "The engine rejected the access token. Restart Levelset.",
+    "not_found": "That item doesn't exist anymore.",
+    "validation_error": "Some values are not valid. Please check and try again.",
+    "previous_step_not_done": "Finish the previous steps first.",
+    "scan_failed": "The scan couldn't get market data. Try again in a moment.",
+    "news_failed": "Couldn't load the news right now. Try again in a moment.",
+    "insufficient_position": "You don't hold enough shares to sell that quantity.",
+    "invalid_alert": "This alert isn't valid. Check the type and the level or time."
+  }
+}

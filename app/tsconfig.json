@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "useDefineForClassFields": true,
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@themes/*": ["../shared/themes/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts", "tailwind.config.ts", "scripts/**/*.ts"]
+}

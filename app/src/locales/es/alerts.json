@@ -1,0 +1,19 @@
+{
+  "title": "Alertas",
+  "description": "Stops, objetivos, niveles de precio y la campana de apertura. Cada alerta suena una sola vez.",
+  "placeholder": "Aquí aparecerán tus alertas y el historial de avisos.",
+  "types": {
+    "above": "Precio por encima",
+    "below": "Precio por debajo",
+    "stop": "Stop",
+    "target": "Objetivo",
+    "pct_move": "Movimiento %",
+    "time": "Hora",
+    "open_bell": "Campana de apertura",
+    "flat_by": "Cierre de posiciones"
+  },
+  "status": {
+    "armed": "Activa",
+    "rung": "Sonó"
+  }
+}

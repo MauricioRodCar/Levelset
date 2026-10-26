@@ -1,0 +1,40 @@
+{
+  "progress": "Step {{current}} of {{total}}",
+  "back": "Back",
+  "next": "Next",
+  "skip": "Skip for now",
+  "saveAndContinue": "Save and continue",
+  "steps": {
+    "language": {
+      "short": "Language",
+      "title": "Welcome to Levelset",
+      "description": "Choose your language. You can change it any time from the status bar."
+    },
+    "theme": {
+      "short": "Theme",
+      "title": "Pick a look",
+      "description": "Every colour can be customised later in Settings › Appearance."
+    },
+    "account": {
+      "short": "Limits",
+      "title": "Your account and limits",
+      "description": "Levelset sizes every trade and blocks anything over these limits. Max loss per trade is the most you're willing to lose if the stop is hit."
+    },
+    "disclaimer": {
+      "short": "Disclaimer",
+      "title": "Before you start",
+      "description": "Please read this carefully.",
+      "accept": "I understand that Levelset is not financial advice and that I'm responsible for my own trades.",
+      "continue": "Accept and continue"
+    },
+    "finish": {
+      "short": "Start",
+      "title": "You're all set",
+      "description": "See the full pipeline on a real example, or go straight to your dashboard.",
+      "demo": "Try the demo trade",
+      "demoHint": "Replays the TSLA opening-range breakout from Oct 19, 2026, step by step.",
+      "dashboard": "Go to dashboard",
+      "dashboardHint": "See ready tickets, your watchlist and today's news."
+    }
+  }
+}
