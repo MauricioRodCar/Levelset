@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Engine exe + NSIS installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Build engine (PyInstaller) + smoke test + stage sidecar
+        shell: pwsh
+        run: ./engine/packaging/build.ps1 -Python python
+
+      - name: Install app dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build NSIS installer
+        working-directory: app
+        run: npm run tauri:build
+
+      - name: Collect artifacts
+        id: collect
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item app/src-tauri/target/release/bundle/nsis/*-setup.exe out/
+          Compress-Archive -Path engine/packaging/dist/levelset-engine/* -DestinationPath out/levelset-engine-win-x64.zip
+          Get-ChildItem out | Format-Table Name, Length
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: levelset-windows
+          path: out/*
+
+      - name: Draft GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: out/*
+          body: |
+            Levelset ${{ github.ref_name }} for Windows 10/11 (x64).
+            - `Levelset_*_x64-setup.exe`: per-user installer (no admin rights needed).
+            - `levelset-engine-win-x64.zip`: the engine on its own (`levelset-engine.exe --demo --port 0`).
+            Not financial advice.
