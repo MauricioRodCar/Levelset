@@ -10,7 +10,7 @@ info:
     This file is the contract between engine (WP1) and UI (WP2-5). Change it only through the lead.
     Error codes (Problem.code) the UI must translate: unauthorized, not_found, validation_error,
     previous_step_not_done, scan_failed (502), news_failed (502), insufficient_position (422),
-    invalid_alert (422), alert_not_found (404), fill_not_found (404), fill_in_use (409).
+    invalid_alert (422), alert_not_found (404), fill_not_found (404), fill_in_use (409), bars_failed (502), run_busy, no_ticker.
     A run-all that stops early (e.g. entry still waiting) ends with status
     "check" and the remaining steps "pending". News tags map the skill's people->leadership,
     capital/risk->other.
