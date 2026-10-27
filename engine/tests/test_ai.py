@@ -321,3 +321,11 @@ def test_tools_only_read(engine: tuple[TestClient, dict[str, Any], Path], c: Tes
     allowed = {t.path for t in tools.TOOLS if "{" not in t.path}
     allowed |= {"/pipeline/runs/%s" % run["id"], "/tickets/%s" % run["ticketId"], "/analyst/TSLA"}
     assert {p for _, p in seen} <= allowed
+
+
+def test_haiku_long_prompt_tier():
+    short = pricing.cost_usd("claude-haiku-5-5", 100_000, 1_000)
+    long_ = pricing.cost_usd("claude-haiku-5-5", 100_001, 1_000)
+    assert round(short, 6) == round((100_000 * 0.10 + 1_000 * 0.50) / 1e6, 6)
+    assert round(long_, 6) == round((100_001 * 0.50 + 1_000 * 2.50) / 1e6, 6)
+    assert pricing.cost_usd("claude-sonnet-5-5", 200_000, 0) == 200_000 * 2.00 / 1e6

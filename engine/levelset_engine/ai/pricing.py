@@ -25,6 +25,10 @@ PRICES: dict[str, tuple[float, float]] = {
 }
 FALLBACK_PRICE = (5.00, 25.00)
 
+# Haiku 5.5 list price is for prompts up to 100K tokens; longer prompts cost more.
+LONG_PROMPT_TOKENS = 100_000
+LONG_PROMPT_PRICES: dict[str, tuple[float, float]] = {"claude-haiku-5-5": (0.50, 2.50)}
+
 # Server-side refusal fallbacks exist for these models only (not Haiku).
 SUPPORTS_FALLBACKS = frozenset({"claude-sonnet-5-5", "claude-opus-5-5"})
 
@@ -49,4 +53,6 @@ def usage_tokens(usage: Any) -> tuple[int, int, int, int]:
 
 def cost_usd(model: str, inp: int, out: int, cache_write: int = 0, cache_read: int = 0) -> float:
     pin, pout = PRICES.get(model, FALLBACK_PRICE)
+    if inp + cache_write + cache_read > LONG_PROMPT_TOKENS and model in LONG_PROMPT_PRICES:
+        pin, pout = LONG_PROMPT_PRICES[model]
     return (inp * pin + cache_write * pin * 1.25 + cache_read * pin * 0.1 + out * pout) / 1_000_000
