@@ -47,7 +47,7 @@ def get_settings(s: Services = Depends(services)) -> dict:
 async def put_settings(body: Settings, s: Services = Depends(services)) -> dict:
     """Writes the skills' trader/config.json, keeping every key Levelset does not manage.
     data.demoMode is read-only here: demo is chosen when the engine starts (--demo)."""
-    async with s.ctx.lock:
+    async with s.ctx.config_lock:
         current = s.ctx.ws.read_json(wsf.CONFIG, {}) or {}
         s.ctx.ws.write_json(wsf.CONFIG, config_from_settings(dump(body), current))
     return s.market.settings()

@@ -35,6 +35,7 @@ class EngineContext:
         self.calendar = MarketCalendar(config.skills_dir)
         self.bus = EventBus()
         self._lock: asyncio.Lock | None = None
+        self._config_lock: asyncio.Lock | None = None
         self.tasks: dict[str, asyncio.Task[Any]] = {}
         self.seed()
 
@@ -63,6 +64,14 @@ class EngineContext:
         if self._lock is None:
             self._lock = asyncio.Lock()
         return self._lock
+
+    @property
+    def config_lock(self) -> asyncio.Lock:
+        """Serializes read-modify-writes of trader/config.json. Not the run lock: skills only read the
+        config and writes are atomic, so saving settings never waits for a pipeline step or catch-up run."""
+        if self._config_lock is None:
+            self._config_lock = asyncio.Lock()
+        return self._config_lock
 
     def config_doc(self) -> dict[str, Any]:
         return effective_config(self.ws.read_json(wsf.CONFIG, {}))

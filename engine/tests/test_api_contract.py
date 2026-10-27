@@ -270,3 +270,26 @@ def test_live_mode_status_and_settings(tmp_path):
         assert s["mode"] == "live" and s["dataDelaySeconds"] > 0
         assert c.get("/settings").json()["data"]["demoMode"] is False
         assert c.get("/watchlist").json() == [] and c.get("/tickets").json() == []
+
+
+def test_settings_save_does_not_wait_for_a_running_step(client):
+    """Onboarding's save must not hang behind a long pipeline step or the paper catch-up runs."""
+    import threading
+
+    ctx = client.app.state.services.ctx
+
+    async def hold() -> None:
+        await ctx.lock.acquire()
+
+    client.portal.call(hold)  # a step is "running" for as long as this test holds the run lock
+    try:
+        s = client.get("/settings").json()
+        s["account"]["accountSizeUsd"] = 7000
+        out: dict = {}
+        t = threading.Thread(target=lambda: out.update(r=client.put("/settings", json=s)))
+        t.start()
+        t.join(10)
+        assert not t.is_alive(), "PUT /settings waited for the run lock"
+        assert out["r"].status_code == 200 and out["r"].json()["account"]["accountSizeUsd"] == 7000
+    finally:
+        client.portal.call(ctx.lock.release)
