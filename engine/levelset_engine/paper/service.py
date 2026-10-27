@@ -428,7 +428,9 @@ class PaperService:
             await asyncio.sleep(interval)
 
     async def background(self, interval: float = LOOP_SECONDS) -> None:
-        """Engine start: catch up on the missed part of today first, then the loop."""
+        """Engine start: catch up on the missed part of today first, then the loop. Nothing starts before
+        the UI has finished onboarding, so a fresh install is not busy re-running the day."""
+        await self.ctx.wait_onboarded()
         try:
             await self.backfill()
         except asyncio.CancelledError:
@@ -484,7 +486,7 @@ class PaperService:
                 overrides = dict(params or {})
                 overrides["scanner"] = dict(overrides.get("scanner") or {}, at=hhmm)
                 with ctx.clock.as_of(moment):
-                    run = self.pipeline.create_run("all", None, "orb", overrides)
+                    run = self.pipeline.create_run("all", None, "orb", overrides, background=True)
                     task = ctx.tasks.get(run.get("id"))
                     if task is not None:
                         await task

@@ -44,6 +44,9 @@ class PipelineService:
     def __init__(self, ctx: EngineContext) -> None:
         self.ctx = ctx
         self._busy: set[str] = set()
+        self._background: set[str] = set()  # catch-up runs: their steps let user-started runs go first
+        self._user_runs = 0
+        self._user_idle: asyncio.Event | None = None
         self.ticket_hooks: list[Any] = []  # called with each new ticket (the paper account's auto-follow)
         self.recover()
 
@@ -82,7 +85,26 @@ class PipelineService:
                     self.ctx.db.upsert_step(run["id"], s)
             self.ctx.db.update_run(run["id"], status="error", ended_at=iso(self.ctx.clock.now()))
 
-    def create_run(self, mode: str, ticker: str | None, setup: str, overrides: dict[str, Any] | None) -> dict[str, Any]:
+    # ---------------------------------------------------------------- user runs go first
+    def _idle_event(self) -> asyncio.Event:
+        if self._user_idle is None:
+            self._user_idle = asyncio.Event()
+            self._user_idle.set()
+        return self._user_idle
+
+    def _user_started(self) -> None:
+        self._user_runs += 1
+        self._idle_event().clear()
+
+    def _user_ended(self) -> None:
+        self._user_runs = max(0, self._user_runs - 1)
+        if self._user_runs == 0:
+            self._idle_event().set()
+
+    def create_run(self, mode: str, ticker: str | None, setup: str, overrides: dict[str, Any] | None,
+                   background: bool = False) -> dict[str, Any]:
+        """background=True (the paper catch-up): before each step the run waits until no user-started run
+        is busy, so the user's own runs never queue behind it for more than the step in progress."""
         run_id = new_id("run")
         now = iso(self.ctx.clock.now())
         run = {"id": run_id, "ticker": ticker.upper() if ticker else None, "setup": setup, "mode": mode,
@@ -93,15 +115,22 @@ class PipelineService:
             self.ctx.db.upsert_step(run_id, {"key": key, "idx": i, "status": "pending",
                                              "params": P.merged(key, (overrides or {}).get(key))})
         self._publish_run(run_id)
+        if background:
+            self._background.add(run_id)
         if mode == "all":
+            if not background:
+                self._user_started()  # counted now, so a catch-up step that is about to start waits
             task = asyncio.get_running_loop().create_task(self._run_all(run_id))
             self.ctx.tasks[run_id] = task
         return self.run_json(run_id) or {}
 
     async def _run_all(self, run_id: str) -> None:
         self._busy.add(run_id)
+        background = run_id in self._background
         try:
             for key in STEP_KEYS:
+                if background:
+                    await self._idle_event().wait()
                 outcome = await self._execute(run_id, key, None)
                 if outcome.halt:
                     break
@@ -109,6 +138,9 @@ class PipelineService:
             log.error("run %s crashed:\n%s", run_id, traceback.format_exc())
         finally:
             self._busy.discard(run_id)
+            self._background.discard(run_id)
+            if not background:
+                self._user_ended()
             self._finish(run_id)
             self.ctx.tasks.pop(run_id, None)
 
@@ -131,6 +163,7 @@ class PipelineService:
         if key != "scanner" and not run.get("ticker"):
             raise PipelineError(409, "no_ticker", "No ticker yet: run the scanner step or give a ticker")
         self._busy.add(run_id)
+        self._user_started()
         try:
             # a re-run invalidates everything after it
             for later in STEP_KEYS[idx + 1:]:
@@ -142,6 +175,7 @@ class PipelineService:
             await self._execute(run_id, key, overrides)
         finally:
             self._busy.discard(run_id)
+            self._user_ended()
             self._finish(run_id)
         row = next(s for s in self.ctx.db.get_steps(run_id) if s["key"] == key)
         return self.step_json(row)

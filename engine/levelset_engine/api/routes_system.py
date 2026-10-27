@@ -6,7 +6,7 @@ import asyncio
 from typing import AsyncIterator
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from .. import __version__
 from ..adapters.settings_map import config_from_settings
@@ -29,6 +29,13 @@ def health() -> Health:
 @router.get("/status", response_model=Status)
 def status(s: Services = Depends(services)) -> dict:
     return s.market.status()
+
+
+@router.post("/system/onboarding", status_code=204, response_class=Response)
+def onboarding_done(s: Services = Depends(services)) -> Response:
+    """First-run setup is finished; the paper catch-up may start (it waits for this on a fresh install)."""
+    s.ctx.mark_onboarded()
+    return Response(status_code=204)
 
 
 @router.get("/dashboard", response_model=DashboardSummary)

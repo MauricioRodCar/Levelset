@@ -2,6 +2,7 @@
  * TanStack Query hooks, one per engine endpoint (docs/api/openapi.yaml).
  * Components import from '@/api' and never call fetch directly.
  */
+import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
 import { getApi, isNetworkError, unwrap } from './client';
 import { qk } from './queryKeys';
@@ -214,6 +215,23 @@ export function useRunScanner() {
       void qc.invalidateQueries({ queryKey: qk.dashboard });
     },
   });
+}
+
+/**
+ * Tells the engine that first-run setup is finished, so it may start the paper catch-up runs (it holds
+ * them back on a fresh install). Sent once per app start, after the engine has answered; idempotent.
+ */
+export function useReportOnboarding(done: boolean, engineUp: boolean) {
+  const sent = useRef(false);
+  useEffect(() => {
+    if (!done || !engineUp || sent.current) return;
+    sent.current = true;
+    getApi()
+      .POST('/system/onboarding')
+      .catch(() => {
+        sent.current = false; // try again when the engine is back
+      });
+  }, [done, engineUp]);
 }
 
 export function useStartRun() {

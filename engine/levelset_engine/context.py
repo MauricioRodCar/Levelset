@@ -16,6 +16,7 @@ from .runner import SkillResult, SkillRunner
 from .storage import Database, Workspace
 from .storage import workspace as wsf
 
+ONBOARDED_KEY = "system.onboarded"
 DEMO_CHARTS = "demo-data/charts"  # <TICKER>.json for trader-entry / trader-exit --offline
 
 
@@ -36,6 +37,7 @@ class EngineContext:
         self.bus = EventBus()
         self._lock: asyncio.Lock | None = None
         self._config_lock: asyncio.Lock | None = None
+        self._onboarded: asyncio.Event | None = None
         self.tasks: dict[str, asyncio.Task[Any]] = {}
         self.seed()
 
@@ -64,6 +66,22 @@ class EngineContext:
         if self._lock is None:
             self._lock = asyncio.Lock()
         return self._lock
+
+    def _onboarded_event(self) -> asyncio.Event:
+        if self._onboarded is None:
+            self._onboarded = asyncio.Event()
+            if self.db.kv_get(ONBOARDED_KEY):
+                self._onboarded.set()
+        return self._onboarded
+
+    def mark_onboarded(self) -> None:
+        """The UI finished first-run setup (POST /system/onboarding); remembered across restarts."""
+        self.db.kv_set(ONBOARDED_KEY, True)
+        self._onboarded_event().set()
+
+    async def wait_onboarded(self) -> None:
+        """Background work that should not start on a fresh install (the paper catch-up) waits here."""
+        await self._onboarded_event().wait()
 
     @property
     def config_lock(self) -> asyncio.Lock:

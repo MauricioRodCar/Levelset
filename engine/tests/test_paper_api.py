@@ -385,3 +385,66 @@ def test_demo_paper_reproduces_the_time_machine_actual_path(demo):
     acct = client.get("/paper/accounts").json()[0]
     assert acct["realizedPnl"] == 13.92 and acct["equityUsd"] == 5013.92
     validate(client.get("/paper/stats").json(), "PaperStats")
+
+
+def test_catch_up_waits_for_onboarding(tmp_path):
+    """A fresh install must not start re-running the day before onboarding is finished."""
+    with make_client(tmp_path / "ws", demo=False) as c:
+        paper = c.app.state.paper
+        calls: list[str] = []
+
+        async def fake_backfill(*_a: Any, **_k: Any) -> None:
+            calls.append("backfill")
+
+        async def fake_loop(*_a: Any, **_k: Any) -> None:
+            calls.append("loop")
+
+        paper.backfill, paper.loop = fake_backfill, fake_loop
+
+        async def start() -> None:
+            import asyncio
+            c.app.state.services.ctx.tasks["t.bg"] = asyncio.create_task(paper.background())
+
+        c.portal.call(start)
+        time.sleep(0.3)
+        assert calls == [], "catch-up started before onboarding"
+        assert c.post("/system/onboarding").status_code == 204
+        deadline = time.monotonic() + 5
+        while calls != ["backfill", "loop"] and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert calls == ["backfill", "loop"]
+    with make_client(tmp_path / "ws", demo=False) as c:  # remembered across restarts
+        c.portal.call(c.app.state.services.ctx.wait_onboarded)
+
+
+def test_user_runs_go_before_catch_up_steps(tmp_path):
+    """A catch-up run yields between steps: the user's run never waits for more than the step in progress."""
+    with make_client(tmp_path / "ws") as c:
+        svc = c.app.state.services.pipeline
+        ctx = c.app.state.services.ctx
+        order: list[tuple[str, str]] = []
+        real = svc._execute
+
+        async def recording(run_id: str, key: str, overrides: Any) -> Any:
+            order.append((run_id, key))
+            return await real(run_id, key, overrides)
+
+        svc._execute = recording
+
+        async def hold() -> None:
+            await ctx.lock.acquire()
+
+        c.portal.call(hold)
+        bg = c.portal.call(lambda: svc.create_run("all", None, "orb", {}, background=True))["id"]
+        time.sleep(0.2)  # the catch-up's first step is now waiting for the lock
+        user = c.post("/pipeline/runs", json={"mode": "all", "ticker": "TSLA", "setup": "orb"}).json()["id"]
+        c.portal.call(ctx.lock.release)
+        for rid in (user, bg):
+            deadline = time.monotonic() + 120
+            while c.get("/pipeline/runs/%s" % rid).json()["status"] == "running" and time.monotonic() < deadline:
+                time.sleep(0.2)
+        bg_steps = [i for i, (r, _) in enumerate(order) if r == bg]
+        user_steps = [i for i, (r, _) in enumerate(order) if r == user]
+        assert user_steps and len(bg_steps) >= 2
+        # only the catch-up step that was already waiting ran before the user's run; the rest came after it
+        assert bg_steps[0] < user_steps[0] and max(user_steps) < bg_steps[1]

@@ -14,6 +14,18 @@ beforeEach(async () => {
 });
 
 describe('app shell', () => {
+  it('tells the engine onboarding is done once the engine answers', async () => {
+    let reports = 0;
+    server.use(
+      http.post(`${getEngineInfo().url}/system/onboarding`, () => {
+        reports += 1;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderApp('/');
+    await waitFor(() => expect(reports).toBe(1));
+  });
+
   it('renders sidebar, status bar from /status and the dashboard placeholder', async () => {
     renderApp('/');
     const nav = screen.getByRole('navigation', { name: 'Main navigation' });

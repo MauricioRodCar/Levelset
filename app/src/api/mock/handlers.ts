@@ -159,6 +159,11 @@ export const handlers = [
     return json(currentStatus());
   }),
 
+  http.post(`${P}/system/onboarding`, async () => {
+    await latency();
+    return new HttpResponse(null, { status: 204 });
+  }),
+
   http.get(`${P}/dashboard`, async () => {
     await latency();
     return json({

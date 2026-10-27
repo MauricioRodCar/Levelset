@@ -49,6 +49,14 @@ paths:
       summary: Market clock, data delay, mode
       responses:
         "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/Status" } } } }
+  /system/onboarding:
+    post:
+      summary: |
+        The UI reports that first-run setup is finished (at the end of onboarding, and on every start once
+        it is done). Until then the engine does not start the paper account's catch-up runs. Idempotent;
+        remembered by the engine.
+      responses:
+        "204": { description: recorded }
   /dashboard:
     get:
       summary: KPI row + counts for the Dashboard

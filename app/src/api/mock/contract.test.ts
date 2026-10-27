@@ -283,6 +283,10 @@ describe('mock engine matches openapi.yaml', () => {
     );
   });
 
+  it('accepts the onboarding-finished report', async () => {
+    expect((await send('POST', '/system/onboarding')).status).toBe(204);
+  });
+
   it('errors use the Problem shape', async () => {
     const r = await get('/pipeline/runs/nope');
     expect(r.status).toBe(404);

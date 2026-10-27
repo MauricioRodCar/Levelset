@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getEngineInfo, useEngineEvents, useStatus } from '@/api';
+import { getEngineInfo, useEngineEvents, useReportOnboarding, useStatus } from '@/api';
 import { DisclaimerBanner } from '@/components/Disclaimer';
 import { ErrorState } from '@/components/ErrorState';
 import { useAlertNotifications } from '@/features/alerts/notifications';
@@ -19,6 +19,7 @@ export function AppShell() {
   useEngineEvents();
   useTrayLabels();
   useAlertNotifications();
+  useReportOnboarding(onboardingDone, status.isSuccess);
 
   if (!onboardingDone)
     return <Navigate to="/onboarding" replace state={{ from: location.pathname }} />;
