@@ -18,7 +18,9 @@ The app is available in **English and Spanish** (switch it any time from the sta
 | --- | --- |
 | ![Dashboard: tickets with large entry, stop loss and take profit](docs/screenshots/dashboard.png) | ![Pipeline: the 8 steps behind a ticket](docs/screenshots/pipeline.png) |
 | ![Settings: 7 presets and per-colour editing](docs/screenshots/appearance.png) | ![Spanish UI on the Daylight theme](docs/screenshots/dashboard-es-daylight.png) |
-| ![Connections: how to enter a ticket in cTrader, MT4, MT5](docs/screenshots/connections.png) | |
+| ![Connections: how to enter a ticket in cTrader, MT4, MT5](docs/screenshots/connections.png) | ![Paper account: equity curve, stats and trade log](docs/screenshots/paper.png) |
+| ![Analyst: quarters, margins and what changed](docs/screenshots/analyst.png) | ![Congress trades: House PTR filings](docs/screenshots/congress.png) |
+| ![AI assistant: explains and coaches, never calls trades](docs/screenshots/ai.png) | |
 
 _Screenshots come from the built-in demo (mock engine, TSLA on 2026-10-19). Regenerate with `node app/scripts/screenshots.mjs` while `npm run dev:mock -- --port 5174` runs._
 
@@ -31,6 +33,22 @@ _Screenshots come from the built-in demo (mock engine, TSLA on 2026-10-19). Rege
 - **Risk first**: your max loss per trade, daily loss limit, trades per day, reward:risk minimum
   and entry window are enforced by the trader-risk skill before a ticket is marked ready.
 - **Alerts**: stop, target, flat-by and price alerts with desktop notifications.
+- **Paper account** (v1.1): follows every ticket that passes the risk check, with next-bar fills,
+  slippage (0.02 % + $0.01/share by default), stop-first when a bar touches both levels and the
+  flat-by close. Equity curve, win rate, expectancy, drawdown, breakdowns, trade log, "signals vs.
+  you" and CSV export. Paper trades never count toward your real limits. After a restart it
+  catches up on the missed part of the day.
+- **AI assistant** (v1.1, optional, off by default): bring your own Claude API key (kept in
+  Windows Credential Manager) and pick Haiku, Sonnet or Opus with a monthly cap (US$5 by
+  default). It explains steps and blocked tickets, summarises news, reviews your paper results
+  and answers questions about your own data. It never makes buy/sell calls or price predictions.
+- **Analyst and Congress trades** (v1.1): quarterly results from SEC EDGAR with what changed,
+  and the House's public stock-trade disclosures (PTRs) with watchlist alerts.
+- **Platform bridges** (v1.1, source in [`bridges/`](bridges/)): a cTrader cBot and MT4/MT5 EAs
+  that show a Levelset ticket inside the platform. The order is placed only when you click
+  **Place** there.
+- **Runs in the background**: closing the window keeps Levelset in the tray; optional start
+  with Windows and keep-awake during market hours.
 - **Demo mode**: offline fixtures and a pinned clock (Mon 2026-10-19 10:15 ET), so you can try
   the whole flow without market data. The README example ends at 8 x TSLA, entry 364.18,
   stop 358.32, target 370.04.
@@ -54,8 +72,8 @@ _Screenshots come from the built-in demo (mock engine, TSLA on 2026-10-19). Rege
 ```mermaid
 flowchart LR
   subgraph App["Levelset.exe (Tauri 2)"]
-    UI["React UI (WebView2)<br/>Dashboard · Pipeline · Alerts · Settings"]
-    Shell["Rust shell<br/>window · notifications · engine sidecar"]
+    UI["React UI (WebView2)<br/>Dashboard · Pipeline · Paper · Analyst · Congress · Settings"]
+    Shell["Rust shell<br/>window · tray · notifications · engine sidecar · secrets"]
   end
   subgraph Engine["levelset-engine.exe (PyInstaller)"]
     API["FastAPI on 127.0.0.1:random<br/>bearer token · SSE /events"]
@@ -63,13 +81,17 @@ flowchart LR
     DB[("SQLite + trader/*.json<br/>in the workspace")]
   end
   Skills["vendor/day-trader-skill<br/>11 skills (MIT)"]
-  Data["Free data<br/>Yahoo · SEC EDGAR · Nasdaq Trader"]
+  Data["Free data<br/>Yahoo · SEC EDGAR · Nasdaq Trader · House Clerk"]
+  Claude["Claude API<br/>(optional, your key)"]
+  Bridges["cTrader / MT4 / MT5<br/>bridge reads a signals folder"]
 
   Shell -- "spawn --port 0 --token, wait for ready line,<br/>kill on exit (Job Object)" --> API
   UI -- "HTTP + SSE" --> API
   API --> Runner --> Skills
   Runner --> DB
   Skills -. "live mode only" .-> Data
+  API -. "AI on" .-> Claude
+  API -. "signal files" .-> Bridges
 ```
 
 More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/PRD.md](docs/PRD.md),
@@ -111,12 +133,12 @@ Tests: `cd engine && .venv\Scripts\python -m pytest -q` ·
 powershell -ExecutionPolicy Bypass -File engine\packaging\build.ps1   # engine exe + smoke test + stage sidecar
 cd app
 npm run tauri:build
-# -> app\src-tauri\target\release\bundle\nsis\Levelset_0.1.0_x64-setup.exe
+# -> app\src-tauri\target\release\bundle\nsis\Levelset_1.1.0_x64-setup.exe
 ```
 
 The installer is per-user (no admin rights), adds a Start menu entry and bundles the engine, so
-no Python is needed on the target PC. Demo mode in the installed app: set `LEVELSET_DEMO=1`, or
-create an empty file named `demo` in `%APPDATA%\app.levelset.desktop\`. Details:
+no Python is needed on the target PC. Demo mode in the installed app: Settings › System › Demo
+mode (restarts Levelset), or set `LEVELSET_DEMO=1`. Details:
 [engine/packaging/README.md](engine/packaging/README.md).
 
 ## Web demo

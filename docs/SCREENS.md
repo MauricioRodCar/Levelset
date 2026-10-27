@@ -1,8 +1,8 @@
-# Levelset — Screen Plan (v0.1, draft for sign-off)
+# Levelset — Screen Plan (v1.1)
 
 Global frame on every screen:
-- **Sidebar** (collapsible): Dashboard · Pipeline · Alerts · Analyst (v1.1) · Pelosi (v1.1) · Connections · Settings. Footer: Paper/Live label, tier.
-- **Status bar** (top): market open/closed · New York time (ET) · data delay · engine status · language switch.
+- **Sidebar** (collapsible): Dashboard · Pipeline · Alerts · Paper account · Analyst · Pelosi · Connections · Settings. Footer: Paper/Live label, tier.
+- **Status bar** (top): market open/closed · New York time (ET) · data delay · engine status · AI chat toggle (when AI is on) · language switch.
 - **Disclaimer** link always reachable; first-run acceptance required.
 
 Default window 1440×900, minimum 1180×720. Base font 14 px; numbers use tabular figures.
@@ -68,7 +68,7 @@ States: empty ("Run the scanner to find today's setups" + Run button), loading (
 - Toggle: Windows notifications, sound.
 
 ## S4. Settings
-Tabs: **Account & limits** · **Appearance** · **Language** · **Data & SEC** · **AI (optional)** · **About** (versions, MIT notice for day-trader-skill, licence tier).
+Tabs: **Account & limits** · **Paper account** (auto-follow, slippage) · **Appearance** · **Language** · **Data & SEC** · **AI (optional)** (on/off, model, monthly cap, spend, key) · **System** (start with Windows, keep awake in market hours, demo mode) · **About** (versions, MIT notice for day-trader-skill, licence tier).
 
 Appearance:
 ```
@@ -81,13 +81,32 @@ Appearance:
 
 ## S5. Connections
 - Cards per platform: cTrader, MetaTrader 4, MetaTrader 5, Alpaca, Interactive Brokers.
-- v1: each shows "Tickets: copy / export" + step-by-step how-to (EN/ES). Bridge/API cards show "Coming in v1.1 / Pro".
+- Each shows "Tickets: copy / export" + step-by-step how-to (EN/ES).
+- v1.1 bridges (cTrader, MT4, MT5): install guide (EN/ES), signals folder, heartbeat status per platform, symbol-mapping editor (US symbol → broker symbol, volume conversion). PASS tickets get "Send to platform"; the card shows sent / placed / dismissed, and the user confirms with Place inside the platform.
 
 ## S6. Onboarding (first run)
 1. Language → 2. Theme (preset previews) → 3. Account & limits (with sensible defaults, $ max loss explained) → 4. Disclaimer acceptance → 5. "Try the demo trade" or "Scan the market".
 
-## S7. Analyst (v1.1) · S8. Pelosi (v1.1)
-Specified later; same frame and components.
+## S7. Analyst
+- Ticker search → quarters table (revenue, gross / operating / net margin, net income, diluted EPS, each with YoY), TTM, translated "what changed" lines, latest 8-K / press release link.
+- Revenue and EPS by quarter chart. "Reports this week" badge also on tickets and the watchlist.
+- Prompts for the SEC identity (Settings › Data & SEC) when it is missing. AI "What changed this quarter?" when AI is on.
+
+## S8. Pelosi (Congress trades)
+- Feed of House PTR filings: member, owner, ticker, buy/sell, amount range, trade date, days to disclose; "in your watchlist / positions" flag.
+- Filters: member, ticker, type, date. Refresh. Toggle "notify me when a new filing mentions my watchlist".
+- Note: public disclosures, delayed up to 45 days; not inside information.
+
+## S9. Paper account
+- Account switcher (create, reset with confirmation, period selector).
+- KPIs: P/L, win rate, expectancy (R), profit factor, max drawdown, longest losing streak. Equity curve.
+- Breakdowns by ticker / setup / hour / weekday. Trade log (entry/exit, reason, R, P/L, backfilled, skipped, "View flow"). "Signals vs. you". CSV export.
+- Notes: fills are approximate (delayed, bar-based data); the PC must be on, awake and online in market hours.
+- Elsewhere: Dashboard tile "Paper P/L today", PAPER badge in Open trades, "Paper: opened 364.29" on the ticket card. AI coach review card when AI is on.
+
+## S10. AI assistant (optional)
+- Side chat panel scoped to Levelset data; Explain buttons on pipeline steps, blocked tickets, news and the Analyst page.
+- Every answer shows the data it used, its cost and a "not financial advice" footer. Never buy/sell calls or price predictions.
 
 ---
 

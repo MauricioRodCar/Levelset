@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "levelset_engine"
-version = "0.1.0"
+version = "1.1.0"
 description = "Levelset local engine: FastAPI wrapper around the day-trader skills"
 requires-python = ">=3.11"
 license = { text = "MIT" }
